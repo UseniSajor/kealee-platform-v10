@@ -1991,6 +1991,9 @@ importers:
       '@anthropic-ai/sdk':
         specifier: ^0.74.0
         version: 0.74.0(zod@3.25.76)
+      '@kealee/estimating':
+        specifier: workspace:*
+        version: link:../estimating
       openai:
         specifier: ^6.32.0
         version: 6.49.0(@aws-sdk/credential-provider-node@3.972.80)(@smithy/signature-v4@5.7.2)(ws@8.21.3)(zod@3.25.76)

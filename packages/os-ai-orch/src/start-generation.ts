@@ -141,7 +141,7 @@ export async function finalizeV30PackageIfComplete(input: {
 }): Promise<{ finalized: boolean; failedCount: number; total: number }> {
   const executions = await prisma.v30BotExecution.findMany({
     where: { projectId: input.projectId, packageId: input.packageId },
-    select: { status: true },
+    select: { status: true, outputData: true },
   })
 
   const total = executions.length
@@ -152,11 +152,17 @@ export async function finalizeV30PackageIfComplete(input: {
     return { finalized: false, failedCount: 0, total }
   }
 
-  const failedCount = terminal.filter(e => e.status === 'FAILED').length
+  const failed = terminal.filter(e => e.status === 'FAILED')
+  const failedCount = failed.length
+  // A bot the model-free engine handed to a person (requiresHumanFulfillment)
+  // is waiting on staff, not broken: the order reads IN_REVIEW, the platform's
+  // status for "a person is on it". Only a genuine failure reads FAILED.
+  const staffOnly = failedCount > 0 && failed.every(e =>
+    Boolean((e.outputData as Record<string, unknown> | null)?.requiresHumanFulfillment))
 
   await prisma.project.update({
     where: { id: input.projectId },
-    data: { status: failedCount === 0 ? 'DELIVERED' : 'FAILED' },
+    data: { status: failedCount === 0 ? 'DELIVERED' : staffOnly ? 'IN_REVIEW' : 'FAILED' },
   })
 
   if (failedCount === 0) {

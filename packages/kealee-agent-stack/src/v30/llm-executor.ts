@@ -2,7 +2,7 @@ import { getV30Bot, V30_PARALLEL_BOT_TYPES } from './bots'
 import { buildV30BotUserPrompt } from './bot-task-prompts'
 import { executeV30DesignBot } from './design-bot-executor'
 import { getV30SystemPrompt } from './prompts'
-import { v30DryRunExecution } from './orchestrator'
+import { executeV30BotWithoutModel, modelFreeForced } from './model-free'
 import {
   maxTokensForV30Bot,
   resolveV30AnthropicModel,
@@ -33,10 +33,23 @@ function isLlmBot(botType: V30BotType): boolean {
 export async function executeV30BotWithLlm(
   input: V30BotExecutionInput & { systemPrompt: string },
 ): Promise<V30BotExecutionResult> {
+  // No model configured (or model-free forced): the bot is computed from
+  // platform data. It never returns a hollow COMPLETE — see model-free/.
   if (!shouldUseV30Llm() || !isLlmBot(input.botType)) {
-    return v30DryRunExecution(input)
+    return executeV30BotWithoutModel(input)
   }
+  const result = await executeV30BotWithModel(input)
+  // A model that fails, truncates or returns unparseable JSON does not stop
+  // the order: the model-free engine produces the deliverable instead.
+  if (result.status === 'FAILED') {
+    return executeV30BotWithoutModel(input, { modelFailure: result.errorMessage ?? 'model call failed' })
+  }
+  return result
+}
 
+async function executeV30BotWithModel(
+  input: V30BotExecutionInput & { systemPrompt: string },
+): Promise<V30BotExecutionResult> {
   if (input.botType === 'design') {
     return executeV30DesignBot(input)
   }
@@ -102,6 +115,7 @@ export async function executeV30BotWithLlm(
 }
 
 export function shouldUseV30Llm(): boolean {
+  if (modelFreeForced()) return false
   return Boolean(process.env.ANTHROPIC_API_KEY && process.env.KEALEE_V30_LLM_ENABLED !== 'false')
 }
 

@@ -16,6 +16,7 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.74.0",
+    "@kealee/estimating": "workspace:*",
     "openai": "^6.32.0",
     "replicate": "^1.4.0"
   },

@@ -1,5 +1,6 @@
 import { getV30Bot, V30_PARALLEL_BOT_TYPES } from './bots'
 import { getV30SystemPrompt } from './prompts'
+import { executeV30BotWithoutModel } from './model-free'
 import type {
   V30BotExecutionInput,
   V30BotExecutionResult,
@@ -14,23 +15,13 @@ export interface V30OrchestratorOptions {
   botTypes?: V30BotType[]
 }
 
+/**
+ * Kept for callers of the old name. It used to return status COMPLETE with
+ * `{ dryRun: true }` and no deliverable; it now runs the model-free engine,
+ * which either computes the deliverable or records that a person must.
+ */
 export function v30DryRunExecution(input: V30BotExecutionInput): V30BotExecutionResult {
-  const def = getV30Bot(input.botType)
-  const started = Date.now()
-  return {
-    botType: input.botType,
-    status: 'COMPLETE',
-    progress: 100,
-    outputData: {
-      dryRun: true,
-      message: `${def.displayName} completed (orchestrator stub)`,
-      inputKeys: Object.keys(input.inputData),
-    },
-    modelUsed: def.defaultModel,
-    tokensUsed: 0,
-    costUSD: def.estimatedCostUsd,
-    durationMs: Date.now() - started,
-  }
+  return executeV30BotWithoutModel(input)
 }
 
 /**
@@ -57,7 +48,7 @@ export async function runV30ParallelGeneration(
     if (options.executeBot) {
       return options.executeBot({ ...input, systemPrompt })
     }
-    return v30DryRunExecution(input)
+    return executeV30BotWithoutModel(input)
   })
 
   const executions = await Promise.all(tasks)
