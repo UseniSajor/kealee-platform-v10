@@ -86,7 +86,7 @@ export const JURISDICTION_COVERAGE: JurisdictionCoverage[] = [
       'Soils (SSURGO MD031)',
     ],
     cannotProduce: [
-      'Standards reconciled with zoning text amendments after the 2014 adopted text — the current consolidated code could not be read; a reviewer confirms the section.',
+      'The pre-1958 lot exemptions of ZTA 16-07 — published only as a scanned image; the reviewer applies them.',
       'Townhouse, multi-unit, commercial and floating-zone envelopes — not transcribed, not drawn.',
       'Residential Infill Compatibility (§4.4.1.B) determinations.',
       'A certified rule pack, or a boundary survey — that is a licensed surveyor',
@@ -184,106 +184,31 @@ export function drawsPlansIn(code: string): boolean {
   return level === 'full' || level === 'preliminary'
 }
 
-export interface ServiceAreaVerdict {
-  served: boolean
-  level: CoverageLevel
-  /** Customer-facing sentence. Never blames the address when the area is the issue. */
-  message: string
-  /** What the operator should do. */
-  disposition: 'proceed' | 'refer_or_refund'
-}
-
 /**
- * Decides whether an address is in the service area BEFORE the locator runs.
+ * Coverage for ANY determined jurisdiction.
  *
- * This is a coarse text check on state and county, deliberately: it exists to
- * catch the obvious out-of-area order early and give it an honest message. It
- * is NOT a jurisdiction determination — that comes from geometry
- * (`Administrative/MapServer/30`), never from typing, and the engine's own
- * rules say so. A `served: true` here means "worth asking the county", not
- * "this parcel is in Prince George's County".
+ * Nothing is refused. An order in a jurisdiction without its own entry is
+ * accepted like any other: the lot, terrain and soils are drawn from the
+ * county's or the state's GIS, and the zoning envelope — which needs that
+ * jurisdiction's ordinance — is prepared by staff and says so. There used to
+ * be a text-matching `assessServiceArea` here that turned addresses away by
+ * the words typed into them; the jurisdiction is now determined from geometry
+ * at intake, and a sale is never declined on it.
  */
-export function assessServiceArea(rawAddress: string): ServiceAreaVerdict {
-  const a = rawAddress.toLowerCase()
-
-  if (/\b(washington,?\s*d\.?c\.?|district of columbia)\b|,\s*dc\b/.test(a)) {
-    return {
-      served: true, level: 'preliminary', disposition: 'proceed',
-      message:
-        'Within the District of Columbia service area, pending the District\'s address locator. ' +
-        'DC plans are delivered as preliminary plans for professional review: the zoning ' +
-        'standards are extracted from Title 11 and cited, not yet certified.',
-    }
-  }
-  if (/\b(arlington|fairfax)\b/.test(a) && /\b(virginia|,\s*va\b|\bva\s+2\d{4})\b/.test(a)) {
-    return {
-      served: true, level: 'preliminary', disposition: 'proceed',
-      message:
-        'Within the Arlington / Fairfax service area, pending the county locator. Plans are ' +
-        'delivered as preliminary plans for professional review.',
-    }
-  }
-  if (/\bmontgomery\b|\b(bethesda|rockville|silver spring|gaithersburg|germantown|potomac|chevy chase|kensington|takoma park)\b/.test(a)) {
-    return {
-      served: true, level: 'preliminary', disposition: 'proceed',
-      message:
-        'Within the Montgomery County service area, pending the county locator. Plans are ' +
-        'delivered as preliminary plans for professional review; the zoning standards are the ' +
-        '2014 adopted text and later amendments must be confirmed.',
-    }
-  }
-  const outOfState = [
-    { pattern: /\b(virginia|,\s*va\b|\bva\s+2\d{4})\b/, name: 'Virginia outside Arlington and Fairfax counties' },
-  ]
-  for (const o of outOfState) {
-    if (o.pattern.test(a)) {
-      return {
-        served: false, level: 'unserved', disposition: 'refer_or_refund',
-        message:
-          `This engine serves Prince George's and Montgomery Counties, Maryland, the District of Columbia, and Arlington and Fairfax Counties, Virginia. The address given is in ` +
-          `${o.name}, which is not yet covered — the zoning rules there are not encoded, ` +
-          `so a plan drawn for it could not be checked for compliance.`,
-      }
-    }
-  }
-
-  const otherMdCounty = [
-    { pattern: /\bhoward county\b/, name: 'Howard County' },
-    { pattern: /\banne arundel\b/, name: 'Anne Arundel County' },
-    { pattern: /\bbaltimore\b/, name: 'Baltimore' },
-    { pattern: /\bcharles county\b/, name: 'Charles County' },
-    { pattern: /\bfrederick county\b/, name: 'Frederick County' },
-  ]
-  for (const o of otherMdCounty) {
-    if (o.pattern.test(a)) {
-      return {
-        served: false, level: 'unserved', disposition: 'refer_or_refund',
-        message:
-          `This engine serves Prince George's and Montgomery Counties in Maryland. The address given appears ` +
-          `to be in ${o.name}, which is not yet covered.`,
-      }
-    }
-  }
-
+export function coverageForDetermined(code: string, name: string | null): JurisdictionCoverage {
+  const own = coverageFor(code)
+  if (own) return own
+  const state = code === 'district_of_columbia' ? 'DC' : code.endsWith('_va') ? 'VA' : 'MD'
   return {
-    served: true, level: 'full', disposition: 'proceed',
-    message: "Within the Prince George's County service area, pending the county locator.",
+    code, name: name ?? code, state,
+    level: 'data_only', rulePackVersion: null, gisConnector: true,
+    produces: [
+      'Parcel, streets and neighbours from the county or statewide parcel fabric',
+      'Existing contours (county layer or USGS 3DEP lidar), soils (SSURGO), rainfall (NOAA Atlas 14)',
+    ],
+    cannotProduce: [
+      `Dimensional standards for ${name ?? code} are not encoded: the zoning envelope is prepared by staff from its ordinance.`,
+      'A certified rule pack, or a boundary survey — that is a licensed surveyor',
+    ],
   }
-}
-
-/**
- * The message a BLOCKED property resolution should carry.
- *
- * Separates "we do not serve this area" from "the county has no such address",
- * because they need different actions and the second one blames the customer.
- */
-export function propertyBlockedMessage(address: string, triedForms: string[]): string {
-  const area = assessServiceArea(address)
-  if (!area.served) return area.message
-  return (
-    `The Prince George's County locator did not match "${address}" at or above the minimum ` +
-    `score of 90 (tried: ${triedForms.map(f => `"${f}"`).join(', ')}). A weak match would site ` +
-    `the plan on the wrong lot, so none is accepted. If the address is correct and new, the ` +
-    `county's address point may not be published yet — a recorded plat resolves it.`
-  )
 }

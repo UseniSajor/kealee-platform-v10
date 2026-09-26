@@ -312,7 +312,10 @@ describe('order evaluation', () => {
     expect(report.coverage).toBe('manual-review')
     expect(report.evaluation).toBeNull()
     expect(report.determinedRequirements).toHaveLength(0)
-    expect(report.customerSummary).toMatch(/prepare the zoning analysis by hand/i)
+    // Every jurisdiction is served: the summary says who prepares the analysis,
+    // never that the site is outside an area.
+    expect(report.customerSummary).toMatch(/prepared from its published ordinance/i)
+    expect(report.customerSummary).not.toMatch(/outside/i)
     expect(canProceedToProfessionalReview(report).ok).toBe(false)
     expect(SUPPORTED_JURISDICTIONS).not.toContain('montgomery_md')
   })

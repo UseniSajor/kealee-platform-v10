@@ -58,6 +58,8 @@ export * from './gis-client'
 // Large surfaces, namespaced
 export * as Survey from './survey/index'
 export * as Rules from './rules/index'
+// Who zones the land at an address, from geometry — used at order intake.
+export * as Jurisdiction from './jurisdictions/determination'
 export * as Persistence from './persistence/index'
 export * as SitePlanOrders from './integration/index'
 export * as SelfPerform from './self-perform/lot-package'

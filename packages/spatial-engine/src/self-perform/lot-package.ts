@@ -340,6 +340,18 @@ export function readZoningEnvelope(
   if (opts.jurisdictionCode && ['montgomery_md', 'fairfax_va', 'arlington_va'].includes(opts.jurisdictionCode)) {
     return readCountyZoningEnvelope(opts.jurisdictionCode, zoneCode, opts.establishedBuildingLine ?? null)
   }
+  // Any other determined jurisdiction: its ordinance is not encoded. Falling
+  // through to the Prince George's reader here printed "Sec. 27-4205" on a
+  // Rockville plan. Say what is true instead, and draw no envelope.
+  if (opts.jurisdictionCode && opts.jurisdictionCode !== 'prince_georges_md') {
+    return {
+      zone: zoneCode, found: false, standards: [], section: null, citation: null,
+      caution:
+        `No dimensional standards are encoded for ${jurisdictionDisplayName(opts.jurisdictionCode)}` +
+        `${zoneCode ? ` (zone ${zoneCode})` : ''}. The setbacks, coverage and height are prepared by staff ` +
+        'from its ordinance; no envelope is drawn until then.',
+    }
+  }
   const lookup = getPgDimensionalStandards(zoneCode)
   if (!lookup.table) {
     return {
@@ -406,8 +418,8 @@ function readCountyZoningEnvelope(
   const cautions = [...std.notes]
   if (code === 'montgomery_md') {
     cautions.unshift(
-      'Standards are from the 2014 council-adopted Chapter 59. Zoning text amendments since 2014 are ' +
-      'NOT reconciled; confirm the current section before relying on them.')
+      'Chapter 59 standard method, reconciled 2026-09-25 through the enacted ZTAs. A lot recorded before ' +
+      '1958 may take the exemptions of ZTA 16-07 (§7.7), which is read by the reviewer.')
   }
   return {
     zone: zoneCode, found: true,

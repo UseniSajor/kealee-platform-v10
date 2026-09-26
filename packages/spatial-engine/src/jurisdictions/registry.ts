@@ -26,8 +26,10 @@ import {
   measureDcStructureType, type DcBuildingRestrictionLine, type DcHistoricStatus,
 } from './dc-gis'
 import { measureBlockFace, type BlockFaceResult, type StructureTypeEvidence } from './block-face-setback'
+import type { JurisdictionDetermination } from './determination'
 import {
-  MONTGOMERY_GIS, FAIRFAX_GIS, ARLINGTON_GIS, montgomeryDetachedHousesAround, montgomeryRecordPlat,
+  MONTGOMERY_GIS, FAIRFAX_GIS, ARLINGTON_GIS, MARYLAND_STATEWIDE_GIS, VIRGINIA_STATEWIDE_GIS,
+  montgomeryDetachedHousesAround, montgomeryRecordPlat,
   virginiaConstraintsOn, type EnvironmentalFinding,
 } from './dmv-counties-gis'
 import { countyStandard } from './county-zoning'
@@ -43,57 +45,35 @@ export const JURISDICTION_CONNECTORS: Record<string, ArcGisJurisdictionConfig> =
   [ARLINGTON_GIS.code]: ARLINGTON_GIS,
 }
 
-export interface AddressHints {
-  state: 'DC' | 'MD' | 'VA' | null
-  /** Jurisdictions the text points at, most specific first. */
-  preferred: string[]
-}
-
-const DC_QUADRANT = /\b\d+[A-Z]?\s+.+\s(NW|NE|SW|SE)\b/i
-
 /**
- * Reads what the customer typed for hints. Never decides anything by itself.
+ * Whose GIS reads a determined jurisdiction.
+ *
+ * The DETERMINATION (`determination.ts`, from geometry) says who zones the
+ * land. This says whose layers draw the lot, which is not always the same
+ * body: a Rockville lot is zoned by the City of Rockville and mapped by
+ * Montgomery County; a Howard County lot has no connector of its own and is
+ * read from Maryland's statewide fabric. Nothing here chooses a jurisdiction.
  */
-export function addressHints(raw: string): AddressHints {
-  const a = ` ${raw.toLowerCase().replace(/\s+/g, ' ')} `
-  const zip = raw.match(/\b(\d{5})(?:-\d{4})?\b(?!.*\b\d{5}\b)/)?.[1] ?? null
-  const z3 = zip ? Number(zip.slice(0, 3)) : null
+export type GisConnector =
+  | { kind: 'pgatlas'; code: typeof PG_CODE }
+  | { kind: 'arcgis'; code: string; cfg: ArcGisJurisdictionConfig; requireZoning: boolean }
+  | { kind: 'none'; reason: string }
 
-  let state: AddressHints['state'] = null
-  if (/\b(washington,?\s*d\.?\s?c\.?|district of columbia)\b|,\s*dc\b|\bdc\s+\d{5}\b/.test(a)) state = 'DC'
-  else if (/\bvirginia\b|,\s*va\b|\bva\s+\d{5}\b/.test(a)) state = 'VA'
-  else if (/\bmaryland\b|,\s*md\b|\bmd\s+\d{5}\b/.test(a)) state = 'MD'
-  else if (z3 != null) {
-    if (z3 === 200 || z3 === 203 || z3 === 204 || z3 === 205) state = 'DC'
-    else if (z3 === 201 || (z3 >= 220 && z3 <= 246)) state = 'VA'
-    else if (z3 >= 206 && z3 <= 219) state = 'MD'
+export function connectorFor(det: JurisdictionDetermination): GisConnector {
+  if (!det.determined || !det.code) return { kind: 'none', reason: det.reason ?? 'jurisdiction not determined' }
+  if (det.countyCode === PG_CODE) return { kind: 'pgatlas', code: PG_CODE }
+  const own = JURISDICTION_CONNECTORS[det.code]
+  if (own) return { kind: 'arcgis', code: own.code, cfg: own, requireZoning: true }
+  // A town inside a county with a connector: the county maps it; the town's
+  // zoning is not the county's, so the county zone layer is not required.
+  const county = det.countyCode ? JURISDICTION_CONNECTORS[det.countyCode] : undefined
+  if (county) return { kind: 'arcgis', code: county.code, cfg: county, requireZoning: false }
+  if (det.state === 'MD') return { kind: 'arcgis', code: MARYLAND_STATEWIDE_GIS.code, cfg: MARYLAND_STATEWIDE_GIS, requireZoning: false }
+  if (det.state === 'VA') return { kind: 'arcgis', code: VIRGINIA_STATEWIDE_GIS.code, cfg: VIRGINIA_STATEWIDE_GIS, requireZoning: false }
+  return {
+    kind: 'none',
+    reason: `${det.name ?? det.code} is outside the states whose parcel fabric this engine reads (DC, MD, VA).`,
   }
-
-  const preferred: string[] = []
-  if (state === 'DC' || DC_QUADRANT.test(raw)) preferred.push('district_of_columbia')
-  if (state === 'VA') {
-    if (z3 === 222) preferred.push('arlington_va', 'fairfax_va')
-    else preferred.push('fairfax_va', 'arlington_va')
-  }
-  if (state === 'MD' || state === null) {
-    const montgomery = /\b(bethesda|rockville|silver spring|gaithersburg|germantown|potomac|chevy chase|kensington|takoma park|olney|wheaton|damascus|poolesville|clarksburg|montgomery)\b/.test(a)
-      || (z3 != null && (z3 === 208 || z3 === 209))
-    if (montgomery) preferred.push('montgomery_md')
-  }
-  return { state, preferred }
-}
-
-/**
- * The order in which to ask the jurisdictions. PG stays first when the text
- * says nothing — that is the engine's established behaviour and its only
- * certified jurisdiction — and a hinted jurisdiction goes ahead of it.
- */
-export function jurisdictionAttemptOrder(raw: string): string[] {
-  const { preferred, state } = addressHints(raw)
-  const all = [PG_CODE, ...Object.keys(JURISDICTION_CONNECTORS)]
-  const stateOf = (code: string) => code === PG_CODE ? 'MD' : JURISDICTION_CONNECTORS[code]?.state
-  const order = [...preferred.filter(c => all.includes(c)), ...all]
-  return [...new Set(order)].filter(c => !state || stateOf(c) === state)
 }
 
 export interface EstablishedBuildingLine {
@@ -130,14 +110,18 @@ export interface ResolvedJurisdictionSite {
  * answer at the matched point.
  */
 export async function resolveInJurisdiction(
-  code: string, address: string, opts: { fetchImpl?: typeof fetch; trace?: (msg: string) => void } = {},
+  code: string, address: string,
+  opts: { fetchImpl?: typeof fetch; trace?: (msg: string) => void; cfg?: ArcGisJurisdictionConfig; requireZoning?: boolean } = {},
 ): Promise<ResolvedJurisdictionSite | null> {
-  const cfg = JURISDICTION_CONNECTORS[code]
+  const cfg = opts.cfg ?? JURISDICTION_CONNECTORS[code]
   if (!cfg) return null
+  code = cfg.code
   const site = await resolveJurisdictionSite(cfg, address, opts)
   if (!site) return null
-  // The geometric proof: this jurisdiction's own fabric and zoning answer here.
-  if (!site.parcel || !site.zoning) {
+  // The lot must be in this fabric. Zoning is required only where the
+  // connector's zone layer IS the zoning authority's.
+  const needZoning = opts.requireZoning ?? Boolean(cfg.zoning)
+  if (!site.parcel || (needZoning && !site.zoning)) {
     opts.trace?.(`${cfg.name} locator matched "${address}" but its ${!site.parcel ? 'parcel' : 'zoning'} layer did not answer`)
     return null
   }
@@ -181,6 +165,7 @@ export async function fetchContoursIn(
   code: string, e: number, n: number, opts: { radiusFt?: number; fetchImpl?: typeof fetch } = {},
 ): Promise<JurisdictionContourResult | null> {
   const cfg = JURISDICTION_CONNECTORS[code]
+    ?? [MARYLAND_STATEWIDE_GIS, VIRGINIA_STATEWIDE_GIS].find(c => c.code === code)
   return cfg ? fetchJurisdictionContours(cfg, e, n, opts) : null
 }
 
@@ -188,7 +173,7 @@ export async function fetchContoursIn(
 export function zoneSourceOf(code: string): string {
   if (code === PG_CODE) return 'PGAtlas Zoning/MapServer/63'
   const cfg = JURISDICTION_CONNECTORS[code]
-  return cfg ? `${cfg.zoning.authority} — ${cfg.zoning.url}` : 'unknown'
+  return cfg?.zoning ? `${cfg.zoning.authority} — ${cfg.zoning.url}` : 'not read — no zoning layer for this authority'
 }
 
 /** The recorded BRL offset that binds the front, where one is recorded as a building restriction. */

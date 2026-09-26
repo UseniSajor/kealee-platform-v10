@@ -89,7 +89,8 @@ export interface ArcGisJurisdictionConfig {
   state: 'DC' | 'MD' | 'VA'
   locators: LocatorConfig[]
   parcels: ParcelLayerConfig[]
-  zoning: { url: string; codeFields: string[]; descriptionField?: string; urlField?: string; authority: string }
+  /** Null for a statewide fabric: the state publishes parcels, not zoning. */
+  zoning: { url: string; codeFields: string[]; descriptionField?: string; urlField?: string; authority: string } | null
   /** One or more centreline layers (MD publishes roads split by class). */
   streets: { urls: string[]; nameFields: string[]; authority: string }
   /** County contours, or '3dep' where the county publishes none queryable. */
@@ -338,6 +339,7 @@ export async function fetchJurisdictionZoning(
   cfg: ArcGisJurisdictionConfig, e: number, n: number, opts: { fetchImpl?: typeof fetch } = {},
 ): Promise<JurisdictionZoning | null> {
   const doFetch = opts.fetchImpl ?? fetch
+  if (!cfg.zoning) return null
   const features = await queryAtPoint(cfg.zoning.url, e, n, doFetch, { geometry: false })
   const a = features[0]?.attributes
   if (!a) return null

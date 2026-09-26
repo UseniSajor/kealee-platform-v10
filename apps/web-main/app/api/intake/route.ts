@@ -15,6 +15,9 @@ import {
   formatUpgradeRange,
   type HomeUpgradeScopeBand,
 } from '@kealee/core-rules'
+import {
+  determineIntakeJurisdiction, jurisdictionFormData, persistJurisdictionColumns,
+} from '@/lib/jurisdiction-intake'
 
 export const dynamic = 'force-dynamic'
 
@@ -91,6 +94,11 @@ export async function POST(req: NextRequest) {
       resolvedFormData.serviceDeliveryDays = deliverable.deliveryDays
     }
 
+    // Who zones this land, from the address's geometry — stored on the order
+    // so nothing downstream has to guess. Never blocks the customer.
+    const jurisdiction = await determineIntakeJurisdiction(String(projectAddress))
+    Object.assign(resolvedFormData, jurisdictionFormData(jurisdiction))
+
     const metadata = mergeAttributionMetadata(null, utm, {
       funnelStage: 'lead',
       marketingSource: 'web-main',
@@ -130,8 +138,12 @@ export async function POST(req: NextRequest) {
           metadata,
         })
         .eq('id', reusable.id)
+      await persistJurisdictionColumns(supabase, reusable.id, jurisdiction)
 
-      return NextResponse.json({ intakeId: reusable.id, reused: true })
+      return NextResponse.json({
+        intakeId: reusable.id, reused: true,
+        jurisdiction: jurisdiction?.determined ? { code: jurisdiction.code, name: jurisdiction.name } : null,
+      })
     }
 
     const { data: intake, error: intakeErr } = await supabase
@@ -166,6 +178,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ intakeId: fallbackId, fallback: true })
     }
 
+    await persistJurisdictionColumns(supabase, intake.id, jurisdiction)
+
     void trackLeadSubmitted({
       intakeId: intake.id,
       projectPath: path,
@@ -190,7 +204,10 @@ export async function POST(req: NextRequest) {
       }
     })()
 
-    return NextResponse.json({ intakeId: intake.id })
+    return NextResponse.json({
+      intakeId: intake.id,
+      jurisdiction: jurisdiction?.determined ? { code: jurisdiction.code, name: jurisdiction.name } : null,
+    })
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : 'Internal error'
     console.error('[intake] Unexpected error:', msg)

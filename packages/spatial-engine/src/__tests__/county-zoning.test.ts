@@ -2,7 +2,6 @@ import { describe, it, expect } from 'vitest'
 import {
   countyStandard, countyFrontSetback, countyStandardRows, normaliseCountyZone,
 } from '../jurisdictions/county-zoning'
-import { jurisdictionAttemptOrder } from '../jurisdictions/registry'
 
 describe('county zone codes', () => {
   it('reads both spellings the map layers use', () => {
@@ -50,10 +49,3 @@ describe('Montgomery established building line', () => {
   })
 })
 
-describe('routing', () => {
-  it('asks Montgomery first for a Montgomery city or ZIP, and Arlington first for 222xx', () => {
-    expect(jurisdictionAttemptOrder('8700 Bradmoor Dr, Bethesda, MD 20817')[0]).toBe('montgomery_md')
-    expect(jurisdictionAttemptOrder('1611 N Kenilworth St, Arlington, VA 22205')[0]).toBe('arlington_va')
-    expect(jurisdictionAttemptOrder('3400 Barkley Dr, Fairfax, VA 22031')[0]).toBe('fairfax_va')
-  })
-})

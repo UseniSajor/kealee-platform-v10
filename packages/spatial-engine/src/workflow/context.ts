@@ -127,7 +127,7 @@ export interface ArtifactInput {
 export interface TraceEvent {
   workflowId: string
   job: SitePlanJobName
-  phase: 'start' | 'complete' | 'fail' | 'skip'
+  phase: 'start' | 'complete' | 'fail' | 'skip' | 'note'
   detail?: string
   durationMs?: number
 }

@@ -1723,7 +1723,7 @@ export default function IntakePage() {
                         <div className="mt-4 border-t border-emerald-200 pt-4">
                           <div className="grid gap-3 text-xs sm:grid-cols-2">
                             <div><span className="block text-emerald-700">Address</span><strong className="text-emerald-950">{siteIntelligence.status === "not_found" ? "We’ll review it" : "Located"}</strong></div>
-                            <div><span className="block text-emerald-700">Jurisdiction</span><strong className="text-emerald-950">{siteIntelligence.jurisdiction.city ?? siteIntelligence.jurisdiction.county ?? "Pending"}{siteIntelligence.jurisdiction.state ? `, ${siteIntelligence.jurisdiction.state}` : ""}</strong></div>
+                            <div><span className="block text-emerald-700">Zoning jurisdiction</span><strong className="text-emerald-950">{(siteIntelligence as { zoningJurisdiction?: { name: string } | null }).zoningJurisdiction?.name ?? <>{siteIntelligence.jurisdiction.city ?? siteIntelligence.jurisdiction.county ?? "Pending"}{siteIntelligence.jurisdiction.state ? `, ${siteIntelligence.jurisdiction.state}` : ""}</>}</strong></div>
                           </div>
                           {siteIntelligence.parcel && (
                             <div className="mt-4 grid gap-4 sm:grid-cols-[160px_1fr] sm:items-center">

@@ -9,6 +9,9 @@ import { getSupabaseAdmin } from '@/lib/supabase-server'
 import { trackCheckoutStarted } from '@/lib/marketing/ga4-server'
 import { parseUtmFromBody } from '@/lib/marketing/utm-metadata'
 import { KEALEE_STRIPE_CHECKOUT_BRANDING } from '@/lib/stripe-checkout-branding'
+import {
+  determineIntakeJurisdiction, jurisdictionFormData, hasDetermination, persistJurisdictionColumns,
+} from '@/lib/jurisdiction-intake'
 
 export const dynamic = 'force-dynamic'
 
@@ -229,9 +232,23 @@ export async function POST(req: NextRequest) {
       const supabase = getSupabaseAdmin()
       const { data: intakeRow } = await supabase
         .from('public_intake_leads')
-        .select('metadata, form_data')
+        .select('metadata, form_data, project_address')
         .eq('id', intakeId)
         .single()
+      // BACKSTOP: every paid order reaches the webhook with its jurisdiction
+      // already determined. Orders created by paths that did not determine it
+      // (marketing webhooks, older rows) are determined here, before payment.
+      const existingFd = (intakeRow?.form_data as Record<string, unknown>) ?? {}
+      if (intakeRow?.project_address && !hasDetermination(existingFd)) {
+        const det = await determineIntakeJurisdiction(String(intakeRow.project_address), 4000)
+        if (det) {
+          await supabase
+            .from('public_intake_leads')
+            .update({ form_data: { ...existingFd, ...jurisdictionFormData(det) } })
+            .eq('id', intakeId)
+          await persistJurisdictionColumns(supabase, intakeId, det)
+        }
+      }
       const bag = {
         ...((intakeRow?.metadata as Record<string, unknown>) ?? {}),
         ...((intakeRow?.form_data as Record<string, unknown>) ?? {}),

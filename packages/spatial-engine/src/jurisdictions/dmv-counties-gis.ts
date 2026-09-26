@@ -196,3 +196,55 @@ export async function virginiaConstraintsOn(
     return null
   }
 }
+
+// ── Statewide fabrics, for jurisdictions with no connector of their own ────
+
+/**
+ * Maryland: the MD iMAP multirole locator (point addresses and parcels) and
+ * the statewide parcel fabric. No zoning — the state does not publish it.
+ */
+export const MARYLAND_STATEWIDE_GIS: ArcGisJurisdictionConfig = {
+  code: 'maryland_statewide',
+  name: 'Maryland (statewide)',
+  state: 'MD',
+  locators: [{
+    name: 'MD iMAP multirole locator', url: `${MD_IMAP}/GeocodeServices/MD_MultiroleLocator/GeocodeServer`,
+    acceptCandidate: c => String(c.attributes.Addr_type ?? '') === 'PointAddress',
+  }],
+  parcels: [{
+    url: `${MD_IMAP}/PlanningCadastre/MD_ParcelBoundaries/MapServer/0`, kind: 'parcel',
+    authority: 'Maryland Department of Planning — MD iMAP parcel boundaries',
+    idFields: ['ACCTID'], areaField: 'LANDAREA',
+    platReference: a => a.PLAT ? `Plat ${a.PLAT}${a.BLOCK ? `, Block ${a.BLOCK}` : ''}${a.LOT ? `, Lot ${a.LOT}` : ''}` : null,
+  }],
+  zoning: null,
+  streets: {
+    urls: [0, 1, 2, 3].map(i => `${MD_IMAP}/Transportation/MD_RoadCenterlines/MapServer/${i}`),
+    nameFields: ['ROADNAMESHA'], authority: 'MDOT SHA — road centerlines',
+  },
+  contours: '3dep',
+}
+
+const VBMP = 'https://vginmaps.vdem.virginia.gov/arcgis/rest/services/VA_Base_Layers'
+
+/** Virginia: VGIN point addresses, the statewide parcel layer and VBMP road centrelines. */
+export const VIRGINIA_STATEWIDE_GIS: ArcGisJurisdictionConfig = {
+  code: 'virginia_statewide',
+  name: 'Virginia (statewide)',
+  state: 'VA',
+  locators: [{
+    name: 'VGIN statewide locator', url: VGIN,
+    acceptCandidate: c => String(c.attributes.Addr_type ?? '') === 'PointAddress',
+  }],
+  parcels: [{
+    url: `${VBMP}/VA_Parcels/FeatureServer/0`, kind: 'parcel',
+    authority: 'VGIN — Virginia statewide parcels (locality-submitted)',
+    idFields: ['PARCELID'],
+  }],
+  zoning: null,
+  streets: {
+    urls: [1, 2, 4, 5].map(i => `${VBMP}/VBMP_RCL/MapServer/${i}`),
+    nameFields: ['ST_FULL'], authority: 'VGIN — VBMP road centerlines',
+  },
+  contours: '3dep',
+}

@@ -7,12 +7,18 @@
  *
  * SOURCES
  *
- *   Montgomery  Chapter 59, Zoning Ordinance, Council Approved March 5, 2014
- *               (Ordinance 17-52), Division 4.4 standard method. THE CURRENT
- *               CONSOLIDATED TEXT COULD NOT BE READ: the county's code library
- *               answers this environment with a bot challenge. Zoning text
- *               amendments adopted since 2014 are NOT reconciled here, and every
- *               envelope says so. A reviewer must check the current section.
+ *   Montgomery  Chapter 59, Division 4.4 standard method, as effective
+ *               30 October 2014 (Ord. 17-43 as revised by Ord. 17-52 / ZTA 14-09),
+ *               read from M-NCPPC's "with ZTA 9.30.14" Article 59-4, and
+ *               RECONCILED on 2026-09-25 against every ZTA the Council lists as
+ *               enacted since: 15-09 relabels the height rows; 21-10 and 22-09
+ *               change accessory structures only; 25-02 (eff. 2025-11-01) ADDS a
+ *               Workforce Housing method on qualifying corridors and leaves the
+ *               standard method unchanged; 22-11, 25-13, 26-06 do not touch
+ *               §4.4. ZTA 16-07 (pre-1958 lot exemptions) is published only as a
+ *               scanned image and was not read; lots recorded before 1958 are
+ *               flagged for the reviewer. The consolidated code library itself
+ *               answers this environment with a bot challenge.
  *   Fairfax     Chapter 112.1 (zMOD, readopted 2023), §2102, read from the
  *               County's official online code on 2026-09-25. Single-family
  *               dwellings take FIXED setbacks; the "setback relative to height"
@@ -61,7 +67,7 @@ export interface CountyZoneStandard {
   notes: string[]
 }
 
-const MC = (s: string) => `Montgomery County Code Ch. 59, §${s} (2014 adopted text)`
+const MC = (s: string) => `Montgomery County Code Ch. 59, §${s}`
 const FFX = (t: string) => `Fairfax County Code Ch. 112.1, Table ${t}`
 const ARL = (s: string) => `Arlington County Zoning Ordinance §${s}; §3.2.5.A; §3.2.6.A`
 

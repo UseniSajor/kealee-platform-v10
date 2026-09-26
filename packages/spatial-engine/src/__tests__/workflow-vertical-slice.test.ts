@@ -57,6 +57,13 @@ function stubFetch(): typeof fetch {
   }) as unknown as typeof fetch
 }
 
+const PG_DETERMINATION = {
+  determined: true, code: 'prince_georges_md', name: "Prince George's County, Maryland", state: 'MD',
+  countyFips: '24033', countyName: "Prince George's County", countyCode: 'prince_georges_md',
+  municipality: null, soilSurveyArea: 'MD033', matchedAddress: '1005 ROLLINS AVE', longitude: -76.9, latitude: 38.87,
+  determinedBy: 'us-census-geocoder', determinedAt: '2026-09-25T00:00:00Z', reason: null,
+}
+
 function harness() {
   const persisted: PersistedStageOutput[] = []
   const traces: TraceEvent[] = []
@@ -87,7 +94,12 @@ function harness() {
 
   const subject = {
     organizationId: 'org_1', projectId: 'proj_1', orderId: 'ord_1', productId: 'permit_site_plan',
-    formData: { address: '1005 Rollins Ave', houseSquareFeet: 2400, storeys: 2, garage: 'attached_2_car' },
+    // What a real order now carries: the jurisdiction, determined from the
+    // address's geometry at intake. The engine never assumes it.
+    formData: {
+      address: '1005 Rollins Ave', houseSquareFeet: 2400, storeys: 2, garage: 'attached_2_car',
+      jurisdiction: PG_DETERMINATION,
+    },
   }
 
   const ctxFor = (snap: WorkflowSnapshot, job: SitePlanJobName): StageContext => ({

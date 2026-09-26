@@ -1,27 +1,39 @@
 import { describe, it, expect } from 'vitest'
-import { addressHints, jurisdictionAttemptOrder } from '../jurisdictions/registry'
+import { connectorFor } from '../jurisdictions/registry'
+import type { JurisdictionDetermination } from '../jurisdictions/determination'
 import { dcFrontSetback, dcEnvelope } from '../jurisdictions/dc-zoning'
 import { localiseLicensure, licensedSurveyor } from '../jurisdictions/profiles'
 
-describe('jurisdiction routing hints', () => {
-  it('asks PG first when the text says nothing — the established behaviour', () => {
-    expect(jurisdictionAttemptOrder('1005 Rollins Ave')[0]).toBe('prince_georges_md')
+const det = (over: Partial<JurisdictionDetermination>): JurisdictionDetermination => ({
+  determined: true, code: null, name: null, state: null, countyFips: null, countyName: null, countyCode: null,
+  municipality: null, soilSurveyArea: null, matchedAddress: null, longitude: null, latitude: null,
+  determinedBy: 'us-census-geocoder', determinedAt: '2026-09-25T00:00:00Z', reason: null, ...over,
+})
+
+describe('whose GIS draws a determined jurisdiction', () => {
+  it('uses PGAtlas for any lot in Prince George\'s, including a town that zones its own land', () => {
+    expect(connectorFor(det({ code: 'prince_georges_md', countyCode: 'prince_georges_md', state: 'MD' })).kind).toBe('pgatlas')
+    expect(connectorFor(det({ code: 'laurel_md', countyCode: 'prince_georges_md', state: 'MD' })).kind).toBe('pgatlas')
   })
 
-  it('asks DC first for a quadrant, a DC ZIP or "Washington, DC"', () => {
-    expect(jurisdictionAttemptOrder('3210 Newark St NW')[0]).toBe('district_of_columbia')
-    expect(jurisdictionAttemptOrder('3210 Newark St, Washington, DC 20008')[0]).toBe('district_of_columbia')
+  it('uses the jurisdiction\'s own connector, and requires its zoning layer', () => {
+    const c = connectorFor(det({ code: 'district_of_columbia', countyCode: 'district_of_columbia', state: 'DC' }))
+    expect(c).toMatchObject({ kind: 'arcgis', code: 'district_of_columbia', requireZoning: true })
   })
 
-  it('never asks a jurisdiction in a state the order contradicts', () => {
-    expect(jurisdictionAttemptOrder('1005 Rollins Ave, Capitol Heights, MD 20743')).not.toContain('district_of_columbia')
-    expect(jurisdictionAttemptOrder('3210 Newark St NW, Washington, DC 20008')).not.toContain('prince_georges_md')
+  it('maps a town from its county, without taking the county\'s zoning for it', () => {
+    const c = connectorFor(det({ code: 'rockville_md', countyCode: 'montgomery_md', state: 'MD' }))
+    expect(c).toMatchObject({ kind: 'arcgis', code: 'montgomery_md', requireZoning: false })
   })
 
-  it('reads state from ZIP when nothing else is typed', () => {
-    expect(addressHints('100 Main St 22207').state).toBe('VA')
-    expect(addressHints('100 Main St 20743').state).toBe('MD')
-    expect(addressHints('100 Main St 20008').state).toBe('DC')
+  it('falls back to the statewide fabric, never to another county', () => {
+    expect(connectorFor(det({ code: 'howard_md', countyCode: 'howard_md', state: 'MD' }))).toMatchObject({ code: 'maryland_statewide' })
+    expect(connectorFor(det({ code: 'alexandria_city_va', countyCode: 'alexandria_city_va', state: 'VA' }))).toMatchObject({ code: 'virginia_statewide' })
+    expect(connectorFor(det({ code: 'new_castle_de', countyCode: 'new_castle_de', state: 'DE' })).kind).toBe('none')
+  })
+
+  it('has no connector for an undetermined address', () => {
+    expect(connectorFor(det({ determined: false, reason: 'no match' })).kind).toBe('none')
   })
 })
 

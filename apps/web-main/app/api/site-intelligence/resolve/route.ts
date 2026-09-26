@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { resolveAddressParcel } from '@/lib/site-intelligence/authoritative-gis'
 import { checkRateLimit, clientKey } from '@/lib/rate-limit'
+import { determineIntakeJurisdiction } from '@/lib/jurisdiction-intake'
 
 export const dynamic = 'force-dynamic'
 export const maxDuration = 30
@@ -40,8 +41,22 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const resolution = await resolveAddressParcel(address)
-    return NextResponse.json(resolution)
+    // Who ZONES the land, from geometry — the same determination stored on
+    // the order at submit, shown here so the customer sees it while typing.
+    const [resolution, zoning] = await Promise.all([
+      resolveAddressParcel(address),
+      determineIntakeJurisdiction(address),
+    ])
+    return NextResponse.json({
+      ...resolution,
+      zoningJurisdiction: zoning?.determined
+        ? {
+            code: zoning.code, name: zoning.name,
+            municipality: zoning.municipality?.name ?? null,
+            zonesOwnLand: zoning.municipality?.zonesOwnLand ?? false,
+          }
+        : null,
+    })
   } catch (error) {
     console.error(
       '[site-intelligence/resolve]',

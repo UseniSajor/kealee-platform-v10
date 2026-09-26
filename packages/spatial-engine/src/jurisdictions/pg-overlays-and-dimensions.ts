@@ -196,6 +196,27 @@ export interface PgDimensionalLookup {
 }
 
 /**
+ * Drops an empty grid column the extractor picked up on some tables.
+ *
+ * RSF-A came out with a blank first use column whose "value" in every row is
+ * the row's own label ("❶ Lot width, min. (ft)"), plus a blank last column.
+ * The remaining columns still pair correctly, which is why no drawn number was
+ * wrong — but the reader emitted junk standards rows under a blank use.
+ * Verified against the county's current §27-4202 on 2026-09-25: after this, all
+ * eight residential tables match the published text cell for cell.
+ */
+function cleanPgTable(t: PgZoneDimensionalTable | undefined): PgZoneDimensionalTable | undefined {
+  if (!t) return t
+  const keep = t.useColumns.map((c, i) => (c ?? '').trim() !== '' ? i : -1).filter(i => i >= 0)
+  if (keep.length === t.useColumns.length) return t
+  return {
+    ...t,
+    useColumns: keep.map(i => t.useColumns[i]),
+    rows: t.rows.map(r => ({ ...r, values: keep.map(i => r.values[i]) })),
+  }
+}
+
+/**
  * Look up the dimensional standards table for a zone.
  *
  * Returns the data. Review is a package-level step handled by an administrator
@@ -204,7 +225,7 @@ export interface PgDimensionalLookup {
  */
 export function getPgDimensionalStandards(zoneCode: string): PgDimensionalLookup {
   const code = zoneCode.trim().toUpperCase()
-  const table = PG_ZONE_DIMENSIONAL_TABLES[code]
+  const table = cleanPgTable(PG_ZONE_DIMENSIONAL_TABLES[code])
 
   if (table) {
     return {

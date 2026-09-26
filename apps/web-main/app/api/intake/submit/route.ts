@@ -3,6 +3,9 @@ import { getSupabaseAdmin } from '@/lib/supabase-server'
 import { PROJECT_PATH_META } from '@kealee/intake'
 import { mergeAttributionMetadata, parseUtmFromRequest } from '@/lib/marketing/utm-metadata'
 import { trackLeadSubmitted } from '@/lib/marketing/ga4-server'
+import {
+  determineIntakeJurisdiction, jurisdictionFormData, persistJurisdictionColumns,
+} from '@/lib/jurisdiction-intake'
 
 export const dynamic = 'force-dynamic'
 
@@ -57,8 +60,11 @@ export async function POST(req: NextRequest) {
     const baseAmount = meta?.paymentAmount ?? 58500
     const totalAmount = overrideAmount ?? baseAmount
     const utm = parseUtmFromRequest(req, intake as Record<string, unknown>)
+    // Who zones this land, determined from the address's geometry.
+    const jurisdiction = await determineIntakeJurisdiction(String(intake.projectAddress ?? ''))
     const formPayload = {
       ...(intake as Record<string, unknown>),
+      ...jurisdictionFormData(jurisdiction),
       captureSessionId: captureSessionId ?? null,
       captureMode: captureMode ?? null,
       siteVisitRequested: siteVisitRequested ?? false,
@@ -94,6 +100,7 @@ export async function POST(req: NextRequest) {
         .single()
 
       if (!error && data) {
+        await persistJurisdictionColumns(supabase, data.id, jurisdiction)
         void trackLeadSubmitted({
           intakeId: data.id,
           projectPath,

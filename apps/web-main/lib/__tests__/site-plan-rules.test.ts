@@ -13,6 +13,7 @@ import {
 } from '../site-plan-rules'
 
 const PG_ORDER = {
+  jurisdictionCode: 'prince_georges_md',
   address: '4500 Rhode Island Ave, Brentwood, MD 20722',
   state: 'MD',
   zone: 'RSF-65',
@@ -41,24 +42,29 @@ describe('which orders the engine handles', () => {
 })
 
 describe('jurisdiction resolution never guesses', () => {
+  const det = (code: string) => ({
+    determined: true, code, name: code, determinedBy: 'us-census-geocoder', determinedAt: '2026-09-25T00:00:00Z',
+  })
+
+  it('reads the determination made from geometry at intake', () => {
+    expect(resolveJurisdiction({ jurisdiction: det('rockville_md') })).toBe('rockville_md')
+    expect(resolveJurisdiction({ jurisdiction: det('district_of_columbia') })).toBe('district_of_columbia')
+  })
+
   it('accepts an explicit jurisdiction code', () => {
     expect(resolveJurisdiction({ jurisdictionCode: 'prince_georges_md' })).toBe('prince_georges_md')
   })
 
-  it('recognises the county by name', () => {
-    expect(resolveJurisdiction({ county: "Prince George's County", state: 'MD' })).toBe('prince_georges_md')
-  })
-
-  it('recognises a municipality inside the county, but only in Maryland', () => {
-    expect(resolveJurisdiction({ address: '4500 Rhode Island Ave, Brentwood, MD' })).toBe('prince_georges_md')
-    // Brentwood also exists in California, Tennessee and New York.
-    expect(resolveJurisdiction({ address: '100 Main St, Brentwood, CA' })).toBeNull()
-  })
-
-  it('returns null rather than assuming, for anywhere unrecognised', () => {
+  it('never infers a jurisdiction from the words in an address', () => {
+    // These used to resolve to Prince George's by matching town names.
+    expect(resolveJurisdiction({ county: "Prince George's County", state: 'MD' })).toBeNull()
+    expect(resolveJurisdiction({ address: '4500 Rhode Island Ave, Brentwood, MD' })).toBeNull()
     expect(resolveJurisdiction({ address: '1 Loudoun St, Leesburg, VA' })).toBeNull()
-    expect(resolveJurisdiction({ address: '500 Congress Ave, Austin, TX' })).toBeNull()
     expect(resolveJurisdiction({})).toBeNull()
+  })
+
+  it('ignores a determination that did not determine anything', () => {
+    expect(resolveJurisdiction({ jurisdiction: { determined: false, code: null, determinedBy: 'us-census-geocoder' } })).toBeNull()
   })
 })
 
@@ -76,7 +82,7 @@ describe('evaluating a paid order', () => {
     expect(out.reviewItems.every(i => i.discipline.length > 0)).toBe(true)
   })
 
-  it('routes an out-of-area order to manual review without pretending', () => {
+  it('never refuses an order, and does not pretend when no jurisdiction is determined', () => {
     const out = evaluateSitePlanOrder({
       intakeId: 'intake-2', projectPath: 'permit_site_plan',
       formData: { address: '500 Congress Ave, Austin, TX', zone: 'SF-3' },
@@ -84,7 +90,8 @@ describe('evaluating a paid order', () => {
     expect(out.ran).toBe(false)
     expect(out.coverage).toBe('manual-review')
     expect(out.determinedRequirements).toEqual([])
-    expect(out.customerSummary).toMatch(/prepares the zoning analysis by hand/i)
+    expect(out.customerSummary).not.toMatch(/outside/i)
+    expect(out.opsSummary).toMatch(/nothing is assumed/i)
   })
 
   it('never claims the county approved anything', () => {
@@ -98,7 +105,7 @@ describe('evaluating a paid order', () => {
   it('surfaces the intake questions that forced a review', () => {
     const out = evaluateSitePlanOrder({
       intakeId: 'intake-4', projectPath: 'preliminary_site_plan',
-      formData: { address: 'Brentwood, MD', zone: 'RSF-65' },
+      formData: { jurisdictionCode: 'prince_georges_md', address: 'Brentwood, MD', zone: 'RSF-65' },
     })
     expect(out.unknownFields).toContain('lotType')
     expect(out.opsSummary).toMatch(/Intake did not establish/i)

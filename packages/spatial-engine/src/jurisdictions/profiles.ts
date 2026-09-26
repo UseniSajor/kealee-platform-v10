@@ -169,8 +169,56 @@ export const JURISDICTION_PROFILES: Record<string, JurisdictionProfile> = {
   },
 }
 
+const REGISTERED = new Map<string, { name: string; state: string | null }>()
+
+/**
+ * Names a determined jurisdiction for this process — "City of Rockville,
+ * Maryland" — so sheets print it instead of a slug. Called with the geometric
+ * determination before a package is built.
+ */
+export function registerJurisdiction(code: string, name: string, state: string | null): void {
+  REGISTERED.set(code, { name, state })
+}
+
+function stateFromCode(code: string): 'DC' | 'MD' | 'VA' | null {
+  if (code === 'district_of_columbia') return 'DC'
+  const m = code.match(/_(md|va)$/)
+  return m ? (m[1].toUpperCase() as 'MD' | 'VA') : null
+}
+
+/**
+ * The profile for a jurisdiction. Any jurisdiction without a profile of its
+ * own gets a GENERIC one naming it and its state — never Prince George's,
+ * whose agencies would otherwise sign a plan for a county they do not serve.
+ */
 export function profileFor(code: string | null | undefined): JurisdictionProfile | null {
-  return code ? JURISDICTION_PROFILES[code] ?? null : null
+  if (!code) return null
+  const own = JURISDICTION_PROFILES[code]
+  if (own) return own
+  const reg = REGISTERED.get(code)
+  const state = (reg?.state as 'DC' | 'MD' | 'VA' | null) ?? stateFromCode(code)
+  if (!state) return null
+  const displayName = reg?.name ?? code.replace(/_(md|va)$/, '').split('_')
+    .map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ') + (state === 'MD' ? ', Maryland' : state === 'VA' ? ', Virginia' : '')
+  const upper = displayName.replace(/, (Maryland|Virginia)$/, '').toUpperCase()
+  return {
+    code, displayName, state,
+    permitAuthority: `${displayName} — building permit authority`,
+    approvalBlocks: [[`${upper} — ZONING REVIEW`, ''], [`${upper} — GRADING / STORMWATER REVIEW`, '']],
+    waterSewerUtility: 'the water and sewer utility serving the lot',
+    utilitiesNote: GENERIC_UTILITIES_NOTE,
+    soilSurveyArea: '',
+    soilsTableSubtitle: 'USDA NRCS SSURGO',
+    reproducesStandardDetails: false,
+    usesPgRequiredNotes: false,
+    apronStandard: `${upper} STANDARD`,
+    licensingJurisdiction: state === 'VA' ? 'THE COMMONWEALTH OF VIRGINIA' : state === 'DC' ? 'THE DISTRICT OF COLUMBIA' : 'THE STATE OF MARYLAND',
+    stormwaterAgency: upper,
+    // The missing envelope is stated once, by the envelope reader.
+    beforeSeal: [
+      `Confirm ${displayName}'s grading, stormwater and right-of-way permit requirements.`,
+    ],
+  }
 }
 
 /**

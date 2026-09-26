@@ -5,7 +5,7 @@
 import { describe, it, expect } from 'vitest'
 import {
   JURISDICTION_COVERAGE, coverageFor, servedJurisdictions, dataOnlyJurisdictions,
-  preliminaryJurisdictions, drawsPlansIn, assessServiceArea, propertyBlockedMessage,
+  preliminaryJurisdictions, drawsPlansIn, coverageForDetermined,
 } from '../jurisdictions/coverage'
 
 describe('the coverage registry', () => {
@@ -68,52 +68,14 @@ describe('the coverage registry', () => {
   })
 })
 
-describe('service-area assessment', () => {
-  it('accepts a Prince George\'s address', () => {
-    expect(assessServiceArea('1005 Rollins Ave').served).toBe(true)
-    expect(assessServiceArea('14408 Leonard Calvert Dr').served).toBe(true)
+describe('no jurisdiction is refused', () => {
+  it('gives any determined jurisdiction a coverage record that says what staff prepare', () => {
+    const c = coverageForDetermined('howard_md', 'Howard County, Maryland')
+    expect(c.level).toBe('data_only')
+    expect(c.cannotProduce.join(' ')).toMatch(/prepared by staff/)
   })
 
-  it('accepts DC as a preliminary-plan jurisdiction and says what that means', () => {
-    const dc = assessServiceArea('1600 Pennsylvania Ave NW, Washington, DC')
-    expect(dc.served).toBe(true)
-    expect(dc.level).toBe('preliminary')
-    expect(dc.message).toMatch(/not yet certified/)
-  })
-
-  it('accepts Arlington and Fairfax, and turns away the rest of Virginia with the reason', () => {
-    expect(assessServiceArea('2100 Clarendon Blvd, Arlington, VA 22201').served).toBe(true)
-    const va = assessServiceArea('100 Main St, Richmond, VA 23219')
-    expect(va.served).toBe(false)
-    expect(va.disposition).toBe('refer_or_refund')
-    expect(va.message).toMatch(/Virginia/)
-  })
-
-  it('accepts Montgomery and warns that later amendments are unreconciled', () => {
-    const mc = assessServiceArea('101 Monroe St, Rockville, Montgomery County, MD')
-    expect(mc.served).toBe(true)
-    expect(mc.message).toMatch(/2014/)
-  })
-
-  it('turns away other Maryland counties by name', () => {
-    const hc = assessServiceArea('3430 Court House Dr, Ellicott City, Howard County, MD')
-    expect(hc.served).toBe(false)
-    expect(hc.message).toMatch(/Howard County/)
-  })
-})
-
-describe('the blocked-property message', () => {
-  it('blames the service area when that is the problem', () => {
-    const m = propertyBlockedMessage('123 Main St, Richmond, VA', ['123 Main St'])
-    expect(m).toMatch(/Virginia/)
-    expect(m, 'must not blame the address').not.toMatch(/did not match/)
-  })
-
-  it('blames nothing and explains when the address is in area but unmatched', () => {
-    const m = propertyBlockedMessage('9999 Nonexistent Way', ['9999 Nonexistent Way'])
-    expect(m).toMatch(/did not match/)
-    expect(m).toMatch(/minimum score of 90/)
-    // And offers the actual remedy rather than leaving a dead end.
-    expect(m).toMatch(/recorded plat/)
+  it('keeps the specific record where one exists', () => {
+    expect(coverageForDetermined('district_of_columbia', null).level).toBe('preliminary')
   })
 })

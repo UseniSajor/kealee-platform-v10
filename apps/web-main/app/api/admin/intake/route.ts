@@ -20,6 +20,9 @@ import {
 } from '@/lib/site-plan-rules'
 import { resolveProductAutomationRoute } from '@/lib/product-automation'
 import { triggerV30GenerationForIntake } from '@/lib/v30-trigger'
+import {
+  determineIntakeJurisdiction, jurisdictionFormData, persistJurisdictionColumns,
+} from '@/lib/jurisdiction-intake'
 
 export const dynamic = 'force-dynamic'
 
@@ -79,6 +82,9 @@ export async function POST(req: NextRequest) {
   }
 
   const record = buildStaffIntakeRecord(input)
+  // Staff-entered jobs are determined the same way as customer orders.
+  const jurisdiction = await determineIntakeJurisdiction(String(record.project_address ?? ''))
+  Object.assign(record.form_data, jurisdictionFormData(jurisdiction))
 
   // An in-house job never passes through Stripe, so the rule evaluation that
   // the webhook performs for a paid order has to happen here instead.
@@ -99,6 +105,7 @@ export async function POST(req: NextRequest) {
     .insert(record)
     .select('id')
     .single()
+  if (data?.id) await persistJurisdictionColumns(supabase, data.id, jurisdiction)
 
   if (error || !data) {
     console.error('[admin-intake] insert failed:', error?.message)

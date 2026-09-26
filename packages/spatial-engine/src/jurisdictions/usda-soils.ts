@@ -62,9 +62,13 @@ export const SOILS_CAVEAT =
  */
 export async function fetchSoilMapUnits(
   jurisdictionCode: string,
-  opts: { fetchImpl?: typeof fetch; limit?: number } = {},
+  opts: { fetchImpl?: typeof fetch; limit?: number; areaSymbol?: string } = {},
 ): Promise<SoilSurveyResult | null> {
-  const areaSymbol = MD_SURVEY_AREAS[jurisdictionCode]
+  // The determination supplies the survey area from the county FIPS for any
+  // jurisdiction; the table covers orders persisted before it existed.
+  const areaSymbol = opts.areaSymbol && /^[A-Z]{2}\d{3}$/.test(opts.areaSymbol)
+    ? opts.areaSymbol
+    : MD_SURVEY_AREAS[jurisdictionCode]
   if (!areaSymbol) return null
   const doFetch = opts.fetchImpl ?? fetch
   const limit = opts.limit ?? 8

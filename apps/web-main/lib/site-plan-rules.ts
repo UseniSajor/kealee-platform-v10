@@ -16,7 +16,7 @@
  * therefore React — harmless in a browser bundle, fatal in an API route.
  */
 
-import { SitePlanOrders, Rules } from '@kealee/pascal-agents/engine'
+import { SitePlanOrders, Rules, Jurisdiction } from '@kealee/pascal-agents/engine'
 
 /** The three saleable Site Plan products. */
 export const SITE_PLAN_PROJECT_PATHS = [
@@ -32,32 +32,21 @@ export function isSitePlanOrder(projectPath: string | undefined | null): project
 }
 
 /**
- * Resolves a jurisdiction from intake data.
+ * The jurisdiction of an order — READ, never inferred.
  *
- * Deliberately conservative: it only claims Prince George's County when the
- * intake actually says so. A guess here would run a Maryland rule pack against
- * a Virginia parcel, and every downstream number would be confidently wrong.
- * Anything unrecognised returns null and routes to manual review.
+ * It was determined from the address's geometry when the order was created
+ * (`lib/jurisdiction-intake.ts`) and stored as `form_data.jurisdiction`. This
+ * used to regex the intake text against twenty Prince George's town names,
+ * which KEALEE.md recorded as the one place a text box was trusted over the
+ * county; that is gone. An order with no determination returns null, the rule
+ * report says the jurisdiction is being confirmed, and the site-plan engine
+ * determines it from geometry when it runs.
  */
 export function resolveJurisdiction(formData: Record<string, unknown>): string | null {
+  const det = Jurisdiction.determinationFrom(formData.jurisdiction)
+  if (det?.code) return det.code
   const explicit = typeof formData.jurisdictionCode === 'string' ? formData.jurisdictionCode.trim() : ''
-  if (explicit) return explicit
-
-  const text = [formData.county, formData.address, formData.city, formData.state]
-    .filter((v): v is string => typeof v === 'string')
-    .join(' ')
-    .toLowerCase()
-
-  if (!text) return null
-
-  const inMaryland = /\bmd\b|maryland/.test(text)
-  const pgNamed = /prince\s*george/.test(text)
-  // Municipalities wholly inside Prince George's County. Named explicitly rather
-  // than inferred, because "Brentwood" is also a place in several other states.
-  const pgTown = /\b(brentwood|mount rainier|riverdale park|hyattsville|bladensburg|college park|greenbelt|bowie|laurel|upper marlboro|cheverly|landover|suitland|clinton|oxon hill|fort washington|accokeek|beltsville|adelphi|lanham|glenn dale|capitol heights)\b/.test(text)
-
-  if (pgNamed || (inMaryland && pgTown)) return 'prince_georges_md'
-  return null
+  return explicit || null
 }
 
 export interface SitePlanRuleOutcome {
@@ -87,8 +76,8 @@ const MANUAL_REVIEW: Omit<SitePlanRuleOutcome, 'jurisdiction' | 'opsSummary'> = 
   regulatorilyResolved: false,
   permitReadyBlocked: ['Zoning analysis is produced by hand for this site.'],
   customerSummary:
-    'Your site is outside the areas we analyse automatically. A member of our team prepares the zoning ' +
-    'analysis by hand and it is included in your package.',
+    'Your zoning analysis is prepared from your jurisdiction\'s published ordinance and checked by the ' +
+    'professional who reviews your package.',
 }
 
 /**
@@ -113,8 +102,9 @@ export function evaluateSitePlanOrder(input: {
         ...MANUAL_REVIEW,
         jurisdiction: null,
         opsSummary:
-          'No jurisdiction could be resolved from the intake, so no rule pack applies. ' +
-          'Route to manual zoning analysis.',
+          'The order carries no jurisdiction determination (it predates determination at intake, or the ' +
+          'geocoder could not place the address). The site-plan engine determines it from geometry when ' +
+          'it runs; nothing is assumed here.',
       }
     }
 

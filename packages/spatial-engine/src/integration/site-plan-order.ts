@@ -12,6 +12,7 @@
  * refusing, because the guess is invisible downstream.
  */
 
+import { jurisdictionDisplayName } from '../jurisdictions/profiles'
 import type { ProjectContext } from '../rules/applicability'
 import type { CertifiableRule } from '../rules/certification'
 import type { RulePack } from '../rules/pack'
@@ -52,7 +53,10 @@ export interface OrderFormData {
   [key: string]: unknown
 }
 
-/** Jurisdictions with a rule pack. Everything else routes to manual review. */
+/**
+ * Jurisdictions with a CERTIFIED rule pack — a statement about automation, not
+ * about who may order. Every jurisdiction is served; see coverage.ts.
+ */
 export const SUPPORTED_JURISDICTIONS = ['prince_georges_md'] as const
 export type SupportedJurisdiction = (typeof SUPPORTED_JURISDICTIONS)[number]
 
@@ -236,11 +240,16 @@ export function evaluateOrder(input: EvaluateOrderInput): OrderRuleReport {
       unmappedValues,
       regulatorilyResolved: false,
       permitReadyBlocked: [`No certified rule pack for ${input.jurisdictionCode}.`],
+      // Not a refusal and not "outside our area": every jurisdiction is served.
+      // The site-plan engine draws the envelope from the jurisdiction's own
+      // published standards where they are encoded; staff prepare it where
+      // they are not. Either way it is in the package.
       customerSummary:
-        'Your site is outside the areas we currently analyse automatically. A member of our team will ' +
-        'prepare the zoning analysis by hand and it will be included in your package.',
+        `Your zoning analysis for ${jurisdictionDisplayName(input.jurisdictionCode)} is prepared from its ` +
+        'published ordinance and checked by the professional who reviews your package.',
       opsSummary:
-        `No rule pack for ${input.jurisdictionCode}. Route to manual zoning analysis. ` +
+        `No certified rule pack for ${input.jurisdictionCode}; the site-plan engine draws the envelope ` +
+        'where the jurisdiction\'s standards are encoded, otherwise staff prepare it. ' +
         (unknownFields.length ? `Intake did not establish: ${unknownFields.join(', ')}.` : ''),
     }
   }

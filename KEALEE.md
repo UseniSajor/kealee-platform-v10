@@ -71,9 +71,20 @@ the decision doc are gated through.
 (`withTenant()` in `@kealee/database`). The policies fail closed, so turning
 them on early makes every protected query return zero rows and stops delivery.
 
-**Jurisdiction:** one certified rule pack, `pg-2022.1`, Prince George's County.
-No Texas support exists. Do not sell into a market that has not been
-integrated — it is a data-layer build, not a configuration.
+**Jurisdiction is DETERMINED, never assumed, and no order is refused for it.**
+When a customer enters an address, `lib/jurisdiction-intake.ts` asks the U.S.
+Census geocoder which state, county and incorporated government the point falls
+in and maps it to the body that ZONES the land (`prince_georges_md` for College
+Park, `rockville_md` for Rockville). It is stored on the order
+(`form_data.jurisdiction`, `public_intake_leads.jurisdiction_code`). The webhook,
+the ops queue and the site-plan engine read it; none infers a county from text.
+Coverage levels describe AUTOMATION, not who may buy:
+- `full` — certified rule pack: Prince George's (`pg-2022.1`).
+- `preliminary` — cited standards encoded, plan drawn for professional review:
+  DC, Montgomery, Fairfax, Arlington.
+- `data_only` — any other determined jurisdiction: lot, terrain and soils drawn
+  from county or statewide GIS; the zoning envelope is prepared by staff.
+Details: `packages/spatial-engine/src/jurisdictions/{determination,registry,coverage}.ts`.
 
 ## MULTIPLE AGENTS EDIT THIS REPO — READ BEFORE COMMITTING
 
@@ -366,13 +377,12 @@ distilled reading of the approved plans and it sets the priority: bottom band
 for tables, adjacent parcel references, match lines, and existing contours
 thin/dashed against heavier proposed.
 
-### Known violation — do not copy this pattern
+### Resolved violation (2026-09-25)
 
-`resolveJurisdiction()` in `apps/web-main/lib/site-plan-rules.ts` regex-matches
-intake free text against a hardcoded list of twenty PG town names. It runs in
-the Stripe webhook, deliberately without network access. It is the one place in
-the site-plan path that trusts a text box over the county, and it is a known
-gap, not a pattern to follow.
+`resolveJurisdiction()` in `apps/web-main/lib/site-plan-rules.ts` used to
+regex-match intake text against twenty PG town names. It now only READS the
+geometric determination stored at intake. Do not reintroduce text matching —
+a town name in a form is the applicant's guess about their own address.
 
 Full detail: `docs/system/site-plan-commands.md` and
 `docs/system/site-plan-generation.md`.
