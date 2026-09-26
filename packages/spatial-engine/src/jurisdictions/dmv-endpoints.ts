@@ -16,16 +16,12 @@
  *      standards PER ZONE AND PER USE TYPE, with footnote markers deliberately
  *      retained because "45 (4)" is not the number 45.
  *
- * Nobody has extracted (2) for DC, Montgomery or Fairfax. Until someone does,
- * these jurisdictions can be DESCRIBED — parcel located, zone code read,
- * terrain fetched — and their setbacks CANNOT BE COMPUTED. A buildable
- * envelope drawn from a guessed setback renders exactly like a correct one and
- * nothing downstream can tell them apart, which is the single worst failure
- * this engine can produce.
- *
- * So `coverage.ts` lists them as `data_only`. Promoting one to `full` requires
- * its dimensional table, extracted from the adopted ordinance and checked by a
- * person. That is a real piece of work per jurisdiction, not a config change.
+ * DC, Montgomery, Fairfax and Arlington now have cited dimensional standards
+ * and produce PRELIMINARY plans for professional review. They are deliberately
+ * not `full`: only Prince George's has a certified rule pack. A buildable
+ * envelope drawn from a guessed setback renders exactly like a correct one, so
+ * every additional zone remains unavailable until its ordinance values are
+ * transcribed and cited.
  *
  * THE PG ASSUMPTION DOES NOT TRANSFER. "PG is similar to the rest of the DMV"
  * is true of the PROCESS — county GIS, a zoning ordinance, a plat, setbacks —

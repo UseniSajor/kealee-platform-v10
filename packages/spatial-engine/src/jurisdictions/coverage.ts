@@ -180,10 +180,18 @@ export function preliminaryJurisdictions(): JurisdictionCoverage[] {
   return JURISDICTION_COVERAGE.filter(j => j.level === 'preliminary')
 }
 
-/** Whether the engine should draw a plan for an order resolved here. */
+/**
+ * Whether the engine should draw a plan for an order resolved here.
+ *
+ * Most newer jurisdictions are intentionally derived from the transcribed
+ * standards table instead of duplicated in `JURISDICTION_COVERAGE`. Keep this
+ * predicate aligned with `coverageForDetermined`: an omitted static marketing
+ * record must not turn a jurisdiction with encoded standards back into
+ * data-only coverage.
+ */
 export function drawsPlansIn(code: string): boolean {
   const level = coverageFor(code)?.level
-  return level === 'full' || level === 'preliminary'
+  return level === 'full' || level === 'preliminary' || transcribedZones(code) !== null
 }
 
 /**

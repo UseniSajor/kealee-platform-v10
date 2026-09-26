@@ -59,7 +59,12 @@ describe('the coverage registry', () => {
     expect(dc.cannotProduce.join(' ')).toMatch(/certified rule pack/i)
     expect(drawsPlansIn('district_of_columbia')).toBe(true)
     expect(drawsPlansIn('arlington_va')).toBe(true)
-    expect(drawsPlansIn('howard_md')).toBe(false)
+    // Counties added through the transcribed standards registry are drawable
+    // even though they do not duplicate a static marketing record above.
+    expect(drawsPlansIn('howard_md')).toBe(true)
+    expect(drawsPlansIn('prince_william_va')).toBe(true)
+    expect(drawsPlansIn('loudoun_va')).toBe(true)
+    expect(drawsPlansIn('garrett_md')).toBe(false)
   })
 
   it('says what it cannot produce even where coverage is full', () => {
@@ -77,5 +82,17 @@ describe('no jurisdiction is refused', () => {
 
   it('keeps the specific record where one exists', () => {
     expect(coverageForDetermined('district_of_columbia', null).level).toBe('preliminary')
+  })
+
+  it('keeps the drawing predicate and determined coverage in agreement', () => {
+    for (const code of [
+      'anne_arundel_md', 'frederick_md', 'calvert_md', 'st_marys_md',
+      'charles_md', 'howard_md', 'alexandria_city_va', 'rockville_md',
+      'gaithersburg_md', 'vienna_va', 'herndon_va', 'falls_church_city_va',
+      'prince_william_va', 'loudoun_va',
+    ]) {
+      expect(coverageForDetermined(code, null).level, code).toBe('preliminary')
+      expect(drawsPlansIn(code), code).toBe(true)
+    }
   })
 })
