@@ -184,7 +184,7 @@ export function compileDeterministic(req: IntentRequest): CompiledIntent {
     return proposal([{ ...base, action: 'SET_PROPERTY', objectIds: [dw.id], key: 'widthFt', value: w }], `Make ${labelOf(dw)} ${w} ft wide`)
   }
   if ((mm = t.match(new RegExp(`\\b(?:add|create|draw)\\b.*?${NUM}${FT}\\s*(?:wide\\s*)?driveway`)))) return addDriveway(req, num(mm[1])!, base)
-  if ((mm = t.match(/\b(?:maintain|keep|limit|reduce|make)\b.*?(?:max(?:imum)?|below|under|less than|at most|no more than)?\s*(\d+(?:\.\d+)?)\s*%/)) && /\b(slope|grade)\b/.test(t)) {
+  if ((mm = t.match(/\b(?:maintain|keep|limit|reduce|make)\b.*?(?:max(?:imum)?|below|under|less than|at most|no more than)?\s*(\d+(?:\.\d+)?)\s*%/)) && (/\b(slope|grade)\b/.test(t) || /\b(section|driveway|walk|ramp)\b/.test(t))) {
     const limit = Number(mm[1]), strictly = /\b(below|under|less than)\b/.test(t)
     const target = targets().find(o => o.type === 'Driveway' || o.geometry.type === 'LineString')
     if (!target) return need('driveway or alignment to grade')

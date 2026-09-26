@@ -150,7 +150,7 @@ export function validateCommand(model: StudioModel, c: StudioCommand): CommandEr
       if (PROTECTED_KEYS.has(c.key)) errs.push({ code: 'PROTECTED_PROPERTY', message: `"${c.key}" is provenance or professional state; it is set by import, review or issuance, never by an edit.` })
       for (const id of c.objectIds) {
         const o = objectById(model, id)
-        if (o && RECORD_SOURCES.has(o.source) && c.key !== 'status' && c.key !== 'note') errs.push({ code: 'RECORD_ATTRIBUTE_PROTECTED', message: `${o.type} ${id} is record data; only its status (e.g. to be removed) or a note may be set.`, objectIds: [id] })
+        if (o && RECORD_SOURCES.has(o.source) && c.key !== 'status' && c.key !== 'note' && !(c.key === 'edgeYards' && o.type === 'ParcelBoundary')) errs.push({ code: 'RECORD_ATTRIBUTE_PROTECTED', message: `${o.type} ${id} is record data; only its status (e.g. to be removed), a note, or — on a parcel — the front/side/rear classification of its lines may be set.`, objectIds: [id] })
         if (o && c.key === 'status' && RECORD_SOURCES.has(o.source) && !['EXISTING', 'TO_BE_REMOVED'].includes(String(c.value))) errs.push({ code: 'RECORD_STATUS', message: 'Record data may only be marked existing or to be removed.', objectIds: [id] })
       }
       break

@@ -159,13 +159,13 @@ export function evaluateRules(model: StudioModel, overrides: RuleOverride[] = []
       severity: width >= 10 ? 'INFO' : 'ERROR', requiredReview: null, objectIds: [d.id],
       trace: { required: '≥ 10 ft', measured: `${width} ft`, method: 'stated width', calcId: null },
     })
-    const limit = Number(d.attributes.maxGradePct ?? 15)
+    const limit = Number(d.attributes.maxGradePct ?? model.design?.maxDrivewayGradePct ?? 15)
     const prof = drivewayProfile(d, model)
     if (prof) {
       const c = runCalculation('driveway_grade', { drivewayId: d.id, maxGradePct: limit }, { actor: { type: 'system', id: 'rules' }, model, now: () => '' })
       push({
         key: `DRIVEWAY_GRADE:${d.id}`, code: 'DRIVEWAY_GRADE', title: 'Driveway grade', ...reqFields(null), confidence: 0.6,
-        citation: d.attributes.maxGradePct ? 'stated maximum' : '15% screening maximum; the jurisdiction standard governs',
+        citation: d.attributes.maxGradePct || model.design?.maxDrivewayGradePct ? 'project driveway grade limit' : '15% screening maximum; the jurisdiction standard governs',
         applicability: 'APPLIES', input: c.outputs, result: c.message, status: c.status === 'PASS' ? 'PASS' : 'FAIL',
         severity: c.status === 'PASS' ? 'INFO' : 'ERROR', requiredReview: null, objectIds: [d.id],
         trace: { required: `≤ ${limit}%`, measured: `${c.outputs.maxGradePct}%`, method: c.equation, calcId: 'driveway_grade' },
