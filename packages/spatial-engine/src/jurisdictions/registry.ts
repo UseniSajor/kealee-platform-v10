@@ -34,6 +34,7 @@ import {
   virginiaConstraintsOn, type EnvironmentalFinding,
 } from './dmv-counties-gis'
 import { countyStandard } from './county-zoning'
+import { MARYLAND_LOCAL_CONNECTORS } from './maryland-local-gis'
 import { queryAround, queryAtPoint, parcelFromFeature, type JurisdictionParcel, type JurisdictionZoning } from './arcgis-jurisdiction'
 
 export const PG_CODE = 'prince_georges_md'
@@ -45,6 +46,8 @@ export const JURISDICTION_CONNECTORS: Record<string, ArcGisJurisdictionConfig> =
   [FAIRFAX_GIS.code]: FAIRFAX_GIS,
   [ARLINGTON_GIS.code]: ARLINGTON_GIS,
   [ALEXANDRIA_GIS.code]: ALEXANDRIA_GIS,
+  // Anne Arundel, Frederick, Calvert, St. Mary's, Charles, Howard — each on its own GIS.
+  ...Object.fromEntries(MARYLAND_LOCAL_CONNECTORS.map(c => [c.code, c])),
 }
 
 /**
@@ -53,8 +56,8 @@ export const JURISDICTION_CONNECTORS: Record<string, ArcGisJurisdictionConfig> =
  * The DETERMINATION (`determination.ts`, from geometry) says who zones the
  * land. This says whose layers draw the lot, which is not always the same
  * body: a Rockville lot is zoned by the City of Rockville and mapped by
- * Montgomery County; a Howard County lot has no connector of its own and is
- * read from Maryland's statewide fabric. Nothing here chooses a jurisdiction.
+ * Montgomery County. The statewide fabrics are a last resort for a county
+ * with no connector of its own. Nothing here chooses a jurisdiction.
  */
 export type GisConnector =
   | { kind: 'pgatlas'; code: typeof PG_CODE }

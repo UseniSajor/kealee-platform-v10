@@ -26,8 +26,14 @@ describe('whose GIS draws a determined jurisdiction', () => {
     expect(c).toMatchObject({ kind: 'arcgis', code: 'montgomery_md', requireZoning: false })
   })
 
+  it('reads every DMV Maryland county from its own GIS', () => {
+    for (const code of ['anne_arundel_md', 'frederick_md', 'calvert_md', 'st_marys_md', 'charles_md', 'howard_md']) {
+      expect(connectorFor(det({ code, countyCode: code, state: 'MD' }))).toMatchObject({ kind: 'arcgis', code, requireZoning: true })
+    }
+  })
+
   it('falls back to the statewide fabric, never to another county', () => {
-    expect(connectorFor(det({ code: 'howard_md', countyCode: 'howard_md', state: 'MD' }))).toMatchObject({ code: 'maryland_statewide' })
+    expect(connectorFor(det({ code: 'garrett_md', countyCode: 'garrett_md', state: 'MD' }))).toMatchObject({ code: 'maryland_statewide' })
     expect(connectorFor(det({ code: 'manassas_city_va', countyCode: 'manassas_city_va', state: 'VA' }))).toMatchObject({ code: 'virginia_statewide' })
     expect(connectorFor(det({ code: 'alexandria_city_va', countyCode: 'alexandria_city_va', state: 'VA' }))).toMatchObject({ code: 'alexandria_city_va' })
     expect(connectorFor(det({ code: 'new_castle_de', countyCode: 'new_castle_de', state: 'DE' })).kind).toBe('none')
