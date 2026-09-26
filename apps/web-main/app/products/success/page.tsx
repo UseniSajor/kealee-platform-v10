@@ -3,6 +3,7 @@ import { Suspense } from 'react'
 import Link from 'next/link'
 import Script from 'next/script'
 import { useSearchParams } from 'next/navigation'
+import { getOwnerPortalBaseUrl } from '@/lib/owner-portal-urls'
 
 const GADS_ID        = process.env.NEXT_PUBLIC_GOOGLE_ADS_ID
 const GADS_CONV_LABEL = process.env.NEXT_PUBLIC_GOOGLE_ADS_CONV_LABEL  // e.g. 'abcXYZ123'
@@ -56,7 +57,7 @@ function ProductSuccessContent() {
       </div>
 
       <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
-        <Link href="/auth/sign-in" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: '#1A1C1B', color: '#fff', padding: '12px 24px', borderRadius: 8, fontWeight: 600, fontSize: 14, textDecoration: 'none' }}>
+        <Link href={`${getOwnerPortalBaseUrl()}/login`} style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: '#1A1C1B', color: '#fff', padding: '12px 24px', borderRadius: 8, fontWeight: 600, fontSize: 14, textDecoration: 'none' }}>
           View your dashboard →
         </Link>
         <Link href="/" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, border: '1.5px solid #E2E1DC', color: '#1A1C1B', padding: '12px 24px', borderRadius: 8, fontWeight: 500, fontSize: 14, textDecoration: 'none' }}>

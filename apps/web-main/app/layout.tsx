@@ -1,5 +1,4 @@
 import type { Metadata, Viewport } from 'next'
-import { Nunito, Nunito_Sans } from 'next/font/google'
 import Script from 'next/script'
 import { ClerkProvider } from '@clerk/nextjs'
 import './globals.css'
@@ -14,22 +13,6 @@ import { buildGlobalJsonLdGraph } from '@/lib/seo/site-json-ld'
 import { MobileConversionRail } from '@/components/marketing/MobileConversionRail'
 import { ConversionPathTracker } from '@/components/marketing/ConversionPathTracker'
 import { ConditionalMain } from '@/components/ConditionalMain'
-
-const nunitoDisplay = Nunito({
-  subsets: ['latin'],
-  weight: ['400', '600', '700', '800', '900'],
-  variable: '--font-nunito-display',
-  display: 'swap',
-  adjustFontFallback: false,
-})
-
-const nunitoBody = Nunito_Sans({
-  subsets: ['latin'],
-  weight: ['300', '400', '600', '700', '800'],
-  variable: '--font-nunito-body',
-  display: 'swap',
-  adjustFontFallback: false,
-})
 
 const GA_ID      = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID
 const PIXEL_ID   = process.env.NEXT_PUBLIC_META_PIXEL_ID
@@ -82,7 +65,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <ClerkProvider>
-      <html lang="en" className={`${nunitoDisplay.variable} ${nunitoBody.variable}`}>
+      <html lang="en">
         <body className="bg-warm-50">
           {process.env.NEXT_PUBLIC_FIGMA_CAPTURE === 'true' && (
             <script

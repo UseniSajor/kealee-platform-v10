@@ -7,6 +7,9 @@ export default function SignUpPage() {
     <div className="flex h-screen w-full items-center justify-center bg-gray-50">
       <div className="w-full max-w-md">
         <SignUp 
+          path="/sign-up"
+          routing="path"
+          signInUrl="/sign-in"
           appearance={{
             elements: {
               rootBox: "w-full",
@@ -14,7 +17,7 @@ export default function SignUpPage() {
               formButtonPrimary: "bg-[#FF8C22] hover:bg-[#E67E1A]",
             }
           }}
-          redirectUrl="/onboarding"
+          fallbackRedirectUrl="/"
         />
       </div>
     </div>

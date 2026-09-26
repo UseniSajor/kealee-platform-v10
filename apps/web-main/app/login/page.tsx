@@ -2,6 +2,11 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { ArrowRight } from 'lucide-react'
+import {
+  getContractorPortalBaseUrl,
+  getDeveloperPortalBaseUrl,
+  getOwnerPortalBaseUrl,
+} from '@/lib/owner-portal-urls'
 
 export const metadata: Metadata = {
   title: 'Sign In | Kealee',
@@ -9,9 +14,9 @@ export const metadata: Metadata = {
 }
 
 // Portal URLs configured per environment
-const ownerUrl      = process.env.NEXT_PUBLIC_PORTAL_OWNER_URL      ?? ''
-const contractorUrl = process.env.NEXT_PUBLIC_PORTAL_CONTRACTOR_URL ?? ''
-const developerUrl  = process.env.NEXT_PUBLIC_PORTAL_DEVELOPER_URL  ?? ''
+const ownerUrl = getOwnerPortalBaseUrl()
+const contractorUrl = getContractorPortalBaseUrl()
+const developerUrl = getDeveloperPortalBaseUrl()
 
 const ROLE_PORTALS = [
   {
@@ -139,14 +144,14 @@ export default function LoginPage({
 
               <div className="space-y-2">
                 <a
-                  href={portal.loginUrl || '#'}
+                  href={portal.loginUrl}
                   className="flex w-full items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90"
                   style={{ backgroundColor: portal.accent }}
                 >
                   Sign In <ArrowRight className="h-4 w-4" />
                 </a>
                 <a
-                  href={portal.signupUrl || '#'}
+                  href={portal.signupUrl}
                   className="flex w-full items-center justify-center gap-2 rounded-xl border py-2.5 text-sm font-semibold transition-colors hover:bg-gray-50"
                   style={{ borderColor: portal.accent, color: portal.accent }}
                 >

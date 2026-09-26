@@ -6,6 +6,7 @@ import { RoleBenefits } from '@/components/roles/RoleBenefits'
 import { RoleWorkflow } from '@/components/roles/RoleWorkflow'
 import { RoleCTA } from '@/components/roles/RoleCTA'
 import { RoleFAQ } from '@/components/roles/RoleFAQ'
+import { getContractorPortalBaseUrl } from '@/lib/owner-portal-urls'
 
 export const metadata: Metadata = {
   title: 'For Contractors — Kealee',
@@ -267,7 +268,7 @@ export default function ContractorsPage() {
                 price: 'Per project',
                 features: ['Scheduling & daily logs', 'RFIs + change orders', 'Milestone payment tracking'],
                 cta: 'Get access',
-                href: process.env.NEXT_PUBLIC_CONTRACTOR_PORTAL_URL ?? '/auth/sign-in',
+                href: `${getContractorPortalBaseUrl()}/login`,
                 accent: '#C8521A',
                 highlight: true,
               },

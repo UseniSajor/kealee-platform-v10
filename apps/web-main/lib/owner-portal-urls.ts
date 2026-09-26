@@ -12,9 +12,11 @@
  */
 
 function rawOwnerPortalUrl(): string {
-  return typeof process.env.NEXT_PUBLIC_OWNER_PORTAL_URL === 'string'
-    ? process.env.NEXT_PUBLIC_OWNER_PORTAL_URL.trim().replace(/\/$/, '')
-    : ''
+  const configured =
+    process.env.NEXT_PUBLIC_OWNER_PORTAL_URL ||
+    process.env.NEXT_PUBLIC_PORTAL_OWNER_URL ||
+    ''
+  return configured.trim().replace(/\/$/, '')
 }
 
 /** True only when an operator has explicitly pointed us at a live portal host. */
@@ -24,6 +26,22 @@ export function isOwnerPortalConfigured(): boolean {
 
 export function getOwnerPortalBaseUrl(): string {
   return rawOwnerPortalUrl() || 'https://owner.kealee.com'
+}
+
+export function getContractorPortalBaseUrl(): string {
+  const configured =
+    process.env.NEXT_PUBLIC_CONTRACTOR_PORTAL_URL ||
+    process.env.NEXT_PUBLIC_PORTAL_CONTRACTOR_URL ||
+    ''
+  return configured.trim().replace(/\/$/, '') || 'https://contractor.kealee.com'
+}
+
+export function getDeveloperPortalBaseUrl(): string {
+  const configured =
+    process.env.NEXT_PUBLIC_DEVELOPER_PORTAL_URL ||
+    process.env.NEXT_PUBLIC_PORTAL_DEVELOPER_URL ||
+    ''
+  return configured.trim().replace(/\/$/, '') || 'https://developer.kealee.com'
 }
 
 /** Deep link to a single intake's deliverable view in the owner portal. */

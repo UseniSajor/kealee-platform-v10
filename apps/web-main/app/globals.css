@@ -3,6 +3,10 @@
 @tailwind utilities;
 
 :root {
+  /* Self-host-safe font stacks. Keep builds independent of Google Fonts. */
+  --font-nunito-display: "Avenir Next", "Segoe UI", ui-sans-serif, system-ui, sans-serif;
+  --font-nunito-body: "Avenir Next", "Segoe UI", ui-sans-serif, system-ui, sans-serif;
+
   /* Layout Dimensions */
   --site-nav-h: 4rem;
   --home-chat-reserve: 7.5rem;
