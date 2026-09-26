@@ -33,6 +33,7 @@
 
 import type { Position, Ring } from '../site-plan/site-twin'
 import { fetch3depContours } from './usgs-3dep'
+import { isWfs, wfsAtPoint, wfsAround, wfsWhere } from './wfs-client'
 
 export const ENGINE_WKID = 2248
 
@@ -97,6 +98,34 @@ export interface ArcGisJurisdictionConfig {
   contours: ContourLayerConfig | '3dep' | null
   /** Default 90. Never lowered for a shorter address form. */
   minScore?: number
+  /**
+   * The jurisdiction's own ADDRESS POINT layer, asked when its locators do not
+   * match. Some locators match only with the city or ZIP (Anne Arundel's scores
+   * "625 Irvin Ave, Deale, MD 20751" at 99 and "625 Irvin Ave" at nothing);
+   * the engine sends street-only forms. The address point is the county's own
+   * record of the address, so an EXACT number + street match on it is as
+   * authoritative as the locator — and more so than a fuzzy score.
+   */
+  addressPoints?: AddressPointLayerConfig
+}
+
+export interface AddressPointLayerConfig {
+  url: string
+  authority: string
+  numberField: string
+  /** Street name WITHOUT its type ("IRVIN"). */
+  nameField: string
+  typeField?: string
+  /**
+   * Directional prefix ("E" in "12 E Church St"). Where the layer carries one
+   * it DECIDES the match: 12 E Church and 12 W Church are different lots.
+   */
+  prefixField?: string
+  /** Where a layer only carries the full address line, e.g. "625 IRVIN AVE". */
+  fullField?: string
+  zipField?: string
+  /** True when the number field is numeric rather than text. */
+  numericNumber?: boolean
 }
 
 export interface JurisdictionAddress {
@@ -180,6 +209,12 @@ export async function queryAtPoint(
   endpoint: string, e: number, n: number, doFetch: typeof fetch,
   opts: { outFields?: string; geometry?: boolean; bufferFt?: number; where?: string } = {},
 ): Promise<any[]> {
+  // A GeoServer layer (Howard County) answers the same question over WFS.
+  if (isWfs(endpoint)) {
+    return opts.bufferFt && opts.bufferFt > 0
+      ? (await wfsAround(endpoint, e, n, opts.bufferFt, doFetch, opts.where)).features
+      : wfsAtPoint(endpoint, e, n, doFetch, opts.where)
+  }
   const params: Record<string, string> = {
     where: opts.where ?? '1=1',
     geometry: `${e},${n}`,
@@ -218,6 +253,7 @@ export async function queryAround(
   endpoint: string, e: number, n: number, radiusFt: number, doFetch: typeof fetch,
   opts: { outFields?: string; where?: string } = {},
 ): Promise<{ features: any[]; truncated: boolean }> {
+  if (isWfs(endpoint)) return wfsAround(endpoint, e, n, radiusFt, doFetch, opts.where)
   const payload = await arcgisGet(endpoint, 'query', {
     where: opts.where ?? '1=1',
     geometry: [e - radiusFt, n - radiusFt, e + radiusFt, n + radiusFt].join(','),
@@ -280,7 +316,107 @@ export async function geocodeJurisdiction(
     outcomes.push(o)
     if (o.kind === 'match') return { match: o.address, outcomes }
   }
+  if (cfg.addressPoints) {
+    const o = await queryAddressPoints(cfg.addressPoints, address, doFetch)
+    outcomes.push(o)
+    if (o.kind === 'match') return { match: o.address, outcomes }
+  }
   return { match: null, outcomes }
+}
+
+const STREET_TYPES: Record<string, string> = {
+  AVENUE: 'AVE', AV: 'AVE', AVE: 'AVE', STREET: 'ST', ST: 'ST', ROAD: 'RD', RD: 'RD', DRIVE: 'DR', DR: 'DR',
+  COURT: 'CT', CT: 'CT', LANE: 'LN', LN: 'LN', PLACE: 'PL', PL: 'PL', BOULEVARD: 'BLVD', BLVD: 'BLVD',
+  TERRACE: 'TER', TER: 'TER', TERR: 'TER', CIRCLE: 'CIR', CIR: 'CIR', WAY: 'WAY', PARKWAY: 'PKWY', PKWY: 'PKWY',
+  HIGHWAY: 'HWY', HWY: 'HWY', PIKE: 'PIKE', TRAIL: 'TRL', TRL: 'TRL', ROW: 'ROW', LOOP: 'LOOP', RUN: 'RUN',
+  SQUARE: 'SQ', SQ: 'SQ', GARTH: 'GRTH', GRTH: 'GRTH', WALK: 'WALK', POINT: 'PT', PT: 'PT', RIDGE: 'RDG', RDG: 'RDG',
+  CROSSING: 'XING', XING: 'XING', COVE: 'CV', CV: 'CV', PATH: 'PATH', LANDING: 'LNDG', LNDG: 'LNDG',
+}
+const DIRECTION_ABBR: Record<string, string> = {
+  N: 'N', S: 'S', E: 'E', W: 'W', NE: 'NE', NW: 'NW', SE: 'SE', SW: 'SW', NORTH: 'N', SOUTH: 'S', EAST: 'E', WEST: 'W',
+}
+const DIRECTIONS = new Set(Object.keys(DIRECTION_ABBR))
+
+/** "625 Irvin Ave" → { number: '625', name: 'IRVIN', type: 'AVE' }. Null when there is no leading number. */
+export function parseStreetAddress(address: string): {
+  number: string; name: string; type: string | null; prefix: string | null; zip: string | null
+} | null {
+  const zip = address.match(/\b(\d{5})(?:-\d{4})?\s*$/)?.[1] ?? null
+  const street = address.split(',')[0].toUpperCase().replace(/[.#]/g, ' ').replace(/\s+/g, ' ').trim()
+  const m = street.match(/^(\d+[A-Z]?)\s+(.+)$/)
+  if (!m) return null
+  const words = m[2].split(' ')
+  if (words.length > 1 && DIRECTIONS.has(words[words.length - 1])) words.pop()
+  const prefix = words.length > 1 && DIRECTIONS.has(words[0]) ? DIRECTION_ABBR[words.shift()!] : null
+  let type: string | null = null
+  if (words.length > 1 && STREET_TYPES[words[words.length - 1]]) type = STREET_TYPES[words.pop()!]
+  return { number: m[1], name: words.join(' '), type, prefix, zip }
+}
+
+/**
+ * Exact number + street match on the jurisdiction's address points. Accepted
+ * only when it identifies ONE place: every hit within 200 ft of the first (the
+ * units of one building), after narrowing by ZIP where the order gives one. A
+ * street name repeated in two communities is ambiguous and is not accepted.
+ */
+export async function queryAddressPoints(
+  layer: AddressPointLayerConfig, address: string, doFetch: typeof fetch,
+): Promise<JurisdictionLocatorOutcome> {
+  const p = parseStreetAddress(address)
+  if (!p) return { kind: 'no_match', tried: layer.url }
+  const q = (s: string) => s.replace(/'/g, "''")
+  const where = layer.fullField
+    ? `UPPER(${layer.fullField}) LIKE '${q(p.number)} ${q(p.name)}%'`
+    : `${layer.numberField} = ${layer.numericNumber ? Number.parseInt(p.number, 10) : `'${q(p.number)}'`} ` +
+      `AND UPPER(${layer.nameField}) = '${q(p.name)}'`
+  let features: any[]
+  try {
+    if (isWfs(layer.url)) {
+      // CQL has no UPPER(); GeoServer layers here store names upper-case.
+      features = await wfsWhere(layer.url, where.replace(/UPPER\((\w+)\)/g, '$1'), doFetch)
+    } else {
+      const payload = await arcgisGet(layer.url, 'query', {
+        where, outFields: '*', returnGeometry: 'true', outSR: String(ENGINE_WKID), resultRecordCount: '50',
+      }, doFetch)
+      features = Array.isArray(payload.features) ? payload.features : []
+    }
+  } catch (e) {
+    return { kind: 'unavailable', tried: layer.url, reason: e instanceof Error ? e.message : String(e) }
+  }
+  const typeOf = (a: Record<string, unknown>) => {
+    const t = layer.typeField ? String(a[layer.typeField] ?? '').trim().toUpperCase() : ''
+    return t ? STREET_TYPES[t] ?? t : null
+  }
+  let hits = features.filter(f => f?.geometry && Number.isFinite(f.geometry.x))
+  if (p.type) hits = hits.filter(f => { const t = typeOf(f.attributes ?? {}); return !t || t === p.type })
+  if (layer.prefixField) {
+    const want = p.prefix ?? ''
+    hits = hits.filter(f => {
+      const got = String(f.attributes?.[layer.prefixField!] ?? '').trim().toUpperCase()
+      return (DIRECTION_ABBR[got] ?? got) === want
+    })
+  }
+  if (p.zip && layer.zipField) {
+    const z = hits.filter(f => String(f.attributes?.[layer.zipField!] ?? '').startsWith(p.zip!))
+    if (z.length) hits = z
+  }
+  if (!hits.length) return { kind: 'no_match', tried: layer.url }
+  const [x0, y0] = [hits[0].geometry.x, hits[0].geometry.y]
+  if (hits.some(f => Math.hypot(f.geometry.x - x0, f.geometry.y - y0) > 200)) {
+    return { kind: 'no_match', tried: `${layer.url} (ambiguous: ${hits.length} places)` }
+  }
+  return {
+    kind: 'match',
+    address: {
+      matchedAddress: `${p.number} ${p.name}${p.type ? ` ${p.type}` : ''}`,
+      score: 100,
+      easting2248: x0,
+      northing2248: y0,
+      locator: `${layer.authority} (exact number + street)`,
+      locatorEndpoint: layer.url,
+      retrievedAt: new Date().toISOString(),
+    },
+  }
 }
 
 function ringArea(pts: number[][]): number {
