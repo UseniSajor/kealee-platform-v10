@@ -67,12 +67,12 @@ export function MarketplaceTopbar() {
                 {p.label} <ExternalLink className="h-3 w-3 opacity-50" />
               </Link>
             ))}
-            <Link
+            <a
               href="/login"
               className="text-xs font-medium text-gray-600 hover:text-[#1A2B4A]"
             >
               Sign In
-            </Link>
+            </a>
             <Link
               href="/get-started"
               className="inline-flex items-center gap-1 rounded-lg px-3 py-1.5 text-xs font-semibold text-white transition-opacity hover:opacity-90"

@@ -39,7 +39,7 @@ export function PortalAccessSection() {
 
         <div className="max-w-3xl mx-auto grid gap-6 sm:grid-cols-2">
           {PORTALS.map((portal) => (
-            <Link
+            <a
               key={portal.title}
               href={portal.href}
               className="group relative flex flex-col rounded-2xl border border-slate-200 bg-white p-8 transition-all hover:shadow-md hover:-translate-y-0.5"
@@ -64,7 +64,7 @@ export function PortalAccessSection() {
               <div className="mt-4 flex items-center gap-1 text-sm font-semibold transition-all group-hover:gap-2" style={{ color: portal.accent }}>
                 Sign In <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
               </div>
-            </Link>
+            </a>
           ))}
         </div>
 
