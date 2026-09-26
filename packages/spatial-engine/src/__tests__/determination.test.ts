@@ -61,3 +61,24 @@ describe('who zones the land', () => {
     expect(determinationFrom('prince_georges_md')).toBeNull()
   })
 })
+
+import { determinationQueryForms } from '../jurisdictions/determination'
+describe('query forms', () => {
+  it('adds street + ZIP forms for a comma-less, misspelt city', () => {
+    const f = determinationQueryForms('1005 rollins ave capital heights md 20743')
+    expect(f).toContain('1005 rollins ave, 20743')
+  })
+  it('takes the first number of a two-number address', () => {
+    expect(determinationQueryForms('1005 & 1009 Rollins Ave capital heights 20743')).toContain('1005 Rollins Ave, 20743')
+  })
+  it('never invents a locality for a bare street', () => {
+    expect(determinationQueryForms('5 Hickory St')).toEqual([])
+  })
+})
+
+describe('no locality, no query', () => {
+  it('never reads the house number as a ZIP, and sends nothing without a locality', () => {
+    expect(determinationQueryForms('14408 Leonard Calvert Dr')).toEqual([])
+    expect(determinationQueryForms('5 Hickory St')).toEqual([])
+  })
+})

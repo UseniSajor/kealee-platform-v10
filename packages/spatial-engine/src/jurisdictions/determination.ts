@@ -161,8 +161,60 @@ export function interpretCensusGeographies(payload: any, now = new Date()): Juri
  * The WHOLE address is passed — city, state and ZIP help the Census matcher,
  * unlike a county locator, and nothing is stripped. Never throws.
  */
+/**
+ * The query forms to try, in order. The customer's text first; then forms the
+ * Census matcher reads more reliably — a misspelt or comma-less city ("rollins
+ * ave capital heights md 20743") fails as typed and matches as "1005 Rollins
+ * Ave 20743". Every form still has to be a real geographic MATCH: a form with
+ * neither a ZIP nor a state is never generated, so a bare "5 Hickory St" stays
+ * undetermined instead of landing in whichever state has one.
+ */
+export function determinationQueryForms(raw: string): string[] {
+  const text = raw.replace(/&amp;/gi, '&').replace(/\s+/g, ' ').trim()
+  const forms: string[] = []
+  // A ZIP is never the leading house number: "14408 Leonard Calvert Dr" has
+  // no ZIP, and reading 14408 as one let a bare street name match nationally.
+  const afterNumber = text.replace(/^\s*\d+[A-Za-z]?\b/, '')
+  const zip = afterNumber.match(/\b(\d{5})(?:-\d{4})?\s*$/)?.[1] ?? afterNumber.match(/\b(\d{5})(?:-\d{4})?\b/)?.[1] ?? null
+  const state = text.match(/\b(MD|DC|VA|Maryland|Virginia|District of Columbia)\b/i)?.[1] ?? null
+  // "1005 & 1009 Rollins Ave" → the first number: a site is one lot.
+  const first = text.replace(/^(\d+[A-Za-z]?)\s*(?:&|and|\/|\+)\s*\d+[A-Za-z]?\b/i, '$1')
+  const street = first.split(',')[0]
+    .replace(/\s+\d{5}(?:-\d{4})?\s*$/, '')
+    .replace(/\s+(MD|DC|VA|Maryland|Virginia)\s*$/i, '')
+    .trim()
+  // The customer's own text first — but only when it names a locality. A
+  // bare "5 Hickory St" or "14408 Leonard Calvert Dr" is sent nowhere: the
+  // Census matcher would place it in whichever state has one.
+  const hasLocality = Boolean(zip || state || /,/.test(text.replace(/,\s*$/, '')))
+  if (hasLocality) forms.push(text)
+  const words = street.split(' ')
+  // Street + ZIP, dropping trailing words one at a time (a city typed with no
+  // comma cannot be told from the street by grammar).
+  if (zip) for (let n = words.length; n >= 3; n--) forms.push(`${words.slice(0, n).join(' ')}, ${zip}`)
+  if (state && !zip) for (let n = words.length; n >= 3; n--) forms.push(`${words.slice(0, n).join(' ')}, ${state}`)
+  return [...new Set(forms)]
+}
+
 export async function determineJurisdiction(
   address: string, opts: { fetchImpl?: typeof fetch; timeoutMs?: number } = {},
+): Promise<JurisdictionDetermination> {
+  let last: JurisdictionDetermination | null = null
+  for (const form of determinationQueryForms(address)) {
+    const d = await determineOnce(form, opts)
+    if (d.determined) return d
+    last = d
+    // A service that did not answer is not a no-match; do not burn the forms.
+    if (/did not answer/.test(d.reason ?? '')) return d
+  }
+  return last ?? {
+    ...interpretCensusGeographies(null),
+    reason: 'The address names no city, state or ZIP, so it cannot be placed without assuming one.',
+  }
+}
+
+async function determineOnce(
+  address: string, opts: { fetchImpl?: typeof fetch; timeoutMs?: number },
 ): Promise<JurisdictionDetermination> {
   const doFetch = opts.fetchImpl ?? fetch
   const p = new URLSearchParams({
