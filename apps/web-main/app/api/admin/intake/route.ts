@@ -21,7 +21,7 @@ import {
 import { resolveProductAutomationRoute } from '@/lib/product-automation'
 import { triggerV30GenerationForIntake } from '@/lib/v30-trigger'
 import {
-  determineIntakeJurisdiction, jurisdictionFormData, persistJurisdictionColumns,
+  determineIntakeJurisdiction, instantJurisdiction, jurisdictionFormData, persistJurisdictionColumns,
 } from '@/lib/jurisdiction-intake'
 
 export const dynamic = 'force-dynamic'
@@ -82,8 +82,11 @@ export async function POST(req: NextRequest) {
   }
 
   const record = buildStaffIntakeRecord(input)
-  // Staff-entered jobs are determined the same way as customer orders.
-  const jurisdiction = await determineIntakeJurisdiction(String(record.project_address ?? ''))
+  // Staff-entered jobs are determined the same way as customer orders. The one
+  // path that waits (bounded): the rule evaluation below runs at insert and
+  // needs it, and a staff member — not a customer — is waiting.
+  const staffAddress = String(record.project_address ?? '')
+  const jurisdiction = instantJurisdiction(staffAddress) ?? await determineIntakeJurisdiction(staffAddress)
   Object.assign(record.form_data, jurisdictionFormData(jurisdiction))
 
   // An in-house job never passes through Stripe, so the rule evaluation that

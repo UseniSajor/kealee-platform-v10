@@ -15,9 +15,7 @@ import {
   formatUpgradeRange,
   type HomeUpgradeScopeBand,
 } from '@kealee/core-rules'
-import {
-  determineIntakeJurisdiction, jurisdictionFormData, persistJurisdictionColumns,
-} from '@/lib/jurisdiction-intake'
+import { attachJurisdiction } from '@/lib/jurisdiction-intake'
 
 export const dynamic = 'force-dynamic'
 
@@ -94,10 +92,10 @@ export async function POST(req: NextRequest) {
       resolvedFormData.serviceDeliveryDays = deliverable.deliveryDays
     }
 
-    // Who zones this land, from the address's geometry — stored on the order
-    // so nothing downstream has to guess. Never blocks the customer.
-    const jurisdiction = await determineIntakeJurisdiction(String(projectAddress))
-    Object.assign(resolvedFormData, jurisdictionFormData(jurisdiction))
+    // Who zones this land, from the address's geometry. Instant: the answer
+    // made while the customer typed, or determined after the save. Never awaited.
+    const { det: jurisdiction, afterSave: saveJurisdiction } =
+      attachJurisdiction(resolvedFormData, String(projectAddress))
 
     const metadata = mergeAttributionMetadata(null, utm, {
       funnelStage: 'lead',
@@ -138,7 +136,7 @@ export async function POST(req: NextRequest) {
           metadata,
         })
         .eq('id', reusable.id)
-      await persistJurisdictionColumns(supabase, reusable.id, jurisdiction)
+      saveJurisdiction(supabase, reusable.id)
 
       return NextResponse.json({
         intakeId: reusable.id, reused: true,
@@ -178,7 +176,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ intakeId: fallbackId, fallback: true })
     }
 
-    await persistJurisdictionColumns(supabase, intake.id, jurisdiction)
+    saveJurisdiction(supabase, intake.id)
 
     void trackLeadSubmitted({
       intakeId: intake.id,

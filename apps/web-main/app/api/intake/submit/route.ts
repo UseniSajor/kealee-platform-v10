@@ -3,9 +3,7 @@ import { getSupabaseAdmin } from '@/lib/supabase-server'
 import { PROJECT_PATH_META } from '@kealee/intake'
 import { mergeAttributionMetadata, parseUtmFromRequest } from '@/lib/marketing/utm-metadata'
 import { trackLeadSubmitted } from '@/lib/marketing/ga4-server'
-import {
-  determineIntakeJurisdiction, jurisdictionFormData, persistJurisdictionColumns,
-} from '@/lib/jurisdiction-intake'
+import { attachJurisdiction } from '@/lib/jurisdiction-intake'
 
 export const dynamic = 'force-dynamic'
 
@@ -60,11 +58,14 @@ export async function POST(req: NextRequest) {
     const baseAmount = meta?.paymentAmount ?? 58500
     const totalAmount = overrideAmount ?? baseAmount
     const utm = parseUtmFromRequest(req, intake as Record<string, unknown>)
-    // Who zones this land, determined from the address's geometry.
-    const jurisdiction = await determineIntakeJurisdiction(String(intake.projectAddress ?? ''))
+    // Who zones this land — instant from the as-you-type answer, or determined
+    // after the save. Never awaited.
+    const jurisdictionFields: Record<string, unknown> = {}
+    const { afterSave: saveJurisdiction } =
+      attachJurisdiction(jurisdictionFields, String(intake.projectAddress ?? ''))
     const formPayload = {
       ...(intake as Record<string, unknown>),
-      ...jurisdictionFormData(jurisdiction),
+      ...jurisdictionFields,
       captureSessionId: captureSessionId ?? null,
       captureMode: captureMode ?? null,
       siteVisitRequested: siteVisitRequested ?? false,
@@ -100,7 +101,7 @@ export async function POST(req: NextRequest) {
         .single()
 
       if (!error && data) {
-        await persistJurisdictionColumns(supabase, data.id, jurisdiction)
+        saveJurisdiction(supabase, data.id)
         void trackLeadSubmitted({
           intakeId: data.id,
           projectPath,
