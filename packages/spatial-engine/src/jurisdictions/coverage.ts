@@ -33,6 +33,8 @@
  * Montgomery and DC, and a connector is not coverage.
  */
 
+import { transcribedZones } from './county-zoning'
+
 export type CoverageLevel = 'full' | 'preliminary' | 'data_only' | 'unserved'
 
 export interface JurisdictionCoverage {
@@ -199,6 +201,25 @@ export function coverageForDetermined(code: string, name: string | null): Jurisd
   const own = coverageFor(code)
   if (own) return own
   const state = code === 'district_of_columbia' ? 'DC' : code.endsWith('_va') ? 'VA' : 'MD'
+  // Standards transcribed from the ordinance (county-zoning.ts): the envelope
+  // is drawn for the zones listed, for professional review.
+  const t = transcribedZones(code)
+  if (t) {
+    return {
+      code, name: name ?? code, state,
+      level: 'preliminary', rulePackVersion: null, gisConnector: true,
+      produces: [
+        'Parcel, streets and neighbours from the jurisdiction\'s own GIS where it publishes them, else the statewide fabric',
+        `Zone code and single-family standards for ${t.zones.join(', ')} — ${t.source}, cited per zone`,
+        'Existing contours (county layer or USGS 3DEP lidar), soils (SSURGO), rainfall (NOAA Atlas 14)',
+      ],
+      cannotProduce: [
+        `Envelopes for zones not listed (planned, cluster, townhouse, multifamily, commercial) — prepared by staff from the ${name ?? code} ordinance.`,
+        'Proffers, conditions of approval and recorded-plat building lines are not read from the zoning layer — the reviewer checks them.',
+        'A certified rule pack, or a boundary survey — that is a licensed surveyor',
+      ],
+    }
+  }
   return {
     code, name: name ?? code, state,
     level: 'data_only', rulePackVersion: null, gisConnector: true,

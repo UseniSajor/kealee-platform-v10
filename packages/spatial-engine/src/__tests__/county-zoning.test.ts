@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest'
 import {
   countyStandard, countyFrontSetback, countyStandardRows, normaliseCountyZone,
 } from '../jurisdictions/county-zoning'
+import { coverageForDetermined } from '../jurisdictions/coverage'
 
 describe('county zone codes', () => {
   it('reads both spellings the map layers use', () => {
@@ -74,5 +75,32 @@ describe('the added jurisdictions', () => {
     expect(countyFrontSetback('rockville_md', s, { averageFt: 40, medianFt: 40, applies: true, sampleCount: 6, basis: '' }).ft).toBe(40)
     expect(countyFrontSetback('rockville_md', s, { averageFt: 70, medianFt: 70, applies: true, sampleCount: 6, basis: '' }).ft).toBe(50)
     expect(countyFrontSetback('rockville_md', s, { averageFt: 26, medianFt: 26, applies: false, sampleCount: 6, basis: '' }).ft).toBe(25)
+  })
+})
+
+describe('Prince William and Loudoun', () => {
+  it('reads Prince William zones as the layer spells them', () => {
+    expect(countyStandard('prince_william_va', 'R-4')).toMatchObject({ frontFt: 30, sideFt: 10, rearFt: 25, coveragePct: 40 })
+    expect(countyStandard('prince_william_va', 'SR-5')).toMatchObject({ frontFt: 50, sideFt: 15 })
+    expect(countyStandard('prince_william_va', 'R-4C')).toMatchObject({ frontFt: 25, rearFt: 20, lotAreaSqFt: 7500 })
+    expect(countyStandard('prince_william_va', 'PMR')).toBeNull()
+  })
+
+  it('maps Loudoun layer codes (R1, CR1, JLMA2, TR10, A3) to the ordinance zones', () => {
+    expect(countyStandard('loudoun_va', 'R1')).toMatchObject({ zone: 'R-1', frontFt: 35, sideFt: 12, rearFt: 35 })
+    expect(countyStandard('loudoun_va', 'R4')?.zone).toBe('R-4')
+    expect(countyStandard('loudoun_va', 'CR1')?.rearFt).toBe(50)
+    expect(countyStandard('loudoun_va', 'JLMA2')?.frontFt).toBe(15)
+    expect(countyStandard('loudoun_va', 'TR10')?.zone).toBe('TR-10')
+    expect(countyStandard('loudoun_va', 'A3')?.zone).toBe('A-3')
+    // Planned districts follow their approved plans, not a table.
+    expect(countyStandard('loudoun_va', 'PDH4')).toBeNull()
+  })
+
+  it('reports a jurisdiction with transcribed standards as preliminary, not data-only', () => {
+    const c = coverageForDetermined('loudoun_va', 'Loudoun County, Virginia')
+    expect(c.level).toBe('preliminary')
+    expect(c.produces.join(' ')).toContain('CR-1')
+    expect(coverageForDetermined('garrett_md', 'Garrett County, Maryland').level).toBe('data_only')
   })
 })

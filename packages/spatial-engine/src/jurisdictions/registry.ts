@@ -35,6 +35,7 @@ import {
 } from './dmv-counties-gis'
 import { countyStandard } from './county-zoning'
 import { MARYLAND_LOCAL_CONNECTORS } from './maryland-local-gis'
+import { VIRGINIA_LOCAL_CONNECTORS } from './virginia-local-gis'
 import { queryAround, queryAtPoint, parcelFromFeature, type JurisdictionParcel, type JurisdictionZoning } from './arcgis-jurisdiction'
 
 export const PG_CODE = 'prince_georges_md'
@@ -48,6 +49,8 @@ export const JURISDICTION_CONNECTORS: Record<string, ArcGisJurisdictionConfig> =
   [ALEXANDRIA_GIS.code]: ALEXANDRIA_GIS,
   // Anne Arundel, Frederick, Calvert, St. Mary's, Charles, Howard — each on its own GIS.
   ...Object.fromEntries(MARYLAND_LOCAL_CONNECTORS.map(c => [c.code, c])),
+  // Prince William, Loudoun — each on its own GIS.
+  ...Object.fromEntries(VIRGINIA_LOCAL_CONNECTORS.map(c => [c.code, c])),
 }
 
 /**

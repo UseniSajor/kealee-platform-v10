@@ -229,6 +229,53 @@ export const HOWARD_STANDARDS: Record<string, CountyZoneStandard> = {
   'R-12': { zone: 'R-12', lotAreaSqFt: 12000, lotWidthFt: 60, frontFt: 20, sideFt: 7.5, sideSumFt: null, rearFt: 30, coveragePct: null, heightFt: 34, citation: HW('109.0.D'), notes: ['Semi-detached: 15 ft one side.'] },
 }
 
+const PW = (s: string) => `Prince William County Code Ch. 32 (Zoning), §${s} (Municode, Supplement 46); height §32-300.05`
+const PW_CORNER = 'Corner lot: 20 ft on the side abutting the side street; corner front and side yards are fixed at building permit.'
+const PW_ABUT = 'Principal building 25 ft from a line shared with commercial/office zoning, 35 ft from industrial, or the §32-250.30 buffer if greater.'
+export const PRINCE_WILLIAM_STANDARDS: Record<string, CountyZoneStandard> = {
+  'A-1': { zone: 'A-1', lotAreaSqFt: 435600, lotWidthFt: 100, frontFt: 35, sideFt: 15, sideSumFt: null, rearFt: 25, coveragePct: null, heightFt: 35, citation: PW('32-301.05, 32-301.06'),
+    notes: ['Front 35 ft from the front line, all streets and private access easements.', 'Side may be 10 ft where properties of similar acreage nearby have 10 ft side yards — drawn at 15.', 'New lots 10 acres; 1 acre under §25-6.'] },
+  'SR-1': { zone: 'SR-1', lotAreaSqFt: 43560, lotWidthFt: 100, frontFt: 35, sideFt: 10, sideSumFt: null, rearFt: 25, coveragePct: 25, heightFt: 35, citation: PW('32-302.06, 32-302.07'), notes: [PW_CORNER, PW_ABUT] },
+  'SR-3': { zone: 'SR-3', lotAreaSqFt: 130680, lotWidthFt: 100, frontFt: 35, sideFt: 10, sideSumFt: null, rearFt: 25, coveragePct: 25, heightFt: 35, citation: PW('32-302.16, 32-302.17'), notes: ['Front 35 ft from the front line and any side street.', PW_ABUT] },
+  'SR-5': { zone: 'SR-5', lotAreaSqFt: 217800, lotWidthFt: 100, frontFt: 50, sideFt: 15, sideSumFt: null, rearFt: 25, coveragePct: 25, heightFt: 35, citation: PW('32-302.26, 32-302.27'), notes: [PW_CORNER, PW_ABUT] },
+  'R-2': { zone: 'R-2', lotAreaSqFt: 20000, lotWidthFt: 100, frontFt: 35, sideFt: 10, sideSumFt: null, rearFt: 25, coveragePct: 30, heightFt: 35, citation: PW('32-303.05, 32-303.06'), notes: ['Lot width 80 ft on a cul-de-sac.', PW_CORNER, PW_ABUT] },
+  'R-4': { zone: 'R-4', lotAreaSqFt: 10000, lotWidthFt: 70, frontFt: 30, sideFt: 10, sideSumFt: null, rearFt: 25, coveragePct: 40, heightFt: 35, citation: PW('32-303.14, 32-303.15'),
+    notes: ['Frontage 70 ft (100 ft each street on a corner lot; 45 ft on a cul-de-sac arc with 70 ft at the setback line).', PW_CORNER, PW_ABUT] },
+  // Cluster subdivisions — shown on the zoning map as R-2C / R-4C once the preliminary plan is approved.
+  'R-2C': { zone: 'R-2C', lotAreaSqFt: 15000, lotWidthFt: 80, frontFt: 30, sideFt: 10, sideSumFt: null, rearFt: 25, coveragePct: 35, heightFt: 35, citation: PW('32-300.61 (cluster schedule)'),
+    notes: ['Corner lot width 100 ft; 20 ft on the street side.', '15 ft from an access easement or private street serving five lots or fewer.', '35 ft from a development boundary abutting non-cluster single-family without 15 ft of open space.'] },
+  'R-4C': { zone: 'R-4C', lotAreaSqFt: 7500, lotWidthFt: 60, frontFt: 25, sideFt: 10, sideSumFt: null, rearFt: 20, coveragePct: 45, heightFt: 35, citation: PW('32-300.61 (cluster schedule)'),
+    notes: ['Corner lot width 80 ft; 20 ft on the street side.', '15 ft from an access easement or private street serving five lots or fewer.', '35 ft from a development boundary abutting non-cluster single-family without 15 ft of open space.'] },
+}
+
+const LC = (t: string) => `Loudoun County Zoning Ordinance (adopted 2023-12-13), Table ${t} (online ordinance, read 2026-09-26)`
+const LC_OPTION = 'Drawn for the Suburban / Base Density option. A lot recorded under a cluster, compact-cluster or traditional design option has smaller yards — confirm the option on the record plat.'
+const LC_SIDE = 'Side yards 12 ft on one side and 9 ft on the other. Either side may be the 12 ft one, so both are drawn at 12 ft — the reading that complies whichever side is chosen.'
+const LC_ROAD = 'A greater Road Corridor Setback or Buffer under §7.04.02 governs where it applies.'
+const LC_DENSITY = (d: string) => `No minimum lot size; density is capped at ${d}. The area shown is that density figure.`
+export const LOUDOUN_STANDARDS: Record<string, CountyZoneStandard> = {
+  'R-1': { zone: 'R-1', lotAreaSqFt: 40000, lotWidthFt: 175, frontFt: 35, sideFt: 12, sideSumFt: null, rearFt: 35, coveragePct: 25, heightFt: 40, citation: LC('2.02.05.01-1'), notes: [LC_SIDE, LC_OPTION, LC_ROAD] },
+  'R-2': { zone: 'R-2', lotAreaSqFt: 20000, lotWidthFt: 60, frontFt: 25, sideFt: 12, sideSumFt: null, rearFt: 25, coveragePct: 40, heightFt: 40, citation: LC('2.02.05.01-1'), notes: [LC_DENSITY('1 dwelling per 20,000 SF'), LC_SIDE, LC_OPTION, LC_ROAD] },
+  'R-3': { zone: 'R-3', lotAreaSqFt: 15000, lotWidthFt: 50, frontFt: 25, sideFt: 12, sideSumFt: null, rearFt: 25, coveragePct: 40, heightFt: 40, citation: LC('2.02.05.01-1'), notes: [LC_DENSITY('1 dwelling per 15,000 SF'), LC_SIDE, LC_OPTION, LC_ROAD] },
+  'R-4': { zone: 'R-4', lotAreaSqFt: 10000, lotWidthFt: 50, frontFt: 25, sideFt: 9, sideSumFt: null, rearFt: 25, coveragePct: 35, heightFt: 40, citation: LC('2.02.05.02-1'), notes: [LC_DENSITY('1 dwelling per 10,000 SF'), LC_OPTION, LC_ROAD] },
+  'R-8': { zone: 'R-8', lotAreaSqFt: 5445, lotWidthFt: 40, frontFt: 15, sideFt: 8, sideSumFt: null, rearFt: 25, coveragePct: 50, heightFt: 40, citation: LC('2.02.05.03-1'), notes: [LC_DENSITY('8 dwellings per acre'), 'Single-family detached figures.', LC_ROAD] },
+  'CR-1': { zone: 'CR-1', lotAreaSqFt: 40000, lotWidthFt: 175, frontFt: 35, sideFt: 12, sideSumFt: null, rearFt: 50, coveragePct: 15, heightFt: 35, citation: LC('2.04.03.03-1'), notes: [LC_SIDE, LC_OPTION, LC_ROAD] },
+  'CR-2': { zone: 'CR-2', lotAreaSqFt: 40000, lotWidthFt: 50, frontFt: 25, sideFt: 12, sideSumFt: null, rearFt: 50, coveragePct: 40, heightFt: 35, citation: LC('2.04.03.03-1'), notes: [LC_DENSITY('1 lot per 40,000 SF (base density)'), LC_SIDE, LC_OPTION, LC_ROAD] },
+  'CR-3': { zone: 'CR-3', lotAreaSqFt: 40000, lotWidthFt: 50, frontFt: 25, sideFt: 12, sideSumFt: null, rearFt: 50, coveragePct: 40, heightFt: 35, citation: LC('2.04.03.03-1'), notes: [LC_DENSITY('1 lot per 40,000 SF (base density)'), LC_SIDE, LC_OPTION, LC_ROAD] },
+  'CR-4': { zone: 'CR-4', lotAreaSqFt: 40000, lotWidthFt: 50, frontFt: 25, sideFt: 12, sideSumFt: null, rearFt: 50, coveragePct: 35, heightFt: 35, citation: LC('2.04.03.03-1'), notes: [LC_DENSITY('1 lot per 40,000 SF (base density)'), LC_SIDE, LC_OPTION, LC_ROAD] },
+  'AR-1': { zone: 'AR-1', lotAreaSqFt: 871200, lotWidthFt: 175, frontFt: 35, sideFt: 25, sideSumFt: null, rearFt: 25, coveragePct: 25, heightFt: 35, citation: LC('2.04.01-1'),
+    notes: ['Front 25 ft from the property line and 35 ft from a road right-of-way — drawn at 35.', 'Base density division (20 acres); principal/subordinate lots 80,000 SF; cluster lots 15 ft side, 20 ft rear.', 'Coverage 25%, of which only 10% may be residential.'] },
+  'AR-2': { zone: 'AR-2', lotAreaSqFt: 1742400, lotWidthFt: 175, frontFt: 35, sideFt: 25, sideSumFt: null, rearFt: 25, coveragePct: 25, heightFt: 35, citation: LC('2.04.02-1'),
+    notes: ['Front 25 ft from the property line and 35 ft from a road right-of-way — drawn at 35.', 'Base density division (40 acres); principal/subordinate lots 80,000 SF; cluster lots 15 ft side, 20 ft rear.', 'Coverage 25%, of which only 10% may be residential.'] },
+  'A-3': { zone: 'A-3', lotAreaSqFt: 130680, lotWidthFt: 200, frontFt: 35, sideFt: 25, sideSumFt: null, rearFt: 25, coveragePct: 25, heightFt: 35, citation: LC('2.04.03.02-1'), notes: ['25 ft from any property line; 35 ft from any road right-of-way.'] },
+  'A-10': { zone: 'A-10', lotAreaSqFt: 435600, lotWidthFt: 200, frontFt: 50, sideFt: 25, sideSumFt: null, rearFt: 25, coveragePct: 25, heightFt: 35, citation: LC('2.04.03.01-1'), notes: ['25 ft from any property line; 50 ft from any road right-of-way.', 'Cluster lots 3 acres.'] },
+  'JLMA-1': { zone: 'JLMA-1', lotAreaSqFt: 20000, lotWidthFt: 50, frontFt: 35, sideFt: 9, sideSumFt: null, rearFt: 25, coveragePct: 25, heightFt: 40, citation: LC('2.05.01-1'), notes: [LC_ROAD] },
+  'JLMA-2': { zone: 'JLMA-2', lotAreaSqFt: 10000, lotWidthFt: 50, frontFt: 15, sideFt: 8, sideSumFt: null, rearFt: 25, coveragePct: 40, heightFt: 40, citation: LC('2.05.01-1'), notes: [LC_ROAD] },
+  'TR-10': { zone: 'TR-10', lotAreaSqFt: 435600, lotWidthFt: 0, frontFt: 20, sideFt: 7, sideSumFt: null, rearFt: 25, coveragePct: null, heightFt: 40, citation: LC('2.03.01-1'), notes: [LC_DENSITY('1 dwelling per 10 acres'), 'Setback adjacent to roads per §7.04.02.'] },
+  'TR-3': { zone: 'TR-3', lotAreaSqFt: 130680, lotWidthFt: 0, frontFt: 12, sideFt: 7, sideSumFt: null, rearFt: 25, coveragePct: null, heightFt: 40, citation: LC('2.03.01-1'), notes: [LC_DENSITY('1 dwelling per 3 acres'), 'Setback adjacent to roads per §7.04.02.'] },
+  'TR-1': { zone: 'TR-1', lotAreaSqFt: 40000, lotWidthFt: 0, frontFt: 10, sideFt: 5, sideSumFt: null, rearFt: 25, coveragePct: null, heightFt: 40, citation: LC('2.03.01-1'), notes: [LC_DENSITY('1 dwelling per 40,000 SF'), 'Setback adjacent to roads per §7.04.02.'] },
+}
+
 const TABLES: Record<string, Record<string, CountyZoneStandard>> = {
   montgomery_md: MONTGOMERY_STANDARDS,
   fairfax_va: FAIRFAX_STANDARDS,
@@ -241,11 +288,21 @@ const TABLES: Record<string, Record<string, CountyZoneStandard>> = {
   herndon_va: HERNDON_STANDARDS,
   falls_church_city_va: FALLS_CHURCH_STANDARDS,
   howard_md: HOWARD_STANDARDS,
+  prince_william_va: PRINCE_WILLIAM_STANDARDS,
+  loudoun_va: LOUDOUN_STANDARDS,
 }
 
 /** Jurisdictions whose single-family standards are transcribed here. */
 export function hasTranscribedStandards(code: string): boolean {
   return Boolean(TABLES[code])
+}
+
+/** The zones transcribed for a jurisdiction, and the ordinance they cite. */
+export function transcribedZones(code: string): { zones: string[]; source: string } | null {
+  const t = TABLES[code]
+  if (!t) return null
+  const first = Object.values(t)[0]
+  return { zones: Object.keys(t), source: first ? first.citation.replace(/,? ?(Table|§).*$/, '').trim() : '' }
 }
 
 /** "R60", "R-60", "r-60 " → "R-60". The map layers spell zones both ways. */
@@ -263,7 +320,9 @@ export function countyStandard(code: string, zone: string): CountyZoneStandard |
   // The code as published first: Charles's "RM" is not "R-M". Then the
   // normalised spelling, for layers that drop the hyphen ("R60", "R 8").
   const exact = zone.trim().toUpperCase().replace(/\s+/g, '')
-  return t[exact] ?? t[normaliseCountyZone(zone)] ?? null
+  // Last, a dash between the letters and the number: Loudoun's layer writes
+  // "CR1", "JLMA2", "TR10" for the ordinance's CR-1, JLMA-2, TR-10.
+  return t[exact] ?? t[normaliseCountyZone(zone)] ?? t[exact.replace(/^([A-Z]+)-?(\d)/, '$1-$2')] ?? null
 }
 
 /** The front setback to draw, with a measured contextual line where the ordinance has one. */

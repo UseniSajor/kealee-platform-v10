@@ -294,5 +294,6 @@ export const ZONING_AUTHORITY_LAYERS: Record<string, { url: string; codeFields: 
   vienna_va: { url: `${FFX_EUCLID}/GIS/Zoning/MapServer/0`, codeFields: ['ZONECODE'], where: "JURISDICTION = 'TOWN OF VIENNA'", authority: 'Fairfax County GIS — Town of Vienna zoning' },
   herndon_va: { url: `${FFX_EUCLID}/GIS/Zoning/MapServer/0`, codeFields: ['ZONECODE'], where: "JURISDICTION = 'TOWN OF HERNDON'", authority: 'Fairfax County GIS — Town of Herndon zoning' },
   falls_church_city_va: { url: 'https://services1.arcgis.com/2hmXRAz4ofcdQP6p/arcgis/rest/services/Parcels_zoning/FeatureServer/0', codeFields: ['ZoningCode'], authority: 'City of Falls Church — parcels with zoning' },
+  leesburg_va: { url: 'https://logis.loudoun.gov/gis/rest/services/COL/Zoning/MapServer/0', codeFields: ['LB_ZONE'], authority: 'Loudoun County GIS — Town of Leesburg zoning' },
   charles_md: { url: 'https://services7.arcgis.com/3BMWkdyrt45RNCrq/arcgis/rest/services/Zoning/FeatureServer/0', codeFields: ['ZONING'], authority: 'Charles County DPGM — official zoning map layer' },
 }

@@ -70,7 +70,7 @@ describe('the coverage registry', () => {
 
 describe('no jurisdiction is refused', () => {
   it('gives any determined jurisdiction a coverage record that says what staff prepare', () => {
-    const c = coverageForDetermined('howard_md', 'Howard County, Maryland')
+    const c = coverageForDetermined('garrett_md', 'Garrett County, Maryland')
     expect(c.level).toBe('data_only')
     expect(c.cannotProduce.join(' ')).toMatch(/prepared by staff/)
   })
