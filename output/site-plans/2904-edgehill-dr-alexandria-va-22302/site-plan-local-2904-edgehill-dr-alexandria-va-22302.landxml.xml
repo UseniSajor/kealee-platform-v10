@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<LandXML xmlns="http://www.landxml.org/schema/LandXML-1.2"
+         version="1.2"
+         date="2026-09-26" time="02:46:05">
+  <Units><Imperial areaUnit="squareFoot" linearUnit="USSurveyFoot" volumeUnit="cubicFeet"
+           temperatureUnit="fahrenheit" pressureUnit="inHG"/></Units>
+  <Project name="2904 EDGEHILL DR"/>
+  <Application name="Kealee Site Plan Engine" version="1.0"/>
+  <!-- Coordinate system EPSG:2248; horizontal datum NAD83;
+       vertical datum NAVD88 (feet). Model revision 8. -->
+  <CoordinateSystem desc="EPSG:2248" horizontalDatum="NAD83"
+                    verticalDatum="NAVD88 (feet)"/>
+  <Parcels>
+      <Parcel name="023.02-04-18" area="8322.662506103516" parcelType="Single">
+        <CoordGeom>
+            <PntList2D>424181.1611340698 1291620.4256410508</PntList2D>
+            <PntList2D>424150.6545842683 1291574.8934164678</PntList2D>
+            <PntList2D>424145.25145867455 1291505.5975889692</PntList2D>
+            <PntList2D>424167.25519359997 1291476.2003278367</PntList2D>
+            <PntList2D>424175.5740104741 1291465.053877979</PntList2D>
+            <PntList2D>424178.54221056955 1291461.076767875</PntList2D>
+            <PntList2D>424184.8717560108 1291452.6123468396</PntList2D>
+            <PntList2D>424221.1082417163 1291560.9115510825</PntList2D>
+            <PntList2D>424233.67882316 1291588.3270847693</PntList2D>
+            <PntList2D>424193.2469883398 1291613.0387549233</PntList2D>
+            <PntList2D>424184.41622435424 1291618.436313131</PntList2D>
+            <PntList2D>424181.1611340698 1291620.4256410508</PntList2D>
+        </CoordGeom>
+      </Parcel>
+  </Parcels>
+  <!-- No Surfaces element: no vertical datum or elevation data is established for this site. -->
+</LandXML>

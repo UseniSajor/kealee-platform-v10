@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<LandXML xmlns="http://www.landxml.org/schema/LandXML-1.2"
+         version="1.2"
+         date="2026-09-26" time="02:44:22">
+  <Units><Imperial areaUnit="squareFoot" linearUnit="USSurveyFoot" volumeUnit="cubicFeet"
+           temperatureUnit="fahrenheit" pressureUnit="inHG"/></Units>
+  <Project name="18405 EMORY ST"/>
+  <Application name="Kealee Site Plan Engine" version="1.0"/>
+  <!-- Coordinate system EPSG:2248; horizontal datum NAD83;
+       vertical datum NAVD88 (feet). Model revision 6. -->
+  <CoordinateSystem desc="EPSG:2248" horizontalDatum="NAD83"
+                    verticalDatum="NAVD88 (feet)"/>
+  <Parcels>
+      <Parcel name="00005638" area="9588.520874023438" parcelType="Single">
+        <CoordGeom>
+            <PntList2D>543310.5255148709 1267393.4303233027</PntList2D>
+            <PntList2D>543234.845031634 1267485.3217798322</PntList2D>
+            <PntList2D>543172.6744068116 1267431.6893341243</PntList2D>
+            <PntList2D>543210.4257536978 1267388.0345197022</PntList2D>
+            <PntList2D>543250.3105743229 1267341.9163570553</PntList2D>
+            <PntList2D>543310.5255148709 1267393.4303233027</PntList2D>
+        </CoordGeom>
+      </Parcel>
+  </Parcels>
+  <!-- No Surfaces element: no vertical datum or elevation data is established for this site. -->
+</LandXML>

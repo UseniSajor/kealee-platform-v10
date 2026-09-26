@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<LandXML xmlns="http://www.landxml.org/schema/LandXML-1.2"
+         version="1.2"
+         date="2026-09-26" time="02:43:46">
+  <Units><Imperial areaUnit="squareFoot" linearUnit="USSurveyFoot" volumeUnit="cubicFeet"
+           temperatureUnit="fahrenheit" pressureUnit="inHG"/></Units>
+  <Project name="5613 HALPINE RD"/>
+  <Application name="Kealee Site Plan Engine" version="1.0"/>
+  <!-- Coordinate system EPSG:2248; horizontal datum NAD83;
+       vertical datum NAVD88 (feet). Model revision 8. -->
+  <CoordinateSystem desc="EPSG:2248" horizontalDatum="NAD83"
+                    verticalDatum="NAVD88 (feet)"/>
+  <Parcels>
+      <Parcel name="00049596" area="9597.380798339844" parcelType="Single">
+        <CoordGeom>
+            <PntList2D>509900.53104667366 1279694.1248182356</PntList2D>
+            <PntList2D>509888.28124441206 1279679.3752530515</PntList2D>
+            <PntList2D>509882.1924902499 1279671.7345895022</PntList2D>
+            <PntList2D>509877.12495456636 1279665.374867037</PntList2D>
+            <PntList2D>509866.25034321845 1279651.249707073</PntList2D>
+            <PntList2D>509859.87455543876 1279640.7986845225</PntList2D>
+            <PntList2D>509854.12531490624 1279631.3747710735</PntList2D>
+            <PntList2D>509854.15048390627 1279631.360312298</PntList2D>
+            <PntList2D>509907.4402029067 1279599.9569066614</PntList2D>
+            <PntList2D>509969.0678200871 1279563.6401923597</PntList2D>
+            <PntList2D>509969.09352459013 1279563.6251980662</PntList2D>
+            <PntList2D>509995.8417376131 1279579.1544665098</PntList2D>
+            <PntList2D>510002.2512625605 1279582.8730512857</PntList2D>
+            <PntList2D>510019.84974351525 1279593.110405147</PntList2D>
+            <PntList2D>510019.8749125004 1279593.1248639375</PntList2D>
+            <PntList2D>509900.53104667366 1279694.1248182356</PntList2D>
+        </CoordGeom>
+      </Parcel>
+  </Parcels>
+  <!-- No Surfaces element: no vertical datum or elevation data is established for this site. -->
+</LandXML>

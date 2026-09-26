@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<LandXML xmlns="http://www.landxml.org/schema/LandXML-1.2"
+         version="1.2"
+         date="2026-09-26" time="16:16:01">
+  <Units><Imperial areaUnit="squareFoot" linearUnit="USSurveyFoot" volumeUnit="cubicFeet"
+           temperatureUnit="fahrenheit" pressureUnit="inHG"/></Units>
+  <Project name="42525 CARNFORTH CT, ASHBURN, VA, 20148"/>
+  <Application name="Kealee Site Plan Engine" version="1.0"/>
+  <!-- Coordinate system EPSG:2248; horizontal datum NAD83;
+       vertical datum NAVD88 (feet). Model revision 8. -->
+  <CoordinateSystem desc="EPSG:2248" horizontalDatum="NAD83"
+                    verticalDatum="NAVD88 (feet)"/>
+  <Parcels>
+      <Parcel name="154363671000" area="20274.487670898438" parcelType="Single">
+        <CoordGeom>
+            <PntList2D>500116.1940218128 1161787.5103003564</PntList2D>
+            <PntList2D>500091.3025111112 1161785.1921108565</PntList2D>
+            <PntList2D>499956.42145872884 1161790.795154849</PntList2D>
+            <PntList2D>499981.797838985 1161646.376251837</PntList2D>
+            <PntList2D>500142.1998676217 1161685.4527163955</PntList2D>
+            <PntList2D>500138.39937976736 1161704.586612193</PntList2D>
+            <PntList2D>500136.2520848011 1161723.9757535006</PntList2D>
+            <PntList2D>500135.7737718689 1161743.4775711866</PntList2D>
+            <PntList2D>500135.6255555816 1161745.9189017462</PntList2D>
+            <PntList2D>500135.09514079697 1161748.3065204606</PntList2D>
+            <PntList2D>500134.19573548913 1161750.580972716</PntList2D>
+            <PntList2D>500132.9497359457 1161752.685621881</PntList2D>
+            <PntList2D>500131.3881690728 1161754.5680596277</PntList2D>
+            <PntList2D>500125.5339709231 1161761.7100034396</PntList2D>
+            <PntList2D>500120.9696452909 1161769.737825617</PntList2D>
+            <PntList2D>500117.8262442187 1161778.4210293512</PntList2D>
+            <PntList2D>500116.1940218128 1161787.5103003564</PntList2D>
+        </CoordGeom>
+      </Parcel>
+  </Parcels>
+  <!-- No Surfaces element: no vertical datum or elevation data is established for this site. -->
+</LandXML>

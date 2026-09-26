@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<LandXML xmlns="http://www.landxml.org/schema/LandXML-1.2"
+         version="1.2"
+         date="2026-09-26" time="16:40:53">
+  <Units><Imperial areaUnit="squareFoot" linearUnit="USSurveyFoot" volumeUnit="cubicFeet"
+           temperatureUnit="fahrenheit" pressureUnit="inHG"/></Units>
+  <Project name="3427 GROUSE CT, WOODBRIDGE, 22192"/>
+  <Application name="Kealee Site Plan Engine" version="1.0"/>
+  <!-- Coordinate system EPSG:2248; horizontal datum NAD83;
+       vertical datum NAVD88 (feet). Model revision 8. -->
+  <CoordinateSystem desc="EPSG:2248" horizontalDatum="NAD83"
+                    verticalDatum="NAVD88 (feet)"/>
+  <Parcels>
+      <Parcel name="8293-10-5733" area="19134.435302734375" parcelType="Single">
+        <CoordGeom>
+            <PntList2D>366585.3182529235 1222783.304052492</PntList2D>
+            <PntList2D>366510.8499882297 1222719.5780382496</PntList2D>
+            <PntList2D>366596.65163164004 1222659.848261086</PntList2D>
+            <PntList2D>366740.3868239776 1222726.958785468</PntList2D>
+            <PntList2D>366792.30682231387 1222705.5551081893</PntList2D>
+            <PntList2D>366795.25761679217 1222716.2298604767</PntList2D>
+            <PntList2D>366800.62294157845 1222728.3193058278</PntList2D>
+            <PntList2D>366713.9158889861 1222760.7181357795</PntList2D>
+            <PntList2D>366713.7775593188 1222760.769685944</PntList2D>
+            <PntList2D>366607.66634817375 1222800.421998174</PntList2D>
+            <PntList2D>366593.41153858294 1222789.0622414509</PntList2D>
+            <PntList2D>366585.3182529235 1222783.304052492</PntList2D>
+        </CoordGeom>
+      </Parcel>
+  </Parcels>
+  <!-- No Surfaces element: no vertical datum or elevation data is established for this site. -->
+</LandXML>

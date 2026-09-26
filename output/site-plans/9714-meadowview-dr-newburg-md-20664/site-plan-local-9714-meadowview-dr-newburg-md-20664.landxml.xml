@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<LandXML xmlns="http://www.landxml.org/schema/LandXML-1.2"
+         version="1.2"
+         date="2026-09-26" time="02:49:59">
+  <Units><Imperial areaUnit="squareFoot" linearUnit="USSurveyFoot" volumeUnit="cubicFeet"
+           temperatureUnit="fahrenheit" pressureUnit="inHG"/></Units>
+  <Project name="9714 Meadowview Dr, Newburg, Maryland, 20664"/>
+  <Application name="Kealee Site Plan Engine" version="1.0"/>
+  <!-- Coordinate system EPSG:2248; horizontal datum NAD83;
+       vertical datum NAVD88 (feet). Model revision 8. -->
+  <CoordinateSystem desc="EPSG:2248" horizontalDatum="NAD83"
+                    verticalDatum="NAVD88 (feet)"/>
+  <Parcels>
+      <Parcel name="0905007704" area="13033.790985107422" parcelType="Single">
+        <CoordGeom>
+            <PntList2D>256265.11269953966 1320005.809156384</PntList2D>
+            <PntList2D>256222.03867105904 1320004.1093177523</PntList2D>
+            <PntList2D>256191.63054751416 1320003.2598063797</PntList2D>
+            <PntList2D>256187.72972815295 1320002.8429417994</PntList2D>
+            <PntList2D>256183.94235599873 1320001.8210531985</PntList2D>
+            <PntList2D>256180.36128775368 1320000.2188381765</PntList2D>
+            <PntList2D>256177.07476787936 1319998.0764488818</PntList2D>
+            <PntList2D>256174.16411942255 1319995.4466596576</PntList2D>
+            <PntList2D>256171.70092210436 1319992.3935800816</PntList2D>
+            <PntList2D>256169.74521701303 1319988.9929130937</PntList2D>
+            <PntList2D>256168.34576177303 1319985.3278340425</PntList2D>
+            <PntList2D>256167.53669638952 1319981.489249217</PntList2D>
+            <PntList2D>256167.33831116612 1319977.5714171606</PntList2D>
+            <PntList2D>256169.4754535003 1319922.26730249</PntList2D>
+            <PntList2D>256172.79437887127 1319867.0220938944</PntList2D>
+            <PntList2D>256264.64575658579 1319875.612564432</PntList2D>
+            <PntList2D>256271.72273683164 1319876.2742357543</PntList2D>
+            <PntList2D>256265.11269953966 1320005.809156384</PntList2D>
+        </CoordGeom>
+      </Parcel>
+  </Parcels>
+  <!-- No Surfaces element: no vertical datum or elevation data is established for this site. -->
+</LandXML>

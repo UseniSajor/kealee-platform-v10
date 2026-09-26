@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<LandXML xmlns="http://www.landxml.org/schema/LandXML-1.2"
+         version="1.2"
+         date="2026-09-26" time="02:45:31">
+  <Units><Imperial areaUnit="squareFoot" linearUnit="USSurveyFoot" volumeUnit="cubicFeet"
+           temperatureUnit="fahrenheit" pressureUnit="inHG"/></Units>
+  <Project name="5765 Augustine Ave, Elkridge, Maryland, 21075"/>
+  <Application name="Kealee Site Plan Engine" version="1.0"/>
+  <!-- Coordinate system EPSG:2248; horizontal datum NAD83;
+       vertical datum NAVD88 (feet). Model revision 8. -->
+  <CoordinateSystem desc="EPSG:2248" horizontalDatum="NAD83"
+                    verticalDatum="NAVD88 (feet)"/>
+  <Parcels>
+      <Parcel name="1401157531" area="9603.133666992188" parcelType="Single">
+        <CoordGeom>
+            <PntList2D>563258.5239476461 1392106.1202730683</PntList2D>
+            <PntList2D>563178.3963597236 1392033.8007999652</PntList2D>
+            <PntList2D>563243.8651957331 1391964.2209529628</PntList2D>
+            <PntList2D>563314.1144554393 1392037.350782506</PntList2D>
+            <PntList2D>563258.5239476461 1392106.1202730683</PntList2D>
+        </CoordGeom>
+      </Parcel>
+  </Parcels>
+  <!-- No Surfaces element: no vertical datum or elevation data is established for this site. -->
+</LandXML>
