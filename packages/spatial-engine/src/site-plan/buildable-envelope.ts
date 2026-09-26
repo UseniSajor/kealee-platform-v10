@@ -15,6 +15,7 @@
  */
 
 import type { Ring, Position } from './site-twin'
+import { polygon as turfPolygon, featureCollection, union as turfUnion, difference as turfDifference } from '@turf/turf'
 
 export interface Setbacks {
   frontFt: number | null
@@ -182,6 +183,13 @@ function clipHalfPlane(pts: Position[], a: Position, b: Position): Position[] {
 function insetPerEdge(ring: Ring, setbackForEdge: (i: number) => number): Ring | null {
   const pts = normaliseRing(ring)
   if (pts.length < 3) return null
+  // Half-plane clipping is exact only for a CONVEX outline. On a concave lot
+  // — a pipestem, an L, a notch — an edge's line extended across the lot cuts
+  // away ground that is nowhere near that edge: a 24 ft stem's side lines
+  // sliced a 19,000 SF Prince William lot down to 75 SF. There the envelope is
+  // built from its definition instead: the ground at least each edge's
+  // setback from that edge.
+  if (!isConvex(pts)) return insetByDistance(pts, setbackForEdge)
 
   let poly = pts.slice()
   for (let i = 0; i < pts.length; i++) {
@@ -199,6 +207,74 @@ function insetPerEdge(ring: Ring, setbackForEdge: (i: number) => number): Ring |
   }
 
   return { coordinates: [...poly, poly[0]] as Position[] }
+}
+
+function isConvex(pts: Position[]): boolean {
+  let sign = 0
+  for (let i = 0; i < pts.length; i++) {
+    const a = pts[i], b = pts[(i + 1) % pts.length], c = pts[(i + 2) % pts.length]
+    const cross = (b[0] - a[0]) * (c[1] - b[1]) - (b[1] - a[1]) * (c[0] - b[0])
+    // Ignore collinear vertices — a straight run split into segments.
+    if (Math.abs(cross) < 1e-6 * Math.hypot(b[0] - a[0], b[1] - a[1]) * Math.hypot(c[0] - b[0], c[1] - b[1])) continue
+    const sg = Math.sign(cross)
+    if (sign === 0) sign = sg
+    else if (sg !== sign) return false
+  }
+  return true
+}
+
+/** The ground within `d` of segment a→b: a rectangle with round ends. */
+function segmentBand(a: Position, b: Position, d: number, arcSteps = 8): Position[] {
+  const dx = b[0] - a[0], dy = b[1] - a[1]
+  const len = Math.hypot(dx, dy)
+  const ux = dx / len, uy = dy / len
+  const nx = -uy, ny = ux
+  const out: Position[] = []
+  // Around b from its left normal to its right normal, then around a back.
+  const cap = (c: Position, from: number) => {
+    for (let k = 0; k <= arcSteps; k++) {
+      const t = from - (Math.PI * k) / arcSteps
+      // Rotate the unit normal (nx, ny) by t relative to the edge direction.
+      const cx = Math.cos(t) * nx - Math.sin(t) * ny
+      const cy = Math.sin(t) * nx + Math.cos(t) * ny
+      out.push([c[0] + cx * d, c[1] + cy * d] as Position)
+    }
+  }
+  cap(b, 0)
+  cap(a, Math.PI)
+  return out
+}
+
+/**
+ * The per-edge inset of a CONCAVE outline: the lot minus, for every edge, the
+ * ground closer to that edge than its setback. Where that leaves more than one
+ * piece (the stem of a pipestem lot beside its body), the largest is the
+ * envelope — a stem too narrow to build in is not where the house goes.
+ */
+function insetByDistance(pts: Position[], setbackForEdge: (i: number) => number): Ring | null {
+  const closed = (r: Position[]) => [...r, r[0]].map(p => [p[0], p[1]])
+  const bands = []
+  for (let i = 0; i < pts.length; i++) {
+    const a = pts[i], b = pts[(i + 1) % pts.length]
+    const d = setbackForEdge(i)
+    if (d <= 0 || Math.hypot(b[0] - a[0], b[1] - a[1]) < 1e-9) continue
+    bands.push(turfPolygon([closed(segmentBand(a, b, d))]))
+  }
+  const lot = turfPolygon([closed(pts)])
+  const cut = bands.length > 1 ? turfUnion(featureCollection(bands)) : bands[0] ?? null
+  const left = cut ? turfDifference(featureCollection([lot, cut as any])) : lot
+  if (!left) return null
+  const g = left.geometry
+  const polys: number[][][][] = g.type === 'Polygon' ? [g.coordinates as number[][][]] : (g.coordinates as number[][][][])
+  let best: Position[] | null = null, bestArea = 0
+  for (const poly of polys) {
+    const outer = poly[0].slice(0, -1).map(c => [c[0], c[1]] as Position)
+    const area = Math.abs(signedArea(outer))
+    if (outer.length >= 3 && area > bestArea) { best = outer; bestArea = area }
+  }
+  if (!best) return null
+  const ccw = signedArea(best) < 0 ? best.reverse() : best
+  return { coordinates: [...ccw, ccw[0]] as Position[] }
 }
 
 /** Which yard each edge belongs to. */
@@ -1050,6 +1126,22 @@ export function deriveBuildableEnvelope(input: {
   const keepOut: Ring[] = (input.keepOutRings ?? [])
     .filter(r => r && r.length >= 3)
     .map(r => ({ coordinates: [...r, r[0]] as Position[] }))
+  // An estimated house that will not fit at full size is shrunk to the
+  // LARGEST size that fits ANYWHERE along the lot's depth — still as far
+  // forward as that size allows. Shrinking it where it stood, at the front of
+  // the envelope, lost the lot on a pipestem: the envelope's nearest point to
+  // the street is the neck where the stem meets the body, and the house came
+  // out at 88 SF on 3427 Grouse Ct with 11,000 SF of envelope behind it.
+  const shrinkAlongDepth = (): Ring | null => {
+    let lo = 0, hi = 1, best: Ring | null = null
+    for (let i = 0; i < 14; i++) {
+      const mid = (lo + hi) / 2
+      const r = placeAgainstFront(ring, parcel, yards, allowed * mid * mid, aspect, angle, keepOut,
+                                  input.sideStandoffFt ?? null)
+      if (r) { lo = mid; best = r } else hi = mid
+    }
+    return lo > 0.05 ? best : null
+  }
   const footprint = allowed > 0
     ? (placeAgainstFront(ring, parcel, yards, allowed, aspect, angle, keepOut,
                          input.sideStandoffFt ?? null)
@@ -1061,7 +1153,7 @@ export function deriveBuildableEnvelope(input: {
        ?? (stated
            ? rectangleAt(frontSetPosition(ring, parcel, yards, allowed, aspect, angle),
                          allowed, aspect, angle)
-           : largestFittingRectangle(ring, centre, allowed, aspect, angle)))
+           : (shrinkAlongDepth() ?? largestFittingRectangle(ring, centre, allowed, aspect, angle))))
     : null
   const statedFits = !stated || !footprint || rectFits(footprint, ring)
 
