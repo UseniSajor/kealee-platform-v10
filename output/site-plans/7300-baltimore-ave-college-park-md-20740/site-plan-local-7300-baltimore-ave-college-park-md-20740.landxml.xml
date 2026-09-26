@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<LandXML xmlns="http://www.landxml.org/schema/LandXML-1.2"
+         version="1.2"
+         date="2026-09-26" time="00:46:21">
+  <Units><Imperial areaUnit="squareFoot" linearUnit="USSurveyFoot" volumeUnit="cubicFeet"
+           temperatureUnit="fahrenheit" pressureUnit="inHG"/></Units>
+  <Project name="7300 BALTIMORE AVENUE"/>
+  <Application name="Kealee Site Plan Engine" version="1.0"/>
+  <!-- Coordinate system EPSG:2248; horizontal datum NAD83;
+       vertical datum NAVD88 (feet). Model revision 8. -->
+  <CoordinateSystem desc="EPSG:2248" horizontalDatum="NAD83"
+                    verticalDatum="NAVD88 (feet)"/>
+  <Parcels>
+      <Parcel name="156835" area="153054.48919677734" parcelType="Single">
+        <CoordGeom>
+            <PntList2D>478407.54081343865 1329601.9612184612</PntList2D>
+            <PntList2D>478522.80403436656 1329618.7302137893</PntList2D>
+            <PntList2D>478549.7439411031 1329458.980533279</PntList2D>
+            <PntList2D>478665.80506069586 1329478.4214392893</PntList2D>
+            <PntList2D>478671.28798935865 1329479.3404007081</PntList2D>
+            <PntList2D>478616.0581129371 1329823.811496531</PntList2D>
+            <PntList2D>478598.12278136064 1329923.65151995</PntList2D>
+            <PntList2D>478590.48565752094 1329953.596341947</PntList2D>
+            <PntList2D>478195.5290983591 1329953.6074967738</PntList2D>
+            <PntList2D>478204.4490280194 1329916.1748288702</PntList2D>
+            <PntList2D>478256.7819286155 1329612.8624433768</PntList2D>
+            <PntList2D>478325.9359897742 1329623.1084858791</PntList2D>
+            <PntList2D>478373.6809730146 1329597.0343910267</PntList2D>
+            <PntList2D>478407.54081343865 1329601.9612184612</PntList2D>
+        </CoordGeom>
+      </Parcel>
+  </Parcels>
+  <!-- No Surfaces element: no vertical datum or elevation data is established for this site. -->
+</LandXML>

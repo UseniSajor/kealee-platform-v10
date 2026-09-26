@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<LandXML xmlns="http://www.landxml.org/schema/LandXML-1.2"
+         version="1.2"
+         date="2026-09-26" time="00:48:14">
+  <Units><Imperial areaUnit="squareFoot" linearUnit="USSurveyFoot" volumeUnit="cubicFeet"
+           temperatureUnit="fahrenheit" pressureUnit="inHG"/></Units>
+  <Project name="111 MARYLAND AVE"/>
+  <Application name="Kealee Site Plan Engine" version="1.0"/>
+  <!-- Coordinate system EPSG:2248; horizontal datum NAD83;
+       vertical datum NAVD88 (feet). Model revision 8. -->
+  <CoordinateSystem desc="EPSG:2248" horizontalDatum="NAD83"
+                    verticalDatum="NAVD88 (feet)"/>
+  <Parcels>
+      <Parcel name="00150968" area="31197.29541015625" parcelType="Single">
+        <CoordGeom>
+            <PntList2D>515492.92055238783 1269387.7843478322</PntList2D>
+            <PntList2D>515483.48003812134 1269386.6849448085</PntList2D>
+            <PntList2D>515359.5313176662 1269372.2502597868</PntList2D>
+            <PntList2D>515271.9999874681 1269225.750121951</PntList2D>
+            <PntList2D>515498.68746475875 1269199.8747910112</PntList2D>
+            <PntList2D>515500.00803360343 1269269.327287361</PntList2D>
+            <PntList2D>515502.2812756002 1269388.8746471703</PntList2D>
+            <PntList2D>515492.92055238783 1269387.7843478322</PntList2D>
+        </CoordGeom>
+      </Parcel>
+  </Parcels>
+  <!-- No Surfaces element: no vertical datum or elevation data is established for this site. -->
+</LandXML>

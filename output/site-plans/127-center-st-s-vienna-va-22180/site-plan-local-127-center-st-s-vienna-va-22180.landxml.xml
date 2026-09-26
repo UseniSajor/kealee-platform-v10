@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<LandXML xmlns="http://www.landxml.org/schema/LandXML-1.2"
+         version="1.2"
+         date="2026-09-26" time="00:46:56">
+  <Units><Imperial areaUnit="squareFoot" linearUnit="USSurveyFoot" volumeUnit="cubicFeet"
+           temperatureUnit="fahrenheit" pressureUnit="inHG"/></Units>
+  <Project name="127 CENTER ST S, VIENNA, VA, 22180"/>
+  <Application name="Kealee Site Plan Engine" version="1.0"/>
+  <!-- Coordinate system EPSG:2248; horizontal datum NAD83;
+       vertical datum NAVD88 (feet). Model revision 8. -->
+  <CoordinateSystem desc="EPSG:2248" horizontalDatum="NAD83"
+                    verticalDatum="NAVD88 (feet)"/>
+  <Parcels>
+      <Parcel name="0384 02 0146" area="42009.04455566406" parcelType="Single">
+        <CoordGeom>
+            <PntList2D>449474.15887580527 1237198.6434242832</PntList2D>
+            <PntList2D>449331.6711467886 1237058.3460056374</PntList2D>
+            <PntList2D>449341.7778661198 1237048.0907884135</PntList2D>
+            <PntList2D>449447.0791797365 1236941.2678419813</PntList2D>
+            <PntList2D>449481.8147645901 1236906.0306059872</PntList2D>
+            <PntList2D>449515.01951719087 1236872.3460247929</PntList2D>
+            <PntList2D>449582.22160863027 1236939.308864697</PntList2D>
+            <PntList2D>449513.37771987787 1237005.9801270652</PntList2D>
+            <PntList2D>449590.47351053596 1237080.5107085325</PntList2D>
+            <PntList2D>449474.15887580527 1237198.6434242832</PntList2D>
+        </CoordGeom>
+      </Parcel>
+  </Parcels>
+  <!-- No Surfaces element: no vertical datum or elevation data is established for this site. -->
+</LandXML>

@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<LandXML xmlns="http://www.landxml.org/schema/LandXML-1.2"
+         version="1.2"
+         date="2026-09-26" time="00:45:55">
+  <Units><Imperial areaUnit="squareFoot" linearUnit="USSurveyFoot" volumeUnit="cubicFeet"
+           temperatureUnit="fahrenheit" pressureUnit="inHG"/></Units>
+  <Project name="6751 Columbia Gateway Dr, Columbia, Maryland, 21046"/>
+  <Application name="Kealee Site Plan Engine" version="1.0"/>
+  <!-- Coordinate system EPSG:2248; horizontal datum NAD83;
+       vertical datum NAVD88 (feet). Model revision 8. -->
+  <CoordinateSystem desc="EPSG:2248" horizontalDatum="NAD83"
+                    verticalDatum="NAVD88 (feet)"/>
+  <Parcels>
+      <Parcel name="1406498965" area="269739.9748535156" parcelType="Single">
+        <CoordGeom>
+            <PntList2D>552792.1538174562 1368944.2604898592</PntList2D>
+            <PntList2D>552765.8152626792 1368946.8883977789</PntList2D>
+            <PntList2D>552296.9546938471 1368991.6684098712</PntList2D>
+            <PntList2D>552348.7755586974 1368925.818809046</PntList2D>
+            <PntList2D>552390.3240694115 1368859.099911415</PntList2D>
+            <PntList2D>552424.5661671921 1368788.5587489924</PntList2D>
+            <PntList2D>552451.1966329971 1368714.808856692</PntList2D>
+            <PntList2D>552465.523910327 1368659.500550391</PntList2D>
+            <PntList2D>552466.1341964053 1368658.0307242095</PntList2D>
+            <PntList2D>552466.4260935613 1368656.278688188</PntList2D>
+            <PntList2D>552477.1152609116 1368607.4204439977</PntList2D>
+            <PntList2D>552487.1644372055 1368561.0295442024</PntList2D>
+            <PntList2D>552488.4767567902 1368554.789338504</PntList2D>
+            <PntList2D>552489.0837597032 1368551.6890771224</PntList2D>
+            <PntList2D>552490.855222871 1368544.330014913</PntList2D>
+            <PntList2D>552492.84345868 1368536.2396724026</PntList2D>
+            <PntList2D>552495.0154402707 1368528.5591535983</PntList2D>
+            <PntList2D>552497.7744548076 1368519.0905682978</PntList2D>
+            <PntList2D>552502.8434303581 1368503.9298917828</PntList2D>
+            <PntList2D>552507.9450960907 1368490.389919002</PntList2D>
+            <PntList2D>552510.3761734255 1368484.5302693828</PntList2D>
+            <PntList2D>552512.4038070737 1368479.6286790045</PntList2D>
+            <PntList2D>552518.1157060087 1368467.0402460922</PntList2D>
+            <PntList2D>552525.1040033909 1368452.8015460183</PntList2D>
+            <PntList2D>552531.9346877254 1368437.9194719892</PntList2D>
+            <PntList2D>552536.3441096415 1368427.1092129103</PntList2D>
+            <PntList2D>552538.7948830406 1368420.970705129</PntList2D>
+            <PntList2D>552539.1066105079 1368420.170213562</PntList2D>
+            <PntList2D>552544.4738389406 1368405.3409816246</PntList2D>
+            <PntList2D>552546.8951036782 1368397.9884312758</PntList2D>
+            <PntList2D>552550.6156867879 1368385.048873072</PntList2D>
+            <PntList2D>552554.3558632934 1368370.7314343078</PntList2D>
+            <PntList2D>552556.1536566911 1368363.3298218485</PntList2D>
+            <PntList2D>552572.8235338166 1368287.6507473818</PntList2D>
+            <PntList2D>552591.4850379593 1368202.0211016452</PntList2D>
+            <PntList2D>552591.855731854 1368202.09974801</PntList2D>
+            <PntList2D>552850.483752801 1368258.9007963126</PntList2D>
+            <PntList2D>552849.2142337493 1368276.4007353093</PntList2D>
+            <PntList2D>552821.1235499891 1368663.8902632727</PntList2D>
+            <PntList2D>552911.5564768027 1368688.7590345475</PntList2D>
+            <PntList2D>552792.1538174562 1368944.2604898592</PntList2D>
+        </CoordGeom>
+      </Parcel>
+  </Parcels>
+  <!-- No Surfaces element: no vertical datum or elevation data is established for this site. -->
+</LandXML>
