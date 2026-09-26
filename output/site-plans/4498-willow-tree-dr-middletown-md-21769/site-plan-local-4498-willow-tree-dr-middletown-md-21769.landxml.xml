@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<LandXML xmlns="http://www.landxml.org/schema/LandXML-1.2"
+         version="1.2"
+         date="2026-09-26" time="17:04:19">
+  <Units><Imperial areaUnit="squareFoot" linearUnit="USSurveyFoot" volumeUnit="cubicFeet"
+           temperatureUnit="fahrenheit" pressureUnit="inHG"/></Units>
+  <Project name="4498 WILLOW TREE DR"/>
+  <Application name="Kealee Site Plan Engine" version="1.0"/>
+  <!-- Coordinate system EPSG:2248; horizontal datum NAD83;
+       vertical datum NAVD88 (feet). Model revision 8. -->
+  <CoordinateSystem desc="EPSG:2248" horizontalDatum="NAD83"
+                    verticalDatum="NAVD88 (feet)"/>
+  <Parcels>
+      <Parcel name="1103124622" area="18765.85418701172" parcelType="Single">
+        <CoordGeom>
+            <PntList2D>644629.958038643 1167531.2220406383</PntList2D>
+            <PntList2D>644683.5061598867 1167446.7658447176</PntList2D>
+            <PntList2D>644811.1230306476 1167527.6780844778</PntList2D>
+            <PntList2D>644744.3849751502 1167633.371114552</PntList2D>
+            <PntList2D>644637.6860415637 1167565.721971631</PntList2D>
+            <PntList2D>644634.2257466465 1167563.0746672153</PntList2D>
+            <PntList2D>644631.277261734 1167559.8673245609</PntList2D>
+            <PntList2D>644628.9298254699 1167556.1970563084</PntList2D>
+            <PntList2D>644627.2546319813 1167552.1754108071</PntList2D>
+            <PntList2D>644626.3022060543 1167547.9241069704</PntList2D>
+            <PntList2D>644626.1017471403 1167543.572081551</PntList2D>
+            <PntList2D>644626.6594888121 1167539.251224056</PntList2D>
+            <PntList2D>644627.9577145576 1167535.092439726</PntList2D>
+            <PntList2D>644629.958038643 1167531.2220406383</PntList2D>
+        </CoordGeom>
+      </Parcel>
+  </Parcels>
+  <!-- No Surfaces element: no vertical datum or elevation data is established for this site. -->
+</LandXML>

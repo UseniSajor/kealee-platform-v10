@@ -36,6 +36,7 @@ import type { NoaaSite } from '../jurisdictions/noaa-atlas14'
 import {
   countyStandard, countyFrontSetback, countyStandardRows, normaliseCountyZone, hasTranscribedStandards,
 } from '../jurisdictions/county-zoning'
+import { marylandDistrictSummary } from '../jurisdictions/maryland-county-zoning'
 import {
   dcEnvelope, dcFrontSetback, dcStandardRows, DC_ZONING_SOURCE,
   type DcStructureType, type DcBlockFaceMeasure,
@@ -411,7 +412,9 @@ function readCountyZoningEnvelope(
       caution:
         `No single-family standards are transcribed for ${zoneCode} (${normaliseCountyZone(zoneCode)}). ` +
         'Townhouse, multifamily, commercial and planned zones are read from their own sections; ' +
-        'none is assumed.',
+        'none is assumed.' +
+        // Where the district itself is recorded (six Maryland counties), state its limits.
+        (marylandDistrictSummary(code, zoneCode) ? ` ${marylandDistrictSummary(code, zoneCode)}` : ''),
     }
   }
   const front = countyFrontSetback(code, std, ebl)

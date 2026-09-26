@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<LandXML xmlns="http://www.landxml.org/schema/LandXML-1.2"
+         version="1.2"
+         date="2026-09-26" time="17:03:04">
+  <Units><Imperial areaUnit="squareFoot" linearUnit="USSurveyFoot" volumeUnit="cubicFeet"
+           temperatureUnit="fahrenheit" pressureUnit="inHG"/></Units>
+  <Project name="625 IRVIN AVE"/>
+  <Application name="Kealee Site Plan Engine" version="1.0"/>
+  <!-- Coordinate system EPSG:2248; horizontal datum NAD83;
+       vertical datum NAVD88 (feet). Model revision 8. -->
+  <CoordinateSystem desc="EPSG:2248" horizontalDatum="NAD83"
+                    verticalDatum="NAVD88 (feet)"/>
+  <Parcels>
+      <Parcel name="759707033800" area="6070.014831542969" parcelType="Single">
+        <CoordGeom>
+            <PntList2D>402433.3814389716 1439315.8876331272</PntList2D>
+            <PntList2D>402489.3648422085 1439222.098088019</PntList2D>
+            <PntList2D>402538.67998799274 1439283.5299386487</PntList2D>
+            <PntList2D>402461.8918540047 1439345.8319137592</PntList2D>
+            <PntList2D>402433.3814389716 1439315.8876331272</PntList2D>
+        </CoordGeom>
+      </Parcel>
+  </Parcels>
+  <!-- No Surfaces element: no vertical datum or elevation data is established for this site. -->
+</LandXML>

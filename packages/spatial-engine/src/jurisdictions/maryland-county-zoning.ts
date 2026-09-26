@@ -82,10 +82,8 @@ const sfd = (
   notes: string[] = [],
 ): CountyZoneStandard => ({
   zone,
-  // CountyZoneStandard carries numbers; a district with no minimum records 0
-  // here and the note says "no minimum" — countyStandardRows prints the note.
-  lotAreaSqFt: v.area ?? 0,
-  lotWidthFt: v.width ?? 0,
+  lotAreaSqFt: v.area,
+  lotWidthFt: v.width,
   frontFt: v.front, sideFt: v.side, sideSumFt: v.sideSum ?? null, rearFt: v.rear,
   coveragePct: v.cov ?? null, heightFt: v.height, citation,
   notes: [

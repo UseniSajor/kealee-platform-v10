@@ -50,11 +50,14 @@
  */
 
 import type { DcStandardRow } from './dc-zoning'
+import { marylandSfdTables } from './maryland-county-zoning'
 
 export interface CountyZoneStandard {
   zone: string
-  lotAreaSqFt: number
-  lotWidthFt: number
+  /** Null where the district sets no minimum. */
+  lotAreaSqFt: number | null
+  /** Null where the district sets no minimum. */
+  lotWidthFt: number | null
   frontFt: number
   sideFt: number
   /** Sum of both side setbacks, where the ordinance sets one. */
@@ -174,13 +177,11 @@ export const ALEXANDRIA_STANDARDS: Record<string, CountyZoneStandard> = {
   'R-2-5': alx('R-2-5', '3-506', 5000, 50, 20, 1 / 3, 7, 7),
 }
 
-const CH = 'Charles County Code Ch. 297, Figure VI (Attachment 3, Supp. 8, Jul 2020)'
-export const CHARLES_STANDARDS: Record<string, CountyZoneStandard> = {
-  'RM': { zone: 'RM', lotAreaSqFt: 12000, lotWidthFt: 60, frontFt: 25, sideFt: 8, sideSumFt: 20, rearFt: 25, coveragePct: 35, heightFt: 36, citation: `${CH}-4`, notes: ['Residential row of the RM schedule.'] },
-  'RH': { zone: 'RH', lotAreaSqFt: 8000, lotWidthFt: 50, frontFt: 20, sideFt: 8, sideSumFt: 20, rearFt: 25, coveragePct: 40, heightFt: 36, citation: `${CH}-4`, notes: ['Residential row of the RH schedule.'] },
-  'RR': { zone: 'RR', lotAreaSqFt: 30000, lotWidthFt: 100, frontFt: 40, sideFt: 20, sideSumFt: 40, rearFt: 40, coveragePct: 25, heightFt: 36, citation: `${CH}-2`, notes: ['Residential row of the RR schedule.'] },
-  'RC': { zone: 'RC', lotAreaSqFt: 130680, lotWidthFt: 120, frontFt: 50, sideFt: 30, sideSumFt: 60, rearFt: 50, coveragePct: null, heightFt: 36, citation: `${CH}-2`, notes: ['Residential row of the RC schedule (3 acres). Lots under 3 acres existing before 2000-10-31 have their own row.'] },
-}
+// Charles and Howard — with Anne Arundel, Frederick, Calvert and St. Mary's —
+// are recorded district by district in maryland-county-zoning.ts (every
+// district on each county's map, cited). These names are kept for callers.
+const MD = marylandSfdTables()
+export const CHARLES_STANDARDS: Record<string, CountyZoneStandard> = MD.charles_md
 
 const RK = (z: string) => `City of Rockville Code §25.10.05 (Municode, 2026-08-06), ${z} row`
 const rk = (zone: string, area: number, width: number, front: number, cap: number, side: number, rear: number, height: number, cov: number): CountyZoneStandard => ({
@@ -223,11 +224,7 @@ export const FALLS_CHURCH_STANDARDS: Record<string, CountyZoneStandard> = {
   'R-1B': { zone: 'R-1B', lotAreaSqFt: 7500, lotWidthFt: 60, frontFt: 25, sideFt: 10, sideSumFt: null, rearFt: 30, coveragePct: 25, heightFt: 35, citation: FC('Div. 3'), notes: ['Height the lesser of 35 ft or 2½ stories.'] },
 }
 
-const HW = (s: string) => `Howard County Zoning Regulations §${s} (Municode, through Bill 3-2026)`
-export const HOWARD_STANDARDS: Record<string, CountyZoneStandard> = {
-  'R-20': { zone: 'R-20', lotAreaSqFt: 20000, lotWidthFt: 60, frontFt: 50, sideFt: 10, sideSumFt: null, rearFt: 30, coveragePct: null, heightFt: 34, citation: HW('108.0.D'), notes: ['Front 50 ft from a public street right-of-way; 30 ft where the street was constructed after 1993-10-18 — drawn at 50, the restrictive reading.'] },
-  'R-12': { zone: 'R-12', lotAreaSqFt: 12000, lotWidthFt: 60, frontFt: 20, sideFt: 7.5, sideSumFt: null, rearFt: 30, coveragePct: null, heightFt: 34, citation: HW('109.0.D'), notes: ['Semi-detached: 15 ft one side.'] },
-}
+export const HOWARD_STANDARDS: Record<string, CountyZoneStandard> = MD.howard_md
 
 const PW = (s: string) => `Prince William County Code Ch. 32 (Zoning), §${s} (Municode, Supplement 46); height §32-300.05`
 const PW_CORNER = 'Corner lot: 20 ft on the side abutting the side street; corner front and side yards are fixed at building permit.'
@@ -288,6 +285,10 @@ const TABLES: Record<string, Record<string, CountyZoneStandard>> = {
   herndon_va: HERNDON_STANDARDS,
   falls_church_city_va: FALLS_CHURCH_STANDARDS,
   howard_md: HOWARD_STANDARDS,
+  anne_arundel_md: MD.anne_arundel_md,
+  frederick_md: MD.frederick_md,
+  calvert_md: MD.calvert_md,
+  st_marys_md: MD.st_marys_md,
   prince_william_va: PRINCE_WILLIAM_STANDARDS,
   loudoun_va: LOUDOUN_STANDARDS,
 }
@@ -371,7 +372,8 @@ export function countyStandardRows(std: CountyZoneStandard, front: { ft: number;
     r('Rear yard depth', std.rearFt, `${std.rearFt} ft (${std.citation})`),
     ...(std.coveragePct != null ? [r('Lot coverage', std.coveragePct, `${std.coveragePct}% (${std.citation})`)] : []),
     r('Maximum height (ft)', std.heightFt, `${std.heightFt} ft (${std.citation})`),
-    r('Minimum lot width (ft)', std.lotWidthFt, `${std.lotWidthFt} ft (${std.citation})`),
-    r('Minimum lot area (sq ft)', std.lotAreaSqFt, `${std.lotAreaSqFt.toLocaleString()} SF (${std.citation})`),
+    // A district with no minimum prints no row rather than "0".
+    ...(std.lotWidthFt != null ? [r('Minimum lot width (ft)', std.lotWidthFt, `${std.lotWidthFt} ft (${std.citation})`)] : []),
+    ...(std.lotAreaSqFt != null ? [r('Minimum lot area (sq ft)', std.lotAreaSqFt, `${std.lotAreaSqFt.toLocaleString()} SF (${std.citation})`)] : []),
   ]
 }
