@@ -186,7 +186,7 @@ export const CHARLES_GIS: ArcGisJurisdictionConfig = {
     platReference: a => a.PLAT_REF && String(a.PLAT_REF).trim() ? `Plat ${String(a.PLAT_REF).trim()}` : null,
   }],
   zoning: {
-    url: `${CHAS}/Zoning/FeatureServer/0`, codeFields: ['ZONE', 'ZONING'],
+    url: `${CHAS}/Zoning/FeatureServer/0`, codeFields: ['ZONING', 'ZONE'], descriptionField: 'ZONE',
     authority: 'Charles County DPGM — official zoning map layer',
   },
   streets: {
