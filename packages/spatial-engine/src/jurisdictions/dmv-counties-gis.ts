@@ -117,6 +117,12 @@ export const ARLINGTON_GIS: ArcGisJurisdictionConfig = {
   name: 'Arlington County',
   state: 'VA',
   locators: [{
+    // The county's own composite locator (ACMaps 2.0). It also answers with a
+    // Street_Network interpolation at 100, so only an address point is taken.
+    name: 'Arlington County composite locator (address points)',
+    url: 'https://arlgis.arlingtonva.us/arcgis/rest/services/Geoprocessing/Composite_AddPnt_Stnet/GeocodeServer',
+    acceptCandidate: c => String(c.attributes.Addr_type ?? '') === 'PointAddress',
+  }, {
     name: 'VGIN statewide locator (Arlington address points)', url: VGIN,
     acceptCandidate: c =>
       String(c.attributes.Addr_type ?? '') === 'PointAddress' &&
@@ -247,4 +253,46 @@ export const VIRGINIA_STATEWIDE_GIS: ArcGisJurisdictionConfig = {
     nameFields: ['ST_FULL'], authority: 'VGIN — VBMP road centerlines',
   },
   contours: '3dep',
+}
+
+// ── City of Alexandria ───────────────────────────────────────────────────────
+
+const ALX = 'https://maps.alexandriava.gov/arcgis/rest/services'
+
+/**
+ * The City of Alexandria's own services. Its official locator takes the field
+ * `Street` (like Montgomery's); its parcel layer carries the zone, the RPA and
+ * floodplain flags. Its topography is 10-ft only, so terrain is 3DEP at 2 ft.
+ */
+export const ALEXANDRIA_GIS: ArcGisJurisdictionConfig = {
+  code: 'alexandria_city_va',
+  name: 'City of Alexandria',
+  state: 'VA',
+  locators: [{ name: 'City of Alexandria official address locator', url: `${ALX}/geocoders/AlexOfficial/GeocodeServer`, param: 'Street' }],
+  parcels: [{
+    url: `${ALX}/alxParcelsWm/MapServer/0`, kind: 'parcel',
+    authority: 'City of Alexandria — parcels', idFields: ['PID_GIS'], areaField: 'LAND_SF',
+  }],
+  zoning: { url: `${ALX}/alxZoningWm/MapServer/1`, codeFields: ['ZONING'], authority: 'City of Alexandria — zoning' },
+  streets: {
+    urls: [1, 2, 4, 5].map(i => `${VBMP}/VBMP_RCL/MapServer/${i}`),
+    nameFields: ['ST_FULL'], authority: 'VGIN — VBMP road centerlines',
+  },
+  contours: '3dep',
+}
+export const ALEXANDRIA_BUILDINGS = `${ALX}/alxBuildingsWm/MapServer/0`
+
+/**
+ * Where the zoning authority is not the body whose GIS drew the lot — a town
+ * inside a county — its OWN zone layer is read for the zone code. Each checked
+ * live on 2026-09-25; the Fairfax County layer carries the towns' zones tagged
+ * by JURISDICTION.
+ */
+export const ZONING_AUTHORITY_LAYERS: Record<string, { url: string; codeFields: string[]; authority: string; where?: string }> = {
+  rockville_md: { url: 'https://maps.rockvillemd.gov/arcgis/rest/services/Rockville_Planning_WebMerc/MapServer/8', codeFields: ['ZONE'], authority: 'City of Rockville — Zoning Districts' },
+  gaithersburg_md: { url: 'https://maps.gaithersburgmd.gov/arcgis/rest/services/layers/Zoning_SinglePart/MapServer/0', codeFields: ['Zoning'], authority: 'City of Gaithersburg — Chapter 24 zoning' },
+  vienna_va: { url: `${FFX_EUCLID}/GIS/Zoning/MapServer/0`, codeFields: ['ZONECODE'], where: "JURISDICTION = 'TOWN OF VIENNA'", authority: 'Fairfax County GIS — Town of Vienna zoning' },
+  herndon_va: { url: `${FFX_EUCLID}/GIS/Zoning/MapServer/0`, codeFields: ['ZONECODE'], where: "JURISDICTION = 'TOWN OF HERNDON'", authority: 'Fairfax County GIS — Town of Herndon zoning' },
+  falls_church_city_va: { url: 'https://services1.arcgis.com/2hmXRAz4ofcdQP6p/arcgis/rest/services/Parcels_zoning/FeatureServer/0', codeFields: ['ZoningCode'], authority: 'City of Falls Church — parcels with zoning' },
+  charles_md: { url: 'https://services7.arcgis.com/3BMWkdyrt45RNCrq/arcgis/rest/services/Zoning/FeatureServer/0', codeFields: ['ZONING'], authority: 'Charles County DPGM — official zoning map layer' },
 }

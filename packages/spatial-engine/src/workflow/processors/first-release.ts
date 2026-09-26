@@ -32,11 +32,11 @@ import { toDxfNcs } from '../../export/dxf-ncs'
 import { coverageForDetermined } from '../../jurisdictions/coverage'
 import {
   PG_CODE, connectorFor, resolveInJurisdiction, fetchContoursIn, zoneSourceOf,
-  recordedFrontBrlFt, type JurisdictionFindings, type GisConnector,
+  recordedFrontBrlFt, JURISDICTION_CONNECTORS, type JurisdictionFindings, type GisConnector,
 } from '../../jurisdictions/registry'
 import { profileFor, jurisdictionDisplayName, registerJurisdiction } from '../../jurisdictions/profiles'
 import {
-  determineJurisdiction, determinationFrom, type JurisdictionDetermination,
+  determineJurisdiction, determineJurisdictionAtPoint, determinationFrom, type JurisdictionDetermination,
 } from '../../jurisdictions/determination'
 import { DC_ZONING_SOURCE, type DcStructureType } from '../../jurisdictions/dc-zoning'
 import { suppliedSurveyFrom, ingestSuppliedSurvey, type SurveyIngestResult } from '../survey-intake'
@@ -131,6 +131,10 @@ export interface ResolvePropertyOutput {
   gisConnector?: string
   /** The geometric determination of who zones this land. */
   determination?: JurisdictionDetermination
+  /** `confirmed` when the parcel's own coordinates agree with the determination; otherwise flagged for the reviewer. */
+  jurisdictionVerification?: 'confirmed' | 'flagged'
+  /** What the reviewer must confirm about the jurisdiction. Never a reason to stop the order. */
+  jurisdictionFlags?: string[]
 }
 
 export interface ExistingConditionsOutput {
@@ -514,63 +518,119 @@ const resolveProperty: StageProcessor = async (ctx): Promise<StageResult> => {
   const raw = rawAddressFrom(ctx) ?? address
   const candidates = addressCandidates(raw)
 
-  // WHO ZONES THIS LAND was decided from geometry when the customer entered
-  // the address (`determination.ts`, persisted on the order). An order that
-  // predates that is determined now, the same way. Nothing is tried in turn,
-  // and no county is assumed.
-  const det = determinationFrom(ctx.subject.formData.jurisdiction)
-    ?? await determineJurisdiction(raw, { fetchImpl: ctx.capabilities.fetchImpl })
+  // THE ENGINE VERIFIES THE JURISDICTION; IT NEVER REJECTS OR HOLDS AN ORDER
+  // FOR IT. The intake determination (`determination.ts`, from the address's
+  // geometry) is where it starts. Once the lot is located it is checked again
+  // at the PARCEL's own coordinates, and the result is either CONFIRMED or
+  // carried as a FLAG the reviewer sees before seal. Nothing is assumed: a
+  // jurisdiction that cannot be established is flagged as such.
+  //
+  // What can still stop this stage is the LOT, not the jurisdiction: no
+  // locator placing the address at score >= 90 (a weak match draws the wrong
+  // lot), or more than one county placing it. Those go to staff with the reason.
+  const flags: string[] = []
+  const intake = determinationFrom(ctx.subject.formData.jurisdiction)
+  const det = intake ?? await determineJurisdiction(raw, { fetchImpl: ctx.capabilities.fetchImpl })
   if (!det.determined || !det.code) {
-    return {
-      status: 'BLOCKED', outputs: null,
-      blockers: [
-        `The jurisdiction of "${raw}" could not be determined: ${det.reason ?? 'no geographic match'}. ` +
-        'None is assumed. Correct the address on the order, or record the jurisdiction from a ' +
-        'recorded plat, and the stage re-runs.',
-      ],
-    }
+    flags.push(
+      `JURISDICTION NOT DETERMINED FROM THE ADDRESS: ${det.reason ?? 'no geographic match'} ` +
+      'It is established below from the located parcel; confirm it.')
   }
-  ctx.capabilities.trace({
-    workflowId: ctx.workflowId, job: ctx.job, phase: 'note',
-    detail: `jurisdiction ${det.code} (${det.name}) from the Census geocoder` +
-      (det.municipality ? `; municipality ${det.municipality.name}${det.municipality.zonesOwnLand ? ', zones its own land' : ', county zoning'}` : ''),
-  })
 
-  const connector = connectorFor(det)
+  const primary = det.determined && det.code ? connectorFor(det) : null
   let result: StageResult | null = null
-  if (connector.kind === 'pgatlas') result = await resolvePgProperty(ctx, address)
-  else if (connector.kind === 'arcgis') result = await resolveOtherProperty(ctx, connector, raw, candidates)
-  else {
-    return {
-      status: 'BLOCKED', outputs: null,
-      blockers: [`${det.name} was determined, but ${connector.reason} The order routes to staff.`],
+  let connector: Exclude<GisConnector, { kind: 'none' }> | null = null
+  if (primary && primary.kind !== 'none') {
+    connector = primary
+    result = primary.kind === 'pgatlas'
+      ? await resolvePgProperty(ctx, address)
+      : await resolveOtherProperty(ctx, primary, raw, candidates, det.code ?? undefined)
+  } else {
+    if (primary?.kind === 'none') flags.push(`${det.name}: ${primary.reason}`)
+    // No usable determination. Every jurisdiction's own locator is asked; each
+    // accepts only on its OWN parcel and zoning answer at score >= 90.
+    const found: { c: Exclude<GisConnector, { kind: 'none' }>; r: StageResult }[] = []
+    const all: Exclude<GisConnector, { kind: 'none' }>[] = [
+      { kind: 'pgatlas', code: PG_CODE },
+      ...Object.values(JURISDICTION_CONNECTORS).map(cfg => ({ kind: 'arcgis' as const, code: cfg.code, cfg, requireZoning: true })),
+    ]
+    for (const c of all) {
+      const r = c.kind === 'pgatlas'
+        ? await resolvePgProperty(ctx, address)
+        : await resolveOtherProperty(ctx, c, raw, candidates)
+      if (r?.outputs) found.push({ c, r })
     }
+    if (found.length > 1) {
+      return {
+        status: 'BLOCKED', outputs: null,
+        blockers: [
+          `"${raw}" names no locality the geocoder could place, and it matches a lot in more than one ` +
+          `jurisdiction (${found.map(f => jurisdictionDisplayName(f.c.code)).join(', ')}). Drawing either ` +
+          'would be a guess at WHICH LOT; staff pick the lot, and the order continues.',
+        ],
+      }
+    }
+    if (found.length === 1) ({ c: connector, r: result } = found[0])
   }
 
-  if (!result) {
+  if (!result || !connector) {
     return {
       status: 'BLOCKED', outputs: null,
       blockers: [
-        `The address is in ${det.name}, but ${connector.kind === 'arcgis' ? connector.cfg.name : "Prince George's County"}'s ` +
-        `own locator did not match "${address}" at or above the minimum score of 90 (tried: ` +
-        `${candidates.map(c => `"${c}"`).join(', ')}). A weak match would site the plan on the wrong ` +
-        'lot, so none is accepted. If the address is new, its address point may not be published ' +
-        'yet — a recorded plat resolves it.',
+        `No locator placed the lot at "${address}" at or above the minimum score of 90 (tried: ` +
+        `${candidates.map(c => `"${c}"`).join(', ')}${det.name ? `; the address is in ${det.name}` : ''}). ` +
+        'A weak match would site the plan on the wrong lot, so none is accepted. Staff locate the ' +
+        'lot — from a recorded plat if the address point is not yet published — and the order continues.',
       ],
     }
   }
+  if (!result.outputs) return result
+
+  // Verify at the parcel. The lot's own coordinates are stronger evidence than
+  // the address text the intake geocoded, so where they disagree the parcel's
+  // answer is used and the disagreement is flagged.
+  const out = result.outputs as ResolvePropertyOutput
+  let atLot: JurisdictionDetermination | null = null
+  try {
+    atLot = await determineJurisdictionAtPoint(out.easting2248, out.northing2248, { fetchImpl: ctx.capabilities.fetchImpl })
+  } catch { atLot = null }
+  let final: JurisdictionDetermination | null = det.determined && det.code ? det : null
+  let verification: ResolvePropertyOutput['jurisdictionVerification']
+  if (atLot?.determined && atLot.code) {
+    if (final && final.code === atLot.code) {
+      verification = 'confirmed'
+    } else {
+      verification = 'flagged'
+      flags.push(final
+        ? `JURISDICTION CHANGED AT THE PARCEL: the address was placed in ${final.name}, but the located ` +
+          `parcel lies in ${atLot.name}. The parcel's jurisdiction is used; confirm it.`
+        : `Jurisdiction established from the located parcel: ${atLot.name}. Confirm it.`)
+      final = { ...atLot, matchedAddress: final?.matchedAddress ?? out.matchedAddress }
+    }
+  } else {
+    verification = 'flagged'
+    flags.push(final
+      ? `The jurisdiction (${final.name}) was not independently confirmed at the parcel — the Census ` +
+        'service did not answer for its coordinates. Confirm it.'
+      : `JURISDICTION UNCONFIRMED: the lot was located by ${jurisdictionDisplayName(connector.code)}'s ` +
+        'own GIS, but no geocoder confirmed who zones it. Treated as that jurisdiction; confirm it.')
+  }
+
   // The jurisdiction of record is the ZONING AUTHORITY, which may differ from
   // whose GIS drew the lot (a Rockville lot, mapped by Montgomery County).
-  if (result.status === 'COMPLETED' || result.outputs) {
-    const out = result.outputs as ResolvePropertyOutput
-    out.jurisdictionCode = det.code
-    out.gisConnector = connector.code
-    out.determination = det
-    if (det.code !== connector.code) {
-      // The county's zone layer does not state a town's zoning.
-      out.zoneCode = null
-    }
-  }
+  const code = final?.code ?? connector.code
+  out.jurisdictionCode = code
+  out.gisConnector = connector.code
+  if (final) out.determination = final
+  out.jurisdictionVerification = verification
+  out.jurisdictionFlags = flags
+  // The registry reads a town's OWN zone layer (or SDAT zoning for a Maryland
+  // lot with no local layer). PGAtlas does not: Laurel's zone is not PG's.
+  if (code !== connector.code && connector.kind === 'pgatlas') out.zoneCode = null
+  ctx.capabilities.trace({
+    workflowId: ctx.workflowId, job: ctx.job, phase: 'note',
+    detail: `jurisdiction ${code} ${verification}` + (flags.length ? ` — ${flags.join(' | ')}` : ''),
+  })
   return result
 }
 
@@ -584,6 +644,8 @@ const resolveProperty: StageProcessor = async (ctx): Promise<StageResult> => {
  */
 async function resolveOtherProperty(
   ctx: StageContext, connector: Extract<GisConnector, { kind: 'arcgis' }>, raw: string, candidates: string[],
+  /** The zoning authority (determination code); defaults to the connector's own. */
+  authority?: string,
 ): Promise<StageResult | null> {
   const code = connector.code
   const quadrant = raw.match(/\b(NW|NE|SW|SE)\b/i)?.[1]?.toUpperCase() ?? null
@@ -596,6 +658,7 @@ async function resolveOtherProperty(
   for (const form of forms) {
     const r = await resolveInJurisdiction(code, form, {
       fetchImpl: ctx.capabilities.fetchImpl, trace, cfg: connector.cfg, requireZoning: connector.requireZoning,
+      authority,
     })
     if (!r) continue
     const { site, findings } = r
@@ -1102,7 +1165,10 @@ async function emitCadExports(
 const runDraftQc: StageProcessor = async (ctx): Promise<StageResult> => {
   const pkg = lotPackageFrom(ctx)
   const render = requirePriorOutput<RenderOutput>(ctx, 'siteplan.render_exports')
+  const prop = requirePriorOutput<ResolvePropertyOutput>(ctx, 'siteplan.resolve_property')
   const qc = pkg.checklist
+  // Jurisdiction flags go first so the ten-item cap never drops them.
+  const jurisdictionFlags = (prop.jurisdictionFlags ?? []).map((message, i) => ({ code: `JURISDICTION_${i + 1}`, message }))
 
   // Generation is never gated on a seal. Blocking findings are DRAWING defects;
   // pending_seal items are work only a licensed human can do.
@@ -1114,7 +1180,10 @@ const runDraftQc: StageProcessor = async (ctx): Promise<StageResult> => {
       blocking: render.frameFailures.map(f => ({
         code: 'SHEET_FRAME_INCOMPLETE', message: `${f.sheet}: ${f.missing.join(', ')}`,
       })),
-      pendingSeal: pkg.beforeSeal.slice(0, 10).map((b, i) => ({ code: `PENDING_${i + 1}`, message: b })),
+      pendingSeal: [
+        ...jurisdictionFlags,
+        ...pkg.beforeSeal.slice(0, 10).map((b, i) => ({ code: `PENDING_${i + 1}`, message: b })),
+      ],
       summary: qc.summary,
     } satisfies DraftQcOutput,
   }

@@ -28,7 +28,8 @@ describe('whose GIS draws a determined jurisdiction', () => {
 
   it('falls back to the statewide fabric, never to another county', () => {
     expect(connectorFor(det({ code: 'howard_md', countyCode: 'howard_md', state: 'MD' }))).toMatchObject({ code: 'maryland_statewide' })
-    expect(connectorFor(det({ code: 'alexandria_city_va', countyCode: 'alexandria_city_va', state: 'VA' }))).toMatchObject({ code: 'virginia_statewide' })
+    expect(connectorFor(det({ code: 'manassas_city_va', countyCode: 'manassas_city_va', state: 'VA' }))).toMatchObject({ code: 'virginia_statewide' })
+    expect(connectorFor(det({ code: 'alexandria_city_va', countyCode: 'alexandria_city_va', state: 'VA' }))).toMatchObject({ code: 'alexandria_city_va' })
     expect(connectorFor(det({ code: 'new_castle_de', countyCode: 'new_castle_de', state: 'DE' })).kind).toBe('none')
   })
 

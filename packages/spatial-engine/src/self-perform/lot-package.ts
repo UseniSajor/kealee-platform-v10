@@ -34,7 +34,7 @@ import { fetchMdParcelAtPoint } from '../jurisdictions/md-imap'
 import { profileFor, jurisdictionDisplayName, licensedSurveyor } from '../jurisdictions/profiles'
 import type { NoaaSite } from '../jurisdictions/noaa-atlas14'
 import {
-  countyStandard, countyFrontSetback, countyStandardRows, normaliseCountyZone,
+  countyStandard, countyFrontSetback, countyStandardRows, normaliseCountyZone, hasTranscribedStandards,
 } from '../jurisdictions/county-zoning'
 import {
   dcEnvelope, dcFrontSetback, dcStandardRows, DC_ZONING_SOURCE,
@@ -337,7 +337,7 @@ export function readZoningEnvelope(
   } = {},
 ): ZoningEnvelope {
   if (opts.jurisdictionCode === 'district_of_columbia') return readDcZoningEnvelope(zoneCode, opts)
-  if (opts.jurisdictionCode && ['montgomery_md', 'fairfax_va', 'arlington_va'].includes(opts.jurisdictionCode)) {
+  if (opts.jurisdictionCode && hasTranscribedStandards(opts.jurisdictionCode)) {
     return readCountyZoningEnvelope(opts.jurisdictionCode, zoneCode, opts.establishedBuildingLine ?? null)
   }
   // Any other determined jurisdiction: its ordinance is not encoded. Falling

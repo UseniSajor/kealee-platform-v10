@@ -49,3 +49,30 @@ describe('Montgomery established building line', () => {
   })
 })
 
+
+describe('the added jurisdictions', () => {
+  it('finds a code as published before normalising it (Charles "RM" is not "R-M")', () => {
+    expect(countyStandard('charles_md', 'RM')?.frontFt).toBe(25)
+    expect(countyStandard('howard_md', 'R12')?.sideFt).toBe(7.5)
+    expect(countyStandard('alexandria_city_va', 'R 8')?.zone).toBe('R-8')
+  })
+
+  it('evaluates Alexandria setback ratios at the 30 ft maximum height', () => {
+    const s = countyStandard('alexandria_city_va', 'R-8')!
+    expect([s.sideFt, s.rearFt]).toEqual([15, 30])
+    expect(countyStandard('alexandria_city_va', 'R-5')!.sideFt).toBe(10)
+  })
+
+  it('applies Alexandria\'s contextual front, never more than the cap', () => {
+    const s = countyStandard('alexandria_city_va', 'R-8')!
+    expect(countyFrontSetback('alexandria_city_va', s, { averageFt: 38, minFt: 30.3, applies: true, sampleCount: 2, basis: '' }).ft).toBe(30)
+    expect(countyFrontSetback('alexandria_city_va', s, { averageFt: 18, minFt: 12, applies: true, sampleCount: 2, basis: '' }).ft).toBe(12)
+  })
+
+  it('applies Rockville\'s established line only where the block face has one', () => {
+    const s = countyStandard('rockville_md', 'R-60')!
+    expect(countyFrontSetback('rockville_md', s, { averageFt: 40, medianFt: 40, applies: true, sampleCount: 6, basis: '' }).ft).toBe(40)
+    expect(countyFrontSetback('rockville_md', s, { averageFt: 70, medianFt: 70, applies: true, sampleCount: 6, basis: '' }).ft).toBe(50)
+    expect(countyFrontSetback('rockville_md', s, { averageFt: 26, medianFt: 26, applies: false, sampleCount: 6, basis: '' }).ft).toBe(25)
+  })
+})

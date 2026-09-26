@@ -65,6 +65,17 @@ export interface CountyZoneStandard {
   heightFt: number
   citation: string
   notes: string[]
+  /**
+   * A front setback set by the neighbours rather than by a number:
+   *   contextual_range  — within the range of the abutting developed lots
+   *                       sharing the frontage; never more than `capFt`
+   *                       required (Alexandria §3-x06(A)(1)).
+   *   established_line  — where more than half the lots on that side between
+   *                       intersecting streets sit at a different setback,
+   *                       conform to it up to `capFt` (Rockville §25.10.05.e.2).
+   * `frontFt` is then the figure drawn when the neighbours cannot be measured.
+   */
+  frontRule?: { kind: 'contextual_range' | 'established_line'; capFt: number; citation: string }
 }
 
 const MC = (s: string) => `Montgomery County Code Ch. 59, §${s}`
@@ -124,29 +135,157 @@ export const ARLINGTON_STANDARDS: Record<string, CountyZoneStandard> = {
   'R2-7': arl('R2-7', '5.9', 5000, 50, 40, 30, 2520),
 }
 
+// ── Cities, towns and further counties — transcribed 2026-09-25 ─────────────
+//
+// Each read from the jurisdiction's own current code: Municode's latest
+// publication where the jurisdiction publishes there (date of the supplement
+// in the citation), the County's attachment otherwise. Single-family detached
+// standards only; every other zone is not drawn.
+
+/**
+ * Alexandria: side and rear yards are SETBACK RATIOS — horizontal distance to
+ * the height of that part of the building (§2-193) — with a floor. Drawn at
+ * the zone's 30 ft maximum height, which is the restrictive reading; a lower
+ * wall may sit closer, by the ratio.
+ */
+const alx = (zone: string, section: string, area: number, width: number, cap: number,
+  sideRatio: number, sideMin: number, rearMin: number): CountyZoneStandard => {
+  const h = 30
+  return {
+    zone, lotAreaSqFt: area, lotWidthFt: width,
+    frontFt: cap,
+    sideFt: Math.max(sideMin, Math.round(h * sideRatio * 10) / 10), sideSumFt: null,
+    rearFt: Math.max(rearMin, h), coveragePct: null, heightFt: h,
+    citation: `Alexandria Zoning Ordinance §${section} (Municode, Supp. 103, 2026-08-14)`,
+    notes: [
+      `Side yards: setback ratio 1:${Math.round(1 / sideRatio)}, min ${sideMin} ft; rear 1:1, min ${rearMin} ft (§2-193). ` +
+      'Drawn at the 30 ft maximum height; a lower wall may sit closer by the ratio.',
+      'Floor area ratio, not lot coverage, limits bulk here; the FAR is a design check, not a line on the plan.',
+    ],
+    frontRule: { kind: 'contextual_range', capFt: cap, citation: `Alexandria Zoning Ordinance §${section}(A)(1); "contextual block face" §2-122.1` },
+  }
+}
+
+export const ALEXANDRIA_STANDARDS: Record<string, CountyZoneStandard> = {
+  'R-20': alx('R-20', '3-106', 20000, 100, 40, 1 / 2, 12, 12),
+  'R-12': alx('R-12', '3-206', 12000, 80, 35, 1 / 2, 10, 10),
+  'R-8': alx('R-8', '3-306', 8000, 65, 30, 1 / 2, 8, 8),
+  'R-5': alx('R-5', '3-406', 5000, 50, 20, 1 / 3, 7, 7),
+  'R-2-5': alx('R-2-5', '3-506', 5000, 50, 20, 1 / 3, 7, 7),
+}
+
+const CH = 'Charles County Code Ch. 297, Figure VI (Attachment 3, Supp. 8, Jul 2020)'
+export const CHARLES_STANDARDS: Record<string, CountyZoneStandard> = {
+  'RM': { zone: 'RM', lotAreaSqFt: 12000, lotWidthFt: 60, frontFt: 25, sideFt: 8, sideSumFt: 20, rearFt: 25, coveragePct: 35, heightFt: 36, citation: `${CH}-4`, notes: ['Residential row of the RM schedule.'] },
+  'RH': { zone: 'RH', lotAreaSqFt: 8000, lotWidthFt: 50, frontFt: 20, sideFt: 8, sideSumFt: 20, rearFt: 25, coveragePct: 40, heightFt: 36, citation: `${CH}-4`, notes: ['Residential row of the RH schedule.'] },
+  'RR': { zone: 'RR', lotAreaSqFt: 30000, lotWidthFt: 100, frontFt: 40, sideFt: 20, sideSumFt: 40, rearFt: 40, coveragePct: 25, heightFt: 36, citation: `${CH}-2`, notes: ['Residential row of the RR schedule.'] },
+  'RC': { zone: 'RC', lotAreaSqFt: 130680, lotWidthFt: 120, frontFt: 50, sideFt: 30, sideSumFt: 60, rearFt: 50, coveragePct: null, heightFt: 36, citation: `${CH}-2`, notes: ['Residential row of the RC schedule (3 acres). Lots under 3 acres existing before 2000-10-31 have their own row.'] },
+}
+
+const RK = (z: string) => `City of Rockville Code §25.10.05 (Municode, 2026-08-06), ${z} row`
+const rk = (zone: string, area: number, width: number, front: number, cap: number, side: number, rear: number, height: number, cov: number): CountyZoneStandard => ({
+  zone, lotAreaSqFt: area, lotWidthFt: width, frontFt: front, sideFt: side, sideSumFt: null,
+  rearFt: rear, coveragePct: cov, heightFt: height, citation: RK(zone),
+  notes: ['Side yard where a street abuts is larger (table column "where street abuts").'],
+  frontRule: { kind: 'established_line', capFt: cap, citation: 'City of Rockville Code §25.10.05.e.2' },
+})
+export const ROCKVILLE_STANDARDS: Record<string, CountyZoneStandard> = {
+  'R-400': rk('R-400', 40000, 150, 50, 100, 20, 40, 40, 15),
+  'R-200': rk('R-200', 20000, 100, 35, 100, 13, 35, 40, 25),
+  'R-150': rk('R-150', 15000, 90, 35, 60, 13, 30, 40, 25),
+  'R-90': rk('R-90', 9000, 80, 30, 60, 11, 25, 35, 25),
+  'R-75': rk('R-75', 7500, 70, 25, 50, 9, 20, 35, 35),
+  'R-60': rk('R-60', 6000, 60, 25, 50, 8, 20, 35, 35),
+}
+
+const GB = (s: string) => `City of Gaithersburg Code §${s} (Ord. O-5-24; Municode, 2026-07-17)`
+export const GAITHERSBURG_STANDARDS: Record<string, CountyZoneStandard> = {
+  'R-90': { zone: 'R-90', lotAreaSqFt: 7500, lotWidthFt: 50, frontFt: 20, sideFt: 5, sideSumFt: null, rearFt: 20, coveragePct: 50, heightFt: 38, citation: GB('24-3.3'), notes: ['Height 38 ft and 3 stories. Width is the minimum lot frontage.'] },
+  'R-6': { zone: 'R-6', lotAreaSqFt: 3000, lotWidthFt: 30, frontFt: 10, sideFt: 10, sideSumFt: null, rearFt: 5, coveragePct: 50, heightFt: 38, citation: GB('24-3.4'), notes: ['"At least one side setback: 10 feet" — drawn 10 ft both sides, the restrictive reading.'] },
+}
+
+const VN = (s: string) => `Town of Vienna Code §${s} (Ord. of 2024-11-22; Municode, 2026-07-10)`
+export const VIENNA_STANDARDS: Record<string, CountyZoneStandard> = {
+  'RS-16': { zone: 'RS-16', lotAreaSqFt: 16000, lotWidthFt: 65, frontFt: 35, sideFt: 15, sideSumFt: null, rearFt: 35, coveragePct: 25, heightFt: 35, citation: VN('18-217'), notes: ['2.5 stories max. Corner side yard 25 ft.'] },
+  'RS-12.5': { zone: 'RS-12.5', lotAreaSqFt: 12500, lotWidthFt: 65, frontFt: 30, sideFt: 15, sideSumFt: null, rearFt: 35, coveragePct: 25, heightFt: 35, citation: VN('18-218'), notes: ['2.5 stories max.'] },
+  'RS-10': { zone: 'RS-10', lotAreaSqFt: 10000, lotWidthFt: 60, frontFt: 25, sideFt: 12, sideSumFt: null, rearFt: 35, coveragePct: 25, heightFt: 35, citation: VN('18-219'), notes: ['2.5 stories max.'] },
+}
+
+const HN = (s: string) => `Town of Herndon Code §${s} (Municode, 2026-09-04)`
+export const HERNDON_STANDARDS: Record<string, CountyZoneStandard> = {
+  'R-15': { zone: 'R-15', lotAreaSqFt: 15000, lotWidthFt: 90, frontFt: 45, sideFt: 15, sideSumFt: null, rearFt: 25, coveragePct: 25, heightFt: 35, citation: HN('78-30.1'), notes: ['Front may be reduced in the HP overlay (§78-60.3(e)); pipestem lots 35 ft.'] },
+  'R-10': { zone: 'R-10', lotAreaSqFt: 10000, lotWidthFt: 75, frontFt: 35, sideFt: 10, sideSumFt: null, rearFt: 25, coveragePct: 25, heightFt: 35, citation: HN('78-30.2'), notes: ['Front may be reduced in the HP overlay; pipestem lots 25 ft.'] },
+}
+
+const FC = (d: string) => `City of Falls Church Code Ch. 48, Art. IV, ${d} (Municode, 2026-09-11)`
+export const FALLS_CHURCH_STANDARDS: Record<string, CountyZoneStandard> = {
+  'R-1A': { zone: 'R-1A', lotAreaSqFt: 11250, lotWidthFt: 75, frontFt: 30, sideFt: 15, sideSumFt: null, rearFt: 40, coveragePct: 25, heightFt: 35, citation: FC('Div. 2'), notes: ['Height the lesser of 35 ft or 2½ stories; impervious coverage 35%.'] },
+  'R-1B': { zone: 'R-1B', lotAreaSqFt: 7500, lotWidthFt: 60, frontFt: 25, sideFt: 10, sideSumFt: null, rearFt: 30, coveragePct: 25, heightFt: 35, citation: FC('Div. 3'), notes: ['Height the lesser of 35 ft or 2½ stories.'] },
+}
+
+const HW = (s: string) => `Howard County Zoning Regulations §${s} (Municode, through Bill 3-2026)`
+export const HOWARD_STANDARDS: Record<string, CountyZoneStandard> = {
+  'R-20': { zone: 'R-20', lotAreaSqFt: 20000, lotWidthFt: 60, frontFt: 50, sideFt: 10, sideSumFt: null, rearFt: 30, coveragePct: null, heightFt: 34, citation: HW('108.0.D'), notes: ['Front 50 ft from a public street right-of-way; 30 ft where the street was constructed after 1993-10-18 — drawn at 50, the restrictive reading.'] },
+  'R-12': { zone: 'R-12', lotAreaSqFt: 12000, lotWidthFt: 60, frontFt: 20, sideFt: 7.5, sideSumFt: null, rearFt: 30, coveragePct: null, heightFt: 34, citation: HW('109.0.D'), notes: ['Semi-detached: 15 ft one side.'] },
+}
+
 const TABLES: Record<string, Record<string, CountyZoneStandard>> = {
   montgomery_md: MONTGOMERY_STANDARDS,
   fairfax_va: FAIRFAX_STANDARDS,
   arlington_va: ARLINGTON_STANDARDS,
+  alexandria_city_va: ALEXANDRIA_STANDARDS,
+  charles_md: CHARLES_STANDARDS,
+  rockville_md: ROCKVILLE_STANDARDS,
+  gaithersburg_md: GAITHERSBURG_STANDARDS,
+  vienna_va: VIENNA_STANDARDS,
+  herndon_va: HERNDON_STANDARDS,
+  falls_church_city_va: FALLS_CHURCH_STANDARDS,
+  howard_md: HOWARD_STANDARDS,
+}
+
+/** Jurisdictions whose single-family standards are transcribed here. */
+export function hasTranscribedStandards(code: string): boolean {
+  return Boolean(TABLES[code])
 }
 
 /** "R60", "R-60", "r-60 " → "R-60". The map layers spell zones both ways. */
 export function normaliseCountyZone(raw: string): string {
   const z = raw.trim().toUpperCase().replace(/\s+/g, '')
   if (/^R2-?7$/.test(z)) return 'R2-7'
+  if (/^R-?2-5$/.test(z)) return 'R-2-5'
   const m = z.match(/^(RE|R)-?(\d+C?|[A-Z])$/)
   return m ? `${m[1]}-${m[2]}` : z
 }
 
 export function countyStandard(code: string, zone: string): CountyZoneStandard | null {
-  return TABLES[code]?.[normaliseCountyZone(zone)] ?? null
+  const t = TABLES[code]
+  if (!t) return null
+  // The code as published first: Charles's "RM" is not "R-M". Then the
+  // normalised spelling, for layers that drop the hyphen ("R60", "R 8").
+  const exact = zone.trim().toUpperCase().replace(/\s+/g, '')
+  return t[exact] ?? t[normaliseCountyZone(zone)] ?? null
 }
 
 /** The front setback to draw, with a measured contextual line where the ordinance has one. */
 export function countyFrontSetback(
   code: string, std: CountyZoneStandard,
-  measured: { averageFt: number | null; applies: boolean; sampleCount: number; basis: string } | null,
+  measured: { averageFt: number | null; applies: boolean; sampleCount: number; basis: string; minFt?: number | null; medianFt?: number | null } | null,
 ): { ft: number; basis: string } {
+  const rule = std.frontRule
+  if (rule?.kind === 'contextual_range') {
+    if (measured && measured.sampleCount >= 1 && measured.minFt != null) {
+      const ft = Math.min(measured.minFt, rule.capFt)
+      return { ft, basis: `${rule.citation}: within the abutting lots' range (min ${measured.minFt} ft, ${measured.sampleCount} measured; ${measured.basis}); no more than ${rule.capFt} ft required; drawn at ${ft} ft` }
+    }
+    return { ft: rule.capFt, basis: `${rule.citation}: abutting lots not measurable; drawn at the ${rule.capFt} ft cap — the range of the abutting lots governs and may be less` }
+  }
+  if (rule?.kind === 'established_line') {
+    if (measured?.applies && measured.medianFt != null && measured.medianFt > std.frontFt) {
+      const ft = Math.min(measured.medianFt, rule.capFt)
+      return { ft, basis: `${rule.citation}: established setback ${measured.medianFt} ft on this block face (${measured.basis}), up to ${rule.capFt} ft; drawn at ${ft} ft` }
+    }
+    return { ft: std.frontFt, basis: `${std.frontFt} ft (${std.citation}); established setback ${measured ? 'not in effect on this block face' : 'not measured'} (${rule.citation})` }
+  }
   if (code === 'montgomery_md' && measured?.applies && measured.averageFt != null && measured.averageFt > std.frontFt) {
     return {
       ft: measured.averageFt,

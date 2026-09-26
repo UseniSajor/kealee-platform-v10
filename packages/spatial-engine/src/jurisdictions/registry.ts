@@ -29,11 +29,12 @@ import { measureBlockFace, type BlockFaceResult, type StructureTypeEvidence } fr
 import type { JurisdictionDetermination } from './determination'
 import {
   MONTGOMERY_GIS, FAIRFAX_GIS, ARLINGTON_GIS, MARYLAND_STATEWIDE_GIS, VIRGINIA_STATEWIDE_GIS,
+  ALEXANDRIA_GIS, ALEXANDRIA_BUILDINGS, ZONING_AUTHORITY_LAYERS,
   montgomeryDetachedHousesAround, montgomeryRecordPlat,
   virginiaConstraintsOn, type EnvironmentalFinding,
 } from './dmv-counties-gis'
 import { countyStandard } from './county-zoning'
-import { queryAround, parcelFromFeature, type JurisdictionParcel } from './arcgis-jurisdiction'
+import { queryAround, queryAtPoint, parcelFromFeature, type JurisdictionParcel, type JurisdictionZoning } from './arcgis-jurisdiction'
 
 export const PG_CODE = 'prince_georges_md'
 
@@ -43,6 +44,7 @@ export const JURISDICTION_CONNECTORS: Record<string, ArcGisJurisdictionConfig> =
   [MONTGOMERY_GIS.code]: MONTGOMERY_GIS,
   [FAIRFAX_GIS.code]: FAIRFAX_GIS,
   [ARLINGTON_GIS.code]: ARLINGTON_GIS,
+  [ALEXANDRIA_GIS.code]: ALEXANDRIA_GIS,
 }
 
 /**
@@ -79,6 +81,8 @@ export function connectorFor(det: JurisdictionDetermination): GisConnector {
 export interface EstablishedBuildingLine {
   /** Average front setback of the qualifying detached houses. */
   averageFt: number | null
+  medianFt?: number | null
+  minFt?: number | null
   /** 2+ houses and more than half set back beyond the zone minimum. */
   applies: boolean
   sampleCount: number
@@ -111,7 +115,11 @@ export interface ResolvedJurisdictionSite {
  */
 export async function resolveInJurisdiction(
   code: string, address: string,
-  opts: { fetchImpl?: typeof fetch; trace?: (msg: string) => void; cfg?: ArcGisJurisdictionConfig; requireZoning?: boolean } = {},
+  opts: {
+    fetchImpl?: typeof fetch; trace?: (msg: string) => void; cfg?: ArcGisJurisdictionConfig; requireZoning?: boolean
+    /** The ZONING authority (the determination's code) — whose rules the findings serve. */
+    authority?: string
+  } = {},
 ): Promise<ResolvedJurisdictionSite | null> {
   const cfg = opts.cfg ?? JURISDICTION_CONNECTORS[code]
   if (!cfg) return null
@@ -126,13 +134,19 @@ export async function resolveInJurisdiction(
     return null
   }
   const findings: JurisdictionFindings = {}
+  const authority = opts.authority ?? code
+  // The zone code is the AUTHORITY's: a town inside a county reads its own
+  // zone layer; a Maryland lot with no local layer reads the SDAT record.
+  const authorityZone = authority !== code ? await readAuthorityZone(authority, site, opts) : null
+  if (authority !== code) site.zoning = authorityZone
   const soft = <T>(p: Promise<T>, what: string): Promise<T | null> =>
     p.catch((e: unknown) => { opts.trace?.(`${what} unavailable: ${e instanceof Error ? e.message : String(e)}`); return null })
 
   const [adjacent] = await Promise.all([
     soft(fetchJurisdictionAdjacentParcels(cfg, site.parcel, opts), 'adjacent parcels'),
     (async () => {
-      if (code === MONTGOMERY_GIS.code) {
+      const std = site.zoning ? countyStandard(authority, site.zoning.zoneCode) : null
+      if (authority === MONTGOMERY_GIS.code) {
         const [ebl, plat] = await Promise.all([
           soft(measureEstablishedBuildingLine(site, opts), 'established building line'),
           soft(montgomeryRecordPlat(site.address.easting2248, site.address.northing2248, opts), 'record plat index'),
@@ -140,7 +154,23 @@ export async function resolveInJurisdiction(
         Object.assign(findings, { establishedBuildingLine: ebl, recordPlat: plat })
         return
       }
+      if (std?.frontRule) {
+        // Rockville's established line (a Montgomery-mapped town) and
+        // Alexandria's contextual range, measured from the neighbours.
+        const footprints = authority === ALEXANDRIA_GIS.code
+          ? (cx: number, cy: number, r: number) => queryAround(ALEXANDRIA_BUILDINGS, cx, cy, r, opts.fetchImpl ?? fetch, { outFields: 'OBJECTID' })
+              .then(x => x.features.flatMap((f: any) => (f.geometry?.rings ?? []).slice(0, 1).map((rg: number[][]) => rg.map(p => [p[0], p[1]] as Position))))
+          : (cx: number, cy: number, r: number) => montgomeryDetachedHousesAround(cx, cy, r, opts)
+        findings.establishedBuildingLine = await soft(measureFrontContext(site, cfg, {
+          reachFt: std.frontRule.kind === 'contextual_range' ? 150 : 600,
+          abuttingOnly: std.frontRule.kind === 'contextual_range',
+          stdFrontFt: std.frontFt,
+          footprints,
+          source: authority === ALEXANDRIA_GIS.code ? 'City of Alexandria building footprints and parcels' : 'M-NCPPC building footprints (detached houses)',
+        }, opts), 'front context')
+      }
       if (code === FAIRFAX_GIS.code || code === ARLINGTON_GIS.code) {
+        // The county's Chesapeake Bay layers also cover the towns inside it.
         findings.constraints = await virginiaConstraintsOn(code, site.parcel!.ring.coordinates, opts)
         return
       }
@@ -232,5 +262,89 @@ export async function measureEstablishedBuildingLine(
     applies,
     sampleCount: n,
     basis: `${beyond} of ${n} set back beyond ${std.frontFt} ft, within 300 ft on the same side`,
+  }
+}
+
+/**
+ * The zone code from the zoning AUTHORITY's own layer, for a lot drawn from a
+ * county's or the state's GIS. Maryland lots with no local layer take the
+ * zoning recorded on the SDAT assessment record carried by the statewide
+ * parcel fabric — labelled as such, because it can lag the official map.
+ */
+async function readAuthorityZone(
+  authority: string, site: JurisdictionSite, opts: { fetchImpl?: typeof fetch; trace?: (msg: string) => void },
+): Promise<JurisdictionZoning | null> {
+  const layer = ZONING_AUTHORITY_LAYERS[authority]
+  const doFetch = opts.fetchImpl ?? fetch
+  if (layer) {
+    try {
+      const fs = await queryAtPoint(layer.url, site.address.easting2248, site.address.northing2248, doFetch, { geometry: false, where: layer.where })
+      const a = fs[0]?.attributes ?? {}
+      const code = layer.codeFields.map(k => a[k]).find(v => v != null && String(v).trim() !== '')
+      if (code) {
+        return { zoneCode: String(code).trim(), groupName: null, classUrl: null,
+          source: { authority: layer.authority, endpoint: layer.url, retrievedAt: new Date().toISOString() } }
+      }
+    } catch (e) {
+      opts.trace?.(`zoning layer for ${authority} unavailable: ${e instanceof Error ? e.message : String(e)}`)
+    }
+  }
+  const sdat = site.parcel?.attributes?.ZONING
+  if (sdat != null && String(sdat).trim() !== '') {
+    return { zoneCode: String(sdat).trim(), groupName: null, classUrl: null,
+      source: { authority: 'SDAT assessment record (via the parcel fabric) — may lag the official zoning map', endpoint: site.parcel!.source.endpoint, retrievedAt: new Date().toISOString() } }
+  }
+  return null
+}
+
+/**
+ * A neighbour-set front setback, measured: the front setbacks of the
+ * principal buildings on nearby lots that front the same street on the same
+ * side. `abuttingOnly` restricts it to the lots touching the subject —
+ * Alexandria's "contextual block face" is the ABUTTING developed lots.
+ */
+export async function measureFrontContext(
+  site: JurisdictionSite, cfg: ArcGisJurisdictionConfig,
+  spec: {
+    reachFt: number; abuttingOnly: boolean; stdFrontFt: number; source: string
+    footprints: (cx: number, cy: number, r: number) => Promise<Position[][]>
+  },
+  opts: { fetchImpl?: typeof fetch } = {},
+): Promise<EstablishedBuildingLine | null> {
+  if (!site.parcel) return null
+  const doFetch = opts.fetchImpl ?? fetch
+  const ring = site.parcel.ring.coordinates
+  const xs = ring.map(c => c[0]), ys = ring.map(c => c[1])
+  const cx = (Math.min(...xs) + Math.max(...xs)) / 2, cy = (Math.min(...ys) + Math.max(...ys)) / 2
+  const reach = spec.reachFt + Math.max(Math.max(...xs) - Math.min(...xs), Math.max(...ys) - Math.min(...ys)) / 2
+  const layer = cfg.parcels.find(l => l.kind === site.parcel!.kind) ?? cfg.parcels[0]
+  const [lots0, houses] = await Promise.all([
+    queryAround(layer.url, cx, cy, reach, doFetch).then(r => r.features
+      .map((f: any) => parcelFromFeature(f, layer))
+      .filter((p: JurisdictionParcel | null): p is JurisdictionParcel => p !== null)),
+    spec.footprints(cx, cy, reach + 60),
+  ])
+  const touches = (other: Position[]) => other.some(p => ring.some(q => Math.hypot(p[0] - q[0], p[1] - q[1]) < 2))
+  const lots = spec.abuttingOnly ? lots0.filter(l => touches(l.ring.coordinates)) : lots0
+  const token = site.address.matchedAddress.toUpperCase().replace(/^\s*\d+[A-Z]?\s+/, '').split(/\s+/)[0] ?? ''
+  const fronting = site.streets.filter(s => (s.name ?? '').toUpperCase().split(/\s+/)[0] === token).flatMap(s => s.paths)
+  const other = site.streets.filter(s => (s.name ?? '').toUpperCase().split(/\s+/)[0] !== token).flatMap(s => s.paths)
+  const r = measureBlockFace({
+    subject: { id: site.parcel.propId ?? 'subject', ring },
+    blockLots: lots.map(l => ({ id: l.propId ?? '', ring: l.ring.coordinates })),
+    streetPaths: fronting, otherStreetPaths: other, footprints: houses, source: spec.source,
+  })
+  const vals = r.samples.map(x => x.setbackFt).sort((a, b) => a - b)
+  const n = vals.length
+  const beyond = vals.filter(v => v > spec.stdFrontFt + 1).length
+  return {
+    averageFt: r.meanFt,
+    medianFt: n ? vals[Math.floor(n / 2)] : null,
+    minFt: n ? vals[0] : null,
+    applies: spec.abuttingOnly ? n >= 1 : n >= 2 && beyond > n / 2,
+    sampleCount: n,
+    basis: spec.abuttingOnly
+      ? `${n} abutting lot(s) fronting the same street measured`
+      : `${beyond} of ${n} set back beyond ${spec.stdFrontFt} ft on the same side`,
   }
 }
