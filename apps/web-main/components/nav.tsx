@@ -227,12 +227,12 @@ export function SiteNav() {
             {/* Divider (desktop only) */}
             <div className="hidden lg:block w-px h-6 bg-gray-300" />
 
-            <a
-              href="/login"
+            <Link
+              href="/sign-in"
               className="hidden sm:block text-sm text-slate-600 hover:text-slate-900 font-medium transition whitespace-nowrap"
             >
               Sign in
-            </a>
+            </Link>
 
             <Link
               href="/#choose-service"
@@ -277,13 +277,13 @@ export function SiteNav() {
 
             {/* Account */}
             <div className="border-t border-slate-200 mt-3 pt-3 space-y-2">
-              <a
-                href="/login"
+              <Link
+                href="/sign-in"
                 onClick={() => setMobileMenuOpen(false)}
                 className="block rounded-lg px-3 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-50 transition"
               >
                 Sign in
-              </a>
+              </Link>
               <Link
                 href="/#choose-service"
                 onClick={() => setMobileMenuOpen(false)}
