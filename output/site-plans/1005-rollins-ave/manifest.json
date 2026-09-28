@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-09-26T16:40:39.740Z",
+ "generatedAt": "2026-09-26T22:24:10.021Z",
  "address": "1005 Rollins Ave",
  "formData": {
   "projectAddress": "1005 Rollins Ave"
@@ -10,7 +10,7 @@
    "job": "siteplan.initialize",
    "status": "COMPLETED",
    "outputs": {
-    "activatedAt": "2026-09-26T16:40:28.784Z",
+    "activatedAt": "2026-09-26T22:24:03.621Z",
     "address": "1005 Rollins Ave",
     "jurisdictionCode": "undetermined"
    }
@@ -3663,7 +3663,7 @@
      "longitude": -76.9014813861307,
      "latitude": 38.87529677443847,
      "determinedBy": "us-census-geocoder",
-     "determinedAt": "2026-09-26T16:40:34.701Z",
+     "determinedAt": "2026-09-26T22:24:07.846Z",
      "reason": null
     },
     "jurisdictionVerification": "flagged",
@@ -8187,7 +8187,362 @@
       "message": "Review and seal by the professionals responsible for each subject. The platform drafts a complete plan; the seal is a human act that follows delivery. Nothing here implies county approval."
      }
     ],
-    "summary": "6 of 12 applicable checklist items satisfied; 6 outstanding."
+    "summary": "6 of 12 applicable checklist items satisfied; 6 outstanding.",
+    "production": {
+     "stages": [
+      {
+       "stage": "PROJECT_INTAKE",
+       "status": "COMPLETED",
+       "detail": "1005 ROLLINS AVENUE",
+       "revision": 0
+      },
+      {
+       "stage": "JURISDICTION_IDENTIFICATION",
+       "status": "COMPLETED",
+       "detail": "prince_georges_md",
+       "revision": 0
+      },
+      {
+       "stage": "SOURCE_DATA_INVENTORY",
+       "status": "COMPLETED",
+       "detail": "2 sources: Parcel boundary — jurisdiction gis; Existing contours",
+       "revision": 0
+      },
+      {
+       "stage": "SOURCE_QUALITY_CLASSIFICATION",
+       "status": "COMPLETED",
+       "detail": "reliability levels 1 (2 = professional record, 1 = GIS/LiDAR, 0 = unverified)",
+       "revision": 0
+      },
+      {
+       "stage": "BOUNDARY_BASE_MAP",
+       "status": "REQUIRES_FIELD_VERIFICATION",
+       "detail": "county gis — not a survey; a boundary survey or recorded plat governs",
+       "revision": 1
+      },
+      {
+       "stage": "EXISTING_CONDITIONS",
+       "status": "REQUIRES_FIELD_VERIFICATION",
+       "detail": "22 existing features; 22 from GIS/LiDAR, not field verified",
+       "revision": 1
+      },
+      {
+       "stage": "ZONING_DEVELOPMENT_RULES",
+       "status": "COMPLETED",
+       "detail": "RSF-65: 25/8/20 ft, coverage 35% — Subtitle 27, Sec. 27-4202 [CERTIFIED]",
+       "revision": 1
+      },
+      {
+       "stage": "BUILDABLE_AREA",
+       "status": "COMPLETED",
+       "detail": "setback lines and buildable area from the governing requirements",
+       "revision": 3
+      },
+      {
+       "stage": "PROPOSED_PROGRAM",
+       "status": "COMPLETED",
+       "detail": "Single-family detached",
+       "revision": 3
+      },
+      {
+       "stage": "INITIAL_LAYOUT",
+       "status": "COMPLETED",
+       "detail": "proposed footprint placed against the front building line",
+       "revision": 4
+      },
+      {
+       "stage": "ACCESS_DRIVEWAY",
+       "status": "REQUIRES_PROFESSIONAL_REVIEW",
+       "detail": "driveway apron and entrance permit are the jurisdiction's — confirm with the road authority",
+       "revision": 5
+      },
+      {
+       "stage": "UTILITY_COORDINATION",
+       "status": "REQUIRES_PROFESSIONAL_REVIEW",
+       "detail": "no existing utility mapping — connection points unconfirmed",
+       "revision": 6
+      },
+      {
+       "stage": "GRADING",
+       "status": "REQUIRES_PROFESSIONAL_REVIEW",
+       "detail": "grading drafted from LiDAR/GIS terrain — engineer of record reviews",
+       "revision": 7
+      },
+      {
+       "stage": "DRAINAGE_SWM",
+       "status": "REQUIRES_PROFESSIONAL_REVIEW",
+       "detail": "drainage and SWM drafted; sizing is sealed engineering",
+       "revision": 8
+      },
+      {
+       "stage": "EROSION_SEDIMENT_CONTROL",
+       "status": "REQUIRES_PROFESSIONAL_REVIEW",
+       "detail": "LOD and controls drafted",
+       "revision": 9
+      },
+      {
+       "stage": "FLOODPLAIN_ENVIRONMENTAL",
+       "status": "COMPLETED",
+       "detail": "no mapped floodplain, wetland or buffer on the lot (GIS screen)",
+       "revision": 9
+      },
+      {
+       "stage": "DIMENSIONS_ANNOTATION",
+       "status": "COMPLETED",
+       "detail": "7 dimension(s)",
+       "revision": 10
+      },
+      {
+       "stage": "ENGINEERING_CALCULATIONS",
+       "status": "REQUIRES_PROFESSIONAL_REVIEW",
+       "detail": "6 calculations; 0 failing; 0 awaiting input",
+       "revision": 10
+      },
+      {
+       "stage": "RULE_VALIDATION",
+       "status": "REQUIRES_PROFESSIONAL_REVIEW",
+       "detail": "6 checks; 0 failing; 1 need review",
+       "revision": 10
+      },
+      {
+       "stage": "DISCIPLINE_QA",
+       "status": "REQUIRES_PROFESSIONAL_REVIEW",
+       "detail": "each discipline's subjects are routed to its licensed reviewer",
+       "revision": 10
+      },
+      {
+       "stage": "SHEET_ASSEMBLY",
+       "status": "COMPLETED",
+       "detail": "5 sheet(s)",
+       "revision": 10
+      },
+      {
+       "stage": "INTERNAL_QA",
+       "status": "BLOCKED",
+       "detail": "5 checklist item(s) missing; 0 drafting issue(s)",
+       "revision": 10
+      },
+      {
+       "stage": "PROFESSIONAL_REVIEW",
+       "status": "REQUIRES_PROFESSIONAL_REVIEW",
+       "detail": "awaiting the licensed professional of record",
+       "revision": 10
+      },
+      {
+       "stage": "REVISION",
+       "status": "NOT_APPLICABLE",
+       "detail": "no review comments yet",
+       "revision": 10
+      },
+      {
+       "stage": "APPROVAL_FOR_ISSUANCE",
+       "status": "BLOCKED",
+       "detail": "only a licensed professional approves for issuance",
+       "revision": 10
+      },
+      {
+       "stage": "FINAL_DOCUMENT",
+       "status": "BLOCKED",
+       "detail": "no final document without professional approval and execution",
+       "revision": 10
+      }
+     ],
+     "readiness": {
+      "label": "ENGINEERING CHECK COMPLETE",
+      "designCompleteness": {
+       "percent": 64,
+       "complete": 21,
+       "applicable": 33
+      },
+      "draftingQa": {
+       "status": "PASS",
+       "issues": 0
+      },
+      "engineeringCalculations": {
+       "status": "PASS_WITH_REVIEW_ITEMS",
+       "reviewItems": 6,
+       "failing": 0
+      },
+      "jurisdictionRules": {
+       "status": "PASS_WITH_REVIEW_ITEMS",
+       "failing": 0,
+       "reviewItems": 1
+      },
+      "sourceReliability": {
+       "itemsRequiringVerification": 5,
+       "lowestLevel": 1
+      },
+      "professionalReview": {
+       "status": "NOT_COMPLETE"
+      },
+      "issuance": {
+       "status": "NOT_READY"
+      }
+     },
+     "worklist": [
+      "BOUNDARY BASE MAP: REQUIRES FIELD VERIFICATION — county gis — not a survey; a boundary survey or recorded plat governs",
+      "EXISTING CONDITIONS: REQUIRES FIELD VERIFICATION — 22 existing features; 22 from GIS/LiDAR, not field verified",
+      "ACCESS DRIVEWAY: REQUIRES PROFESSIONAL REVIEW — driveway apron and entrance permit are the jurisdiction's — confirm with the road authority",
+      "UTILITY COORDINATION: REQUIRES PROFESSIONAL REVIEW — no existing utility mapping — connection points unconfirmed",
+      "GRADING: REQUIRES PROFESSIONAL REVIEW — grading drafted from LiDAR/GIS terrain — engineer of record reviews",
+      "DRAINAGE SWM: REQUIRES PROFESSIONAL REVIEW — drainage and SWM drafted; sizing is sealed engineering",
+      "EROSION SEDIMENT CONTROL: REQUIRES PROFESSIONAL REVIEW — LOD and controls drafted",
+      "ENGINEERING CALCULATIONS: REQUIRES PROFESSIONAL REVIEW — 6 calculations; 0 failing; 0 awaiting input",
+      "RULE VALIDATION: REQUIRES PROFESSIONAL REVIEW — 6 checks; 0 failing; 1 need review",
+      "DISCIPLINE QA: REQUIRES PROFESSIONAL REVIEW — each discipline's subjects are routed to its licensed reviewer",
+      "INTERNAL QA: BLOCKED — 5 checklist item(s) missing; 0 drafting issue(s)",
+      "PROFESSIONAL REVIEW: REQUIRES PROFESSIONAL REVIEW — awaiting the licensed professional of record",
+      "APPROVAL FOR ISSUANCE: BLOCKED — only a licensed professional approves for issuance",
+      "FINAL DOCUMENT: BLOCKED — no final document without professional approval and execution"
+     ],
+     "rules": {
+      "total": 6,
+      "failing": 0,
+      "reviewRequired": 1
+     },
+     "calculations": {
+      "total": 6,
+      "failing": 0,
+      "awaitingInput": 0
+     },
+     "findings": [
+      {
+       "code": "BOUNDARY_NOT_SURVEYED",
+       "status": "REQUIRES_REVIEW",
+       "message": "Boundary is not from a survey or plat: Boundary is county gis — setbacks measured from it are preliminary",
+       "citation": "Prince George's County / M-NCPPC — PGAtlas Property"
+      }
+     ],
+     "checklist": [
+      {
+       "section": "EXISTING CONDITIONS",
+       "label": "Property boundary",
+       "status": "REQUIRES_FIELD_VERIFICATION",
+       "detail": "county gis — a boundary survey or recorded plat governs"
+      },
+      {
+       "section": "EXISTING CONDITIONS",
+       "label": "Bearings and distances",
+       "status": "REQUIRES_FIELD_VERIFICATION",
+       "detail": "computed from GIS geometry, not record courses"
+      },
+      {
+       "section": "EXISTING CONDITIONS",
+       "label": "Adjacent parcels",
+       "status": "REQUIRES_INPUT",
+       "detail": "0 shown"
+      },
+      {
+       "section": "EXISTING CONDITIONS",
+       "label": "Right-of-way",
+       "status": "MISSING",
+       "detail": "not in the model"
+      },
+      {
+       "section": "EXISTING CONDITIONS",
+       "label": "Roads",
+       "status": "REQUIRES_FIELD_VERIFICATION",
+       "detail": "5 shown; 5 from county gis — not field verified"
+      },
+      {
+       "section": "EXISTING CONDITIONS",
+       "label": "Existing utilities",
+       "status": "MISSING",
+       "detail": "not in the model"
+      },
+      {
+       "section": "EXISTING CONDITIONS",
+       "label": "Existing contours",
+       "status": "REQUIRES_FIELD_VERIFICATION",
+       "detail": "15 shown; 15 from county gis — not field verified"
+      },
+      {
+       "section": "ZONING / LAND USE",
+       "label": "Lot width",
+       "status": "REQUIRES_INPUT",
+       "detail": "not measured"
+      },
+      {
+       "section": "ZONING / LAND USE",
+       "label": "Building height",
+       "status": "REQUIRES_INPUT",
+       "detail": "no limit determined"
+      },
+      {
+       "section": "ZONING / LAND USE",
+       "label": "Overlays",
+       "status": "REQUIRES_PROFESSIONAL_REVIEW",
+       "detail": "overlay applicability is confirmed by the reviewer"
+      },
+      {
+       "section": "PROPOSED SITE",
+       "label": "Drainage",
+       "status": "MISSING",
+       "detail": "not in the model"
+      },
+      {
+       "section": "PROPOSED SITE",
+       "label": "Landscaping where required",
+       "status": "REQUIRES_PROFESSIONAL_REVIEW",
+       "detail": ""
+      },
+      {
+       "section": "ENGINEERING",
+       "label": "Drainage calculations",
+       "status": "REQUIRES_PROFESSIONAL_REVIEW",
+       "detail": "2 calculation(s) — review by the engineer of record"
+      },
+      {
+       "section": "ENGINEERING",
+       "label": "Grading checks",
+       "status": "MISSING",
+       "detail": "not calculated"
+      },
+      {
+       "section": "ENGINEERING",
+       "label": "Earthwork",
+       "status": "MISSING",
+       "detail": "not calculated"
+      },
+      {
+       "section": "ENGINEERING",
+       "label": "SWM calculations",
+       "status": "REQUIRES_PROFESSIONAL_REVIEW",
+       "detail": "1 calculation(s) — review by the engineer of record"
+      },
+      {
+       "section": "DRAFTING QA",
+       "label": "Owner",
+       "status": "REQUIRES_INPUT",
+       "detail": "owner of record not stated"
+      },
+      {
+       "section": "FINAL QA",
+       "label": "Unresolved warnings",
+       "status": "REQUIRES_PROFESSIONAL_REVIEW",
+       "detail": "1 warning(s)"
+      },
+      {
+       "section": "FINAL QA",
+       "label": "Assumptions stated",
+       "status": "REQUIRES_PROFESSIONAL_REVIEW",
+       "detail": "11 calculation assumption(s) for the engineer to accept"
+      },
+      {
+       "section": "FINAL QA",
+       "label": "Missing field verification",
+       "status": "REQUIRES_FIELD_VERIFICATION",
+       "detail": "Property boundary, Bearings and distances, Roads, Existing contours"
+      },
+      {
+       "section": "FINAL QA",
+       "label": "Missing professional review",
+       "status": "REQUIRES_PROFESSIONAL_REVIEW",
+       "detail": "every plan is reviewed by the professional of record before issuance"
+      }
+     ],
+     "studioProjectId": null
+    }
    }
   },
   {
@@ -8247,7 +8602,7 @@
    "job": "siteplan.initialize",
    "phase": "complete",
    "detail": "COMPLETED",
-   "durationMs": 4
+   "durationMs": 1
   },
   {
    "workflowId": "local-1005-rollins-ave",
@@ -8271,7 +8626,7 @@
    "job": "siteplan.resolve_property",
    "phase": "complete",
    "detail": "COMPLETED",
-   "durationMs": 5910
+   "durationMs": 4226
   },
   {
    "workflowId": "local-1005-rollins-ave",
@@ -8295,7 +8650,7 @@
    "job": "siteplan.resolve_jurisdiction",
    "phase": "complete",
    "detail": "COMPLETED",
-   "durationMs": 1
+   "durationMs": 2
   },
   {
    "workflowId": "local-1005-rollins-ave",
@@ -8307,7 +8662,7 @@
    "job": "siteplan.evaluate_rules",
    "phase": "complete",
    "detail": "COMPLETED",
-   "durationMs": 1
+   "durationMs": 0
   },
   {
    "workflowId": "local-1005-rollins-ave",
@@ -8319,7 +8674,7 @@
    "job": "siteplan.build_existing_conditions",
    "phase": "complete",
    "detail": "COMPLETED",
-   "durationMs": 1324
+   "durationMs": 1037
   },
   {
    "workflowId": "local-1005-rollins-ave",
@@ -8331,7 +8686,7 @@
    "job": "siteplan.generate_envelope",
    "phase": "complete",
    "detail": "COMPLETED",
-   "durationMs": 286
+   "durationMs": 83
   },
   {
    "workflowId": "local-1005-rollins-ave",
@@ -8343,7 +8698,7 @@
    "job": "siteplan.generate_layout",
    "phase": "complete",
    "detail": "COMPLETED",
-   "durationMs": 92
+   "durationMs": 37
   },
   {
    "workflowId": "local-1005-rollins-ave",
@@ -8355,7 +8710,7 @@
    "job": "siteplan.compose_sheets",
    "phase": "complete",
    "detail": "COMPLETED",
-   "durationMs": 67
+   "durationMs": 20
   },
   {
    "workflowId": "local-1005-rollins-ave",
@@ -8367,7 +8722,7 @@
    "job": "siteplan.render_exports",
    "phase": "complete",
    "detail": "COMPLETED",
-   "durationMs": 3190
+   "durationMs": 915
   },
   {
    "workflowId": "local-1005-rollins-ave",
@@ -8379,7 +8734,7 @@
    "job": "siteplan.run_draft_qc",
    "phase": "complete",
    "detail": "COMPLETED",
-   "durationMs": 60
+   "durationMs": 68
   },
   {
    "workflowId": "local-1005-rollins-ave",
@@ -8403,7 +8758,7 @@
    "job": "siteplan.deliver_preliminary",
    "phase": "complete",
    "detail": "COMPLETED",
-   "durationMs": 0
+   "durationMs": 1
   }
  ]
 }

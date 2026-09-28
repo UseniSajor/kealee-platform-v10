@@ -24,7 +24,7 @@ import {
 } from '../../jurisdictions/pgatlas'
 import { fetchSoilMapUnits, type SoilMapUnit } from '../../jurisdictions/usda-soils'
 import { fetchPgContours, type PgContourResult } from '../../jurisdictions/pg-elevation'
-import { fetchNoaaSite, type NoaaSite } from '../../jurisdictions/noaa-atlas14'
+import { fetchNoaaSite, noaaIntensity, type NoaaSite } from '../../jurisdictions/noaa-atlas14'
 import { lonLatFrom2248 } from '../../export/transformation-registry'
 import { buildLotPackage, type LotPackage } from '../../self-perform/lot-package'
 import { renderSheetSetPdf } from '../../sheets/render-pdf'
@@ -50,6 +50,10 @@ import {
   buildRecordedPlatBoundary, type RecordedPlatBoundary, type PlatReference,
 } from '../../survey/recorded-plat'
 import type { Course } from '../../survey/cogo'
+import { runProductionWorkflow, type StageRecord } from '../../studio/generator'
+import type { ZoningContext } from '../../studio/model'
+import type { SheetAudit, Readiness } from '../../studio/qa'
+import { extractLotCoveragePct } from '../../site-plan/buildable-envelope'
 import { reconcileSurvey } from '../../survey/reconcile'
 
 // ── Stage payloads ──────────────────────────────────────────────────────────
@@ -254,6 +258,25 @@ export interface DraftQcOutput {
   blocking: { code: string; message: string }[]
   pendingSeal: { code: string; message: string }[]
   summary: string
+  /**
+   * The professional production sequence this plan was run through
+   * (studio/generator.ts): every stage's status, the component readiness and
+   * the professional's worklist. Absent only if the sequence itself threw,
+   * and then `productionError` says why.
+   */
+  production?: {
+    stages: StageRecord[]
+    readiness: Readiness
+    worklist: string[]
+    rules: { total: number; failing: number; reviewRequired: number }
+    calculations: { total: number; failing: number; awaitingInput: number }
+    /** Every failing or review-required finding, traced — the reviewer's list. */
+    findings: { code: string; status: string; message: string; citation: string | null }[]
+    /** Checklist items the plan does not yet satisfy, and the ones that need a person. */
+    checklist: { section: string; label: string; status: string; detail: string }[]
+    studioProjectId: string | null
+  }
+  productionError?: string
 }
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
@@ -1170,6 +1193,17 @@ const runDraftQc: StageProcessor = async (ctx): Promise<StageResult> => {
   // Jurisdiction flags go first so the ten-item cap never drops them.
   const jurisdictionFlags = (prop.jurisdictionFlags ?? []).map((message, i) => ({ code: `JURISDICTION_${i + 1}`, message }))
 
+  // The plan is run through the professional production sequence — the same
+  // objects, commands, calculations, rules and QA a drafter uses. It records
+  // what is complete and what needs a person; it never withholds delivery.
+  let production: DraftQcOutput['production']
+  let productionError: string | undefined
+  try {
+    production = await productionRecord(ctx, pkg, prop, render)
+  } catch (e) {
+    productionError = e instanceof Error ? e.message : String(e)
+  }
+
   // Generation is never gated on a seal. Blocking findings are DRAWING defects;
   // pending_seal items are work only a licensed human can do.
   return {
@@ -1185,7 +1219,84 @@ const runDraftQc: StageProcessor = async (ctx): Promise<StageResult> => {
         ...pkg.beforeSeal.slice(0, 10).map((b, i) => ({ code: `PENDING_${i + 1}`, message: b })),
       ],
       summary: qc.summary,
+      ...(production ? { production } : {}),
+      ...(productionError ? { productionError } : {}),
     } satisfies DraftQcOutput,
+  }
+}
+
+/** Runs the generated plan through studio/generator.ts and, when the host can, persists it as a Studio project. */
+async function productionRecord(ctx: StageContext, pkg: LotPackage, prop: ResolvePropertyOutput, render: RenderOutput): Promise<NonNullable<DraftQcOutput['production']>> {
+  const code = pkg.jurisdiction
+  const b = pkg.buildable
+  const pg = code === PG_CODE
+  const zoning: ZoningContext | null = b ? {
+    jurisdictionCode: code, zone: prop.zoneCode ?? null,
+    frontFt: b.setbacks.frontFt, sideFt: b.setbacks.sideFt, rearFt: b.setbacks.rearFt,
+    coveragePct: extractLotCoveragePct(pkg.envelope.standards), heightFt: null,
+    citation: pkg.envelope.citation ?? b.setbacks.source, ruleSource: pkg.envelope.section ?? null,
+    ruleVersion: pg ? 'pg-2022.1' : null, effectiveDate: null,
+    // Only the PG pack is certified; every other jurisdiction's numbers are
+    // transcribed standards and route to review even when they pass.
+    certification: pg ? 'CERTIFIED' : 'PRELIMINARY',
+  } : null
+  const failed = new Map(render.frameFailures.map(f => [f.sheet, new Set(f.missing)]))
+  const composed = requirePriorOutput<ComposeOutput>(ctx, 'siteplan.compose_sheets')
+  const sheets: SheetAudit = {
+    sheets: composed.pages.map(pg2 => {
+      const miss = failed.get(pg2.primary) ?? new Set<string>()
+      return {
+        id: pg2.primary, title: pg2.primary, hasTitleBlock: !miss.has('titleBlock'), hasNorthArrow: !miss.has('northArrow'),
+        hasScale: !miss.has('scaleAndGraphicScale'), hasLegend: !miss.has('legendAndAbbreviations'), hasNotes: !miss.has('sourceDataNotes'),
+        hasRevisionBlock: !miss.has('revisionTable'), scaleLabel: null, references: [],
+      }
+    }),
+    overprints: 0, droppedLabels: 0,
+  }
+  const now = ctx.capabilities.now().toISOString()
+  const projectId = `spw-${ctx.workflowId}`
+  const facts = {
+    address: prop.matchedAddress ?? null, parcelId: prop.parcelId ?? null, owner: null, projectName: pkg.lot,
+    horizontalDatum: pkg.twin.horizontalDatum ?? (pkg.twin.crs === 'EPSG:2248' ? 'NAD83' : null),
+    sourceDocuments: pkg.twin.sources.map(s => `${s.dataset} — ${s.authority}`),
+    programme: { use: 'Single-family detached' }, wantsParking: true, landscapingRequired: null,
+  }
+  // Design rainfall: the lot's own NOAA Atlas 14 point, 10-year, at the
+  // 5-minute floor a residential time of concentration is held to.
+  const cond = ctx.priorOutputs['siteplan.build_existing_conditions'] as { rainfallSite?: NoaaSite | null } | undefined
+  const rain = cond?.rainfallSite ?? null
+  const intensity = rain ? noaaIntensity(5, 10, rain) : null
+  let seq = 0
+  const result = runProductionWorkflow({
+    twin: pkg.twin, zoning, edgeYards: b?.edgeYards ?? null, facts, sheets,
+    design: { rainfallIntensityInPerHr: intensity, designStormYears: intensity == null ? null : 10, intensitySource: rain ? `NOAA Atlas 14 ${rain.label}, 10-yr, 5-min — ${rain.citation}` : null },
+    streets: (prop.streets ?? []).map(st => ({ name: st.name, paths: st.paths })),
+    ids: { organizationId: ctx.subject.organizationId, workspaceId: `ws-${ctx.subject.organizationId}`, projectId },
+    newId: () => `${projectId}-${++seq}`, now,
+  })
+  let studioProjectId: string | null = null
+  if (ctx.capabilities.persistStudioProject) {
+    try {
+      const saved = await ctx.capabilities.persistStudioProject({ result, meta: {
+        workflowId: ctx.workflowId, name: pkg.lot, address: prop.matchedAddress ?? null, jurisdictionCode: code,
+        licenceState: prop.determination?.state ?? (code.endsWith('_va') ? 'VA' : code === 'district_of_columbia' ? 'DC' : 'MD'),
+        facts, sheets, now,
+      } })
+      studioProjectId = saved?.projectId ?? null
+    } catch (e) {
+      ctx.capabilities.trace({ workflowId: ctx.workflowId, job: ctx.job, phase: 'note', detail: `studio project not persisted: ${e instanceof Error ? e.message : String(e)}` })
+    }
+  }
+  return {
+    stages: result.stages, readiness: result.readiness, worklist: result.worklist,
+    rules: { total: result.rules.length, failing: result.rules.filter(r => r.status === 'FAIL' || r.status === 'BLOCKED').length, reviewRequired: result.rules.filter(r => r.status === 'REQUIRES_REVIEW').length },
+    calculations: { total: result.calculations.length, failing: result.calculations.filter(c => c.status === 'FAIL').length, awaitingInput: result.calculations.filter(c => c.status === 'REQUIRES_INPUT').length },
+    findings: [
+      ...result.rules.filter(r => r.status !== 'PASS' && r.status !== 'NOT_APPLICABLE').map(r => ({ code: r.code, status: r.status, message: `${r.title}: ${r.result}`, citation: r.citation })),
+      ...result.calculations.filter(c => c.status === 'FAIL' || c.status === 'REQUIRES_INPUT' || c.status === 'UNSUPPORTED').map(c => ({ code: `CALC_${c.calcId.toUpperCase()}`, status: c.status, message: `${c.name}: ${c.message}`, citation: c.reference })),
+    ],
+    checklist: result.checklist.filter(i => i.status !== 'COMPLETE' && i.status !== 'NOT_APPLICABLE').map(i => ({ section: i.section, label: i.label, status: i.status, detail: i.detail })),
+    studioProjectId,
   }
 }
 

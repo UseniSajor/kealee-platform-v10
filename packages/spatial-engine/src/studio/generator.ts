@@ -58,6 +58,8 @@ export interface GeneratorInput {
   facts: ProjectFacts
   sheets: SheetAudit | null
   design?: StudioModel['design']
+  /** Street centrelines the jurisdiction's GIS resolved, imported as record roads. */
+  streets?: { name: string | null; paths: [number, number][][]; authority?: string | null }[]
   ids: { organizationId: string; workspaceId: string; projectId: string }
   newId: () => string
   now: string
@@ -122,13 +124,22 @@ export function runProductionWorkflow(input: GeneratorInput): GeneratorResult {
   // 5–6 Base map and existing conditions: IMPORTED, as a survey or GIS import would be.
   const all = twinToStudioObjects(input.twin, { ...ids, actorId: ACTOR, revisionId: `${ids.projectId}-r1`, now })
   const records = all.filter(o => o.status !== 'PROPOSED' && o.type !== 'Setback' && o.type !== 'BuildableArea')
+  for (const [si, st] of (input.streets ?? []).entries()) for (const [pi, path] of st.paths.entries()) {
+    if (path.length < 2) continue
+    records.push({
+      id: `${ids.projectId}-street-${si}-${pi}`, ...ids, type: 'Road', geometry: { type: 'LineString', coordinates: path },
+      attributes: { label: st.name ? `${st.name} (centreline)` : 'Street centreline' }, layer: 'C-ROAD-CNTR', discipline: 'TRANSPORTATION',
+      source: 'COUNTY_GIS', sourceDate: now, sourceAccuracy: 'mapping_grade', sourceAuthority: st.authority ?? 'jurisdiction GIS street centrelines',
+      confidence: 0.75, createdBy: ACTOR, createdAt: now, modifiedBy: ACTOR, modifiedAt: now, revisionId: `${ids.projectId}-r1`, status: 'EXISTING',
+    })
+  }
   for (const o of records.filter(o => o.type === 'ParcelBoundary' && o.geometry.type === 'Polygon')) {
     const ring = normaliseRing({ coordinates: o.geometry.type === 'Polygon' ? o.geometry.coordinates[0] as any : [] })
     o.geometry = { type: 'Polygon', coordinates: [[...ring, ring[0]] as any] }
   }
   const surveyRef = input.twin.sources.find(s => s.reliabilityLevel === 2)?.dataset ?? null
   const imp = importRecords(model, { objects: records, importedBy: ACTOR, capabilities: { importSurvey: records.some(o => SURVEYED_SOURCES.has(o.source)), importSourceData: true }, documentRef: surveyRef ?? 'jurisdiction GIS', revisionId: `${ids.projectId}-r1`, now })
-  if (!imp.ok) { stage('BOUNDARY_BASE_MAP', 'BLOCKED', imp.reason) } else {
+  if ('reason' in imp) { stage('BOUNDARY_BASE_MAP', 'BLOCKED', imp.reason) } else {
     model = imp.model; revisions.push(imp.revision)
     events.push(ev('IMPORT', { count: records.length, discrepancies: imp.discrepancies }))
     const lot = model.objects.find(o => o.type === 'ParcelBoundary' && o.status !== 'SUPERSEDED')

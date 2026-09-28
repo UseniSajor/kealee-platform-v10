@@ -1880,9 +1880,6 @@ importers:
 
   packages/database:
     dependencies:
-      '@kealee/kealee-agent-stack':
-        specifier: workspace:*
-        version: link:../kealee-agent-stack
       '@prisma/client':
         specifier: ^5.22.0
         version: 5.22.0(prisma@5.22.0)
@@ -1991,6 +1988,9 @@ importers:
       '@anthropic-ai/sdk':
         specifier: ^0.74.0
         version: 0.74.0(zod@3.25.76)
+      '@kealee/database':
+        specifier: workspace:*
+        version: link:../database
       '@kealee/estimating':
         specifier: workspace:*
         version: link:../estimating

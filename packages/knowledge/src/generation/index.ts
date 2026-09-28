@@ -57,12 +57,17 @@ export class GenerationRecorder {
     return { run, outputs }
   }
 
-  /** What a person did with the generation. Moves every output's approval with it. */
+  /** What a person did with the generation. Guard-rejected outputs remain hard negatives. */
   async disposeGeneration(runId: string, disposition: 'accepted' | 'corrected' | 'rejected' | 'superseded', actor: { id: string; note?: string }): Promise<GenerationRunRecord> {
     const status = disposition === 'accepted' ? 'APPROVED' : disposition === 'corrected' ? 'CORRECTED' : disposition === 'rejected' ? 'REJECTED' : 'SUPERSEDED'
     const run: GenerationRunRecord = await this.db.generationRun.update({ where: { id: runId }, data: { status, finalDisposition: disposition, dispositionById: actor.id, dispositionAt: new Date() } })
     const outs = await this.db.generationOutput.findMany({ where: { runId } })
     for (const o of outs) {
+      const artifact = await this.db.knowledgeArtifact.findUnique({ where: { id: o.artifactId } })
+      // A run may contain both a valid deliverable and model responses rejected
+      // by deterministic guards. Human acceptance of the deliverable must never
+      // turn those hard negatives into positive training candidates.
+      if (artifact?.approvalStatus === 'REJECTED' && disposition !== 'rejected') continue
       await this.registry.setApproval(o.artifactId, disposition === 'accepted' ? 'HUMAN_APPROVED' : disposition === 'corrected' ? 'HUMAN_REVIEWED' : disposition === 'rejected' ? 'REJECTED' : 'AI_GENERATED', { type: 'user', id: actor.id, note: actor.note })
     }
     const evt = disposition === 'accepted' ? KNOWLEDGE_EVENTS.generation.approved : disposition === 'rejected' ? KNOWLEDGE_EVENTS.generation.rejected : KNOWLEDGE_EVENTS.generation.corrected

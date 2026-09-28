@@ -102,7 +102,7 @@ export function evaluateRules(model: StudioModel, overrides: RuleOverride[] = []
     const req = requirementFor(model.zoning, 'coverage')
     const c = runCalculation('lot_coverage', {}, { actor: { type: 'system', id: 'rules' }, model, now: () => '' })
     const pct = Number(c.outputs.coveragePct)
-    const status: RuleStatus = !req || req.value == null ? 'NOT_APPLICABLE' : pct > req.value ? 'FAIL' : req.outcome !== 'APPLIED_CERTIFIED' ? 'REQUIRES_REVIEW' : 'PASS'
+    const status: RuleStatus = !req || req.value == null ? 'NOT_APPLICABLE' : pct > req.value + 0.005 ? 'FAIL' : req.outcome !== 'APPLIED_CERTIFIED' ? 'REQUIRES_REVIEW' : 'PASS'
     push({
       key: `LOT_COVERAGE:${lot.id}`, code: 'LOT_COVERAGE', title: 'Lot coverage', ...reqFields(req),
       applicability: req ? 'APPLIES' : 'NOT_APPLICABLE', input: c.outputs, result: c.message, status,
@@ -179,7 +179,7 @@ export function evaluateRules(model: StudioModel, overrides: RuleOverride[] = []
     const need = requiredSeparation(utils[a].type, utils[b].type)
     if (need == null) continue
     const d = minDistance(utils[a].geometry, utils[b].geometry)
-    if (d >= need) continue
+    if (d + 0.01 >= need) continue // a line drawn at exactly the separation is at it
     push({
       key: `UTILITY_SEPARATION:${utils[a].id}:${utils[b].id}`, code: 'UTILITY_SEPARATION', title: 'Utility separation', ...reqFields(null), confidence: 0.9,
       citation: 'Ten States Standards §8.8 / utility owner minimum', applicability: 'APPLIES', input: { requiredFt: need, clearanceFt: Math.round(d * 100) / 100 },

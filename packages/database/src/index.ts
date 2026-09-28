@@ -7,6 +7,7 @@ export {
 } from './tenant-context'
 export * from '@prisma/client'
 export { getActiveV30PricingFormula, upsertActiveV30PricingFormula } from './v30-pricing-formula'
+export * from './v30-pricing-config'
 
 // Export Decimal type for financial calculations
 export { Decimal } from '@prisma/client/runtime/library'

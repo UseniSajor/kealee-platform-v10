@@ -29,6 +29,61 @@ export interface ArchitectConceptReview {
   history: { state: string; comment: string | null; decidedAt: string; reviewer: string; conceptGeneration: number }[]
 }
 
+export interface ArchitectConceptAssignment {
+  version: 1
+  professionalProfileId: string
+  professionalUserId: string
+  displayName: string
+  conceptGeneration: number
+  claimedAt: string
+  status: 'ACTIVE' | 'COMPLETED'
+  completedAt: string | null
+}
+
+/** Claims one concept generation. The updated_at guard makes two clicks race safely. */
+export async function claimDesignConcept(formData: FormData) {
+  const intakeId = String(formData.get('intakeId') ?? '')
+  const identity = await getProfessionalIdentity()
+  if (!identity?.profile || identity.discipline !== 'architect') throw new Error('An architect profile is required.')
+  assertCurrentLicence(identity.profile)
+
+  const supabase = getSupabaseAdmin()
+  const { data: row, error } = await supabase
+    .from('public_intake_leads')
+    .select('id, form_data, updated_at')
+    .eq('id', intakeId)
+    .maybeSingle()
+  if (error || !row) throw new Error('Order not found.')
+  const fd = (row.form_data ?? {}) as Record<string, unknown>
+  if (!fd.conceptOutput && !fd.v30ConceptOutput) throw new Error('This order has no design concept to review.')
+  const generation = Number(fd.conceptGeneration ?? 0)
+  const current = fd.architectReviewAssignment as ArchitectConceptAssignment | undefined
+  if (current?.status === 'ACTIVE' && current.conceptGeneration === generation) {
+    if (current.professionalProfileId === identity.profile.id) return
+    throw new Error(`This concept is already assigned to ${current.displayName}.`)
+  }
+  const assignment: ArchitectConceptAssignment = {
+    version: 1,
+    professionalProfileId: identity.profile.id,
+    professionalUserId: identity.user.id,
+    displayName: identity.profile.displayName,
+    conceptGeneration: generation,
+    claimedAt: new Date().toISOString(),
+    status: 'ACTIVE',
+    completedAt: null,
+  }
+  const { data: updated, error: updateError } = await supabase
+    .from('public_intake_leads')
+    .update({ form_data: { ...fd, architectReviewAssignment: assignment } })
+    .eq('id', intakeId)
+    .eq('updated_at', row.updated_at)
+    .select('id')
+    .maybeSingle()
+  if (updateError) throw new Error(`Could not claim the concept: ${updateError.message}`)
+  if (!updated) throw new Error('The concept changed or another architect claimed it. Refresh the queue.')
+  revalidatePath('/architect/review')
+}
+
 export async function reviewDesignConcept(formData: FormData) {
   const intakeId = String(formData.get('intakeId') ?? '')
   const decision = String(formData.get('decision') ?? '')
@@ -45,7 +100,7 @@ export async function reviewDesignConcept(formData: FormData) {
   const supabase = getSupabaseAdmin()
   const { data: row, error } = await supabase
     .from('public_intake_leads')
-    .select('id, project_path, form_data, status')
+    .select('id, project_path, form_data, status, updated_at')
     .eq('id', intakeId)
     .maybeSingle()
   if (error || !row) throw new Error('Order not found.')
@@ -54,6 +109,10 @@ export async function reviewDesignConcept(formData: FormData) {
 
   const prior = fd.architectReview as ArchitectConceptReview | undefined
   const generation = Number(fd.conceptGeneration ?? 0)
+  const assignment = fd.architectReviewAssignment as ArchitectConceptAssignment | undefined
+  if (!assignment || assignment.status !== 'ACTIVE' || assignment.conceptGeneration !== generation || assignment.professionalProfileId !== identity.profile.id) {
+    throw new Error('Claim this concept generation before deciding it.')
+  }
   const now = new Date().toISOString()
   const reviewer = {
     displayName: identity.profile.displayName,
@@ -80,16 +139,21 @@ export async function reviewDesignConcept(formData: FormData) {
   const patch: Record<string, unknown> = {
     ...fd,
     architectReview: record,
+    architectReviewAssignment: { ...assignment, status: 'COMPLETED', completedAt: now },
     ...statusPatch,
     ...(decision === 'CHANGES_REQUESTED' ? { fulfillmentStatus: 'awaiting_designer', designerDirection: comment } : {}),
   }
-  const { error: updateError } = await supabase
+  const { data: updated, error: updateError } = await supabase
     .from('public_intake_leads')
     .update({ form_data: patch, status: decision === 'APPROVED' ? 'delivered' : 'revision_requested' })
     .eq('id', intakeId)
+    .eq('updated_at', row.updated_at)
+    .select('id')
+    .maybeSingle()
   if (updateError) throw new Error(`Could not record the review: ${updateError.message}`)
+  if (!updated) throw new Error('The concept changed while you were reviewing it. Refresh and review the current generation.')
 
   // The decision is a review edge in the knowledge registry (Kealee Construction Intelligence).
-  void recordConceptReviewInKnowledge({ intakeId, state: decision as 'APPROVED' | 'CHANGES_REQUESTED', comment: comment || null, reviewer: { displayName: reviewer.displayName, licenceNumber: reviewer.licenceNumber }, generation })
+  await recordConceptReviewInKnowledge({ intakeId, state: decision as 'APPROVED' | 'CHANGES_REQUESTED', comment: comment || null, reviewer: { displayName: reviewer.displayName, licenceNumber: reviewer.licenceNumber }, generation })
   revalidatePath('/architect/review')
 }

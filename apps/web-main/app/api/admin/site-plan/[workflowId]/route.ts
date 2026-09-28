@@ -36,7 +36,7 @@ export async function GET(
   const [executions, queue, assignments, approvals, evidence] = await Promise.all([
     prisma.sitePlanStageExecution.findMany({
       where: { workflowId: wf.id },
-      select: { job: true, stage: true, status: true, attempt: true, blockers: true, completedAt: true, updatedAt: true },
+      select: { job: true, stage: true, status: true, attempt: true, blockers: true, outputs: true, completedAt: true, updatedAt: true },
       orderBy: { updatedAt: 'asc' },
     }),
     prisma.jobQueue.findMany({
@@ -57,12 +57,12 @@ export async function GET(
   const snapshot: Workflow.WorkflowSnapshot = {
     workflowId: wf.id,
     definitionVersion: wf.definitionVersion,
-    stages: executions.flatMap(e =>
+    stages: executions.flatMap((e: any) =>
       e.job ? [{ job: e.job as Workflow.SitePlanJobName, status: e.status as never, attempt: e.attempt }] : []),
   }
   const runnable = Workflow.nextJobs(snapshot)
   const declared = Workflow.SITE_PLAN_STAGES.map(s => {
-    const row = executions.find(e => e.job === s.job)
+    const row = executions.find((e: any) => e.job === s.job)
     return {
       job: s.job, group: s.group, inFirstRelease: s.inFirstRelease, deliverable: Boolean(s.deliverable),
       status: row?.status ?? 'NOT_STARTED', attempt: row?.attempt ?? 0,
@@ -78,15 +78,20 @@ export async function GET(
     .eq('id', wf.orderId)
     .maybeSingle()
   const fd = ((order?.form_data ?? {}) as Record<string, unknown>)
+  const draftQc = (executions.find((e: any) => e.job === 'siteplan.run_draft_qc')?.outputs ?? {}) as {
+    production?: { studioProjectId?: string | null; readiness?: { label?: string }; worklist?: string[]; rules?: unknown; calculations?: unknown }
+    productionError?: string
+  }
 
   return NextResponse.json({
     workflow: wf,
     stages: declared,
     queue,
+    studio: draftQc.production ? { ...draftQc.production, error: draftQc.productionError ?? null } : { error: draftQc.productionError ?? null },
     review: {
-      assignment: assignments.find(a => a.discipline === 'professional_engineer') ?? assignments[0] ?? null,
+      assignment: assignments.find((a: any) => a.discipline === 'professional_engineer') ?? assignments[0] ?? null,
       assignments, approvals, evidenceCount: evidence,
-      redlines: approvals.filter(a => a.decision === 'CHANGES_REQUESTED' || a.decision === 'REJECTED'),
+      redlines: approvals.filter((a: any) => a.decision === 'CHANGES_REQUESTED' || a.decision === 'REJECTED'),
     },
     order: order ? {
       intakeId: order.id, productKey: order.project_path, clientName: order.client_name,

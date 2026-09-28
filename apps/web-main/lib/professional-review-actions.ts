@@ -13,6 +13,7 @@ import {
   assertCurrentLicence,
   disciplineConfig,
   getProfessionalIdentity,
+  productRequiresDiscipline,
   requireAssignedReview,
   reviewDb,
   type ReviewDiscipline,
@@ -117,6 +118,9 @@ export async function claimReview(formData: FormData) {
 
   const workflow = await reviewDb.sitePlanWorkflow.findFirst({ where: { id: workflowId, professionalReviewRequired: true } })
   if (!workflow) throw new Error('Review is no longer available.')
+  if (!productRequiresDiscipline(workflow.productId, cfg.id)) {
+    throw new Error(`${workflow.productId ?? 'This legacy product'} does not include ${cfg.id.replaceAll('_', ' ')} review.`)
+  }
   const taken = await reviewDb.sitePlanReviewAssignment.findFirst({ where: { workflowId, discipline: cfg.id } })
   if (taken) throw new Error(`Another ${cfg.id.replaceAll('_', ' ')} already holds this review.`)
 

@@ -14,7 +14,7 @@
  * and says so, rather than a number that looks like an estimate.
  */
 
-import { MARKETPLACE_ASSEMBLIES } from '@kealee/estimating'
+import { MARKETPLACE_ASSEMBLIES } from '@kealee/estimating/assemblies'
 
 type MarketplaceAssembly = (typeof MARKETPLACE_ASSEMBLIES)[number]
 

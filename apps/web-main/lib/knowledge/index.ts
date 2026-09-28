@@ -1,7 +1,8 @@
 /**
  * web-main's handle on the Kealee knowledge registry (@kealee/knowledge).
- * One instance per process; every call site records fire-and-forget and
- * logs a miss — the customer's deliverable never waits on the corpus.
+ * One instance per process. Recording helpers catch and log registry errors,
+ * so callers may await the attempt without making the customer's deliverable
+ * depend on knowledge availability.
  */
 import { prisma } from '@kealee/database'
 import { createKnowledge, recordConceptGeneration, recordConceptReview, type Knowledge, type ConceptGenerationFacts } from '@kealee/knowledge'

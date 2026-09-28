@@ -10,6 +10,8 @@ import type { SitePlanJobName } from './definition'
 import type { WorkflowSnapshot } from './state-machine'
 import type { EvidenceLedger } from '../review/evidence'
 import type { CountyComment } from '../review/checklist'
+import type { GeneratorResult } from '../studio/generator'
+import type { ProjectRecord } from '../studio/service'
 
 /** Identity of the order this workflow serves. */
 export interface WorkflowSubject {
@@ -67,6 +69,16 @@ export interface StageCapabilities {
    * leaving stale COMPLETED rows under a superseded result.
    */
   reopenStages?: (workflowId: string, jobs: SitePlanJobName[]) => Promise<void>
+  /**
+   * Persists the generated plan as a Site Plan Studio project, so professional
+   * review happens in the same model a drafter works in. Absent, or failing
+   * (tables not migrated), the production record still rides on the stage
+   * output — delivery is never gated on it.
+   */
+  persistStudioProject?: (input: {
+    result: GeneratorResult
+    meta: { workflowId: string; name: string; address: string | null; jurisdictionCode: string | null; licenceState: string | null; facts: ProjectRecord['facts']; sheets: ProjectRecord['sheets']; now: string }
+  }) => Promise<{ projectId: string } | null>
 }
 
 /** One subject a professional was asked to decide on. */

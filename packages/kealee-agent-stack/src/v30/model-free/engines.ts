@@ -19,6 +19,7 @@ import { analyzeV30Intake } from '../intake-analyzer'
 import { requiresPermitsForScope, isGardenLandscapeScope } from '../scope-rules'
 import type { V30BotType, V30IntakeFormAnswers } from '../types'
 import { priceRecipe, recipeFor, type CostTier, type PricedEstimate } from './costs'
+import { conceptNarrative, estimateNarrative, permitNarrative, type NarrativeContext } from './narratives'
 
 export type EngineResult =
   | { kind: 'complete'; output: Record<string, unknown> }
@@ -36,6 +37,19 @@ export interface EngineInput {
 const TIERS: CostTier[] = ['BUDGET', 'BALANCED', 'PREMIUM']
 const money = (n: number) => `$${Math.round(n).toLocaleString('en-US')}`
 const scopeText = (i: EngineInput) => `${i.answers.primaryScope} ${i.projectPath ?? ''}`
+/**
+ * The customer's stated scope decides the recipe. The project path is used
+ * only when the scope is empty or generic ("remodel", "renovation"): a scope
+ * that names something else ("In-ground pool") must not be priced as the
+ * path's product (a kitchen).
+ */
+const GENERIC_SCOPE = /^(?:\s|remodel|renovation|renovate|project|upgrade|update|refresh|redo|new|full|complete|home|house|interior|and|&)+$/i
+function recipeOf(i: EngineInput) {
+  const scope = i.answers.primaryScope.trim()
+  const fromScope = scope ? recipeFor(scope) : null
+  if (fromScope) return fromScope
+  return !scope || GENERIC_SCOPE.test(scope) ? recipeFor(i.projectPath ?? '') : null
+}
 
 /** Reads the intake answers from whatever shape the order carries; missing answers stay empty, never invented. */
 export function engineInputFrom(inputData: Record<string, unknown>): EngineInput {
@@ -66,10 +80,19 @@ export function engineInputFrom(inputData: Record<string, unknown>): EngineInput
 }
 
 function priceAllTiers(i: EngineInput): Record<CostTier, PricedEstimate> | null {
-  const recipe = recipeFor(scopeText(i))
+  const recipe = recipeOf(i)
   if (!recipe) return null
   return Object.fromEntries(TIERS.map(t => [t, priceRecipe(recipe, t, i.answers.squareFeet, i.answers.location)])) as Record<CostTier, PricedEstimate>
 }
+
+function narrativeContext(i: EngineInput, family: string, label: string): NarrativeContext {
+  return {
+    family, label, propertyType: i.answers.propertyType, location: i.answers.location, yearBuilt: i.answers.yearBuilt,
+    budgetRange: i.answers.budgetRange, timeline: i.answers.timeline, naturalGas: Boolean(i.answers.utilities?.naturalGas),
+    codeConsiderations: i.answers.codeConsiderations, permitTypes: permitTypes(i), jurisdictionName: i.jurisdiction?.name ?? null,
+  }
+}
+const totalsOf = (p: Record<CostTier, PricedEstimate>) => ({ BUDGET: p.BUDGET.total, BALANCED: p.BALANCED.total, PREMIUM: p.PREMIUM.total })
 
 const NO_RECIPE = (i: EngineInput) =>
   `No cost recipe covers "${i.answers.primaryScope || i.projectPath || 'this scope'}"; the assembly library prices kitchens, baths, basements, additions, decks, landscape, flooring and interior painting. Staff prepare this estimate.`
@@ -109,6 +132,7 @@ function estimate(i: EngineInput): EngineResult {
       costPerSqFt: { low: p.BUDGET.costPerSqFt, mid: mid.costPerSqFt, high: p.PREMIUM.costPerSqFt },
       ...(mid.caution ? { caution: mid.caution, staffReviewRecommended: true } : {}),
       source: mid.source,
+      narrative: estimateNarrative(narrativeContext(i, mid.family, mid.label), mid, totalsOf(p)),
       engine: 'model-free',
     },
   }
@@ -126,16 +150,18 @@ function design(i: EngineInput): EngineResult {
   if (!p) return { kind: 'staff', reason: NO_RECIPE(i) }
   const place = i.answers.location || 'the property'
   const prop = i.answers.propertyType || 'home'
+  const ctx = narrativeContext(i, p.BALANCED.family, p.BALANCED.label)
+  const totals = totalsOf(p)
   const concepts = TIERS.map(t => {
     const e = p[t]
     const keyFeatures = [...new Set(e.lines.filter(l => !/General|Permit|Demolition|Paint/.test(l.trade)).map(l => l.name))].slice(0, 6)
+    const story = conceptNarrative(ctx, t, e, totals)
     return {
       tier: t,
       positioning: TIER_POSITION[t].name,
       title: `${TIER_POSITION[t].name} ${e.label}`,
-      narrative:
-        `A ${e.sqft.toLocaleString()} sq ft ${e.label.toLowerCase()} for a ${prop} in ${place} that ${TIER_POSITION[t].intent}: ` +
-        `${keyFeatures.slice(0, 4).join(', ').toLowerCase()}. Priced from the Kealee assembly library at ${money(e.total)} including ${e.contingencyPct}% contingency.`,
+      narrative: story.overview,
+      narrativeSections: story.sections,
       estimatedCostMin: Math.round(e.total * 0.9),
       estimatedCostMax: Math.round(e.total * 1.1),
       keyFeatures,
@@ -185,6 +211,7 @@ function zoning(i: EngineInput): EngineResult {
     output: {
       jurisdiction: i.jurisdiction?.name ?? 'Not determined — confirmed from the parcel when the site is located',
       jurisdictionCode: i.jurisdiction?.code ?? null,
+      narrative: permitNarrative(narrativeContext(i, recipeOf(i)?.family ?? 'other', recipeOf(i)?.label ?? (i.answers.primaryScope || 'project'))),
       zoneInfo: {
         zone: (i.lotContext?.zoneCode ?? i.lotContext?.zone ?? null) as string | null,
         permitRequired: types.length > 0,
@@ -231,6 +258,7 @@ function permit(i: EngineInput): EngineResult {
         ? 'Structural work: drawings sealed by a licensed professional engineer in the project\'s state.'
         : 'No PE seal expected for non-structural interior work; the permit office may require one on review.',
       requiredPermits: zo.requiredPermits,
+      narrative: zo.narrative,
       engine: 'model-free',
     },
   }
@@ -238,7 +266,7 @@ function permit(i: EngineInput): EngineResult {
 
 // ── Floor plan (concept layout) ─────────────────────────────────────────────
 function floorplan(i: EngineInput): EngineResult {
-  const recipe = recipeFor(scopeText(i))
+  const recipe = recipeOf(i)
   const sqft = i.answers.squareFeet || recipe?.defaultSqft || 0
   if (!recipe || !['kitchen', 'bath', 'basement', 'addition'].includes(recipe.family) || !sqft) {
     return { kind: 'staff', reason: 'A concept layout is generated only for a single room or addition with a known size; staff draw this one.' }

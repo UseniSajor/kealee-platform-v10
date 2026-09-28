@@ -5,50 +5,16 @@
  */
 
 import { calculateFloorplanAddon } from './floorplan-pricing'
-import type { V30FloorplanScope } from './floorplan-pricing'
 import type { V30Complexity, V30IntakeFormAnswers } from './types'
+import {
+  DEFAULT_V30_PRICING_FORMULA,
+  type V30PricingFormulaConfig,
+} from '@kealee/database/v30-pricing-config'
 
-export interface V30PricingFormulaConfig {
-  baseAmount: number
-  sqftMultiplier: number
-  complexityFees: Record<V30Complexity, number>
-  featureCosts: Record<string, number>
-  /** Per-scope floorplan add-ons (whole house scales with sqft in calculateFloorplanAddon). */
-  floorplanScopeCosts?: Partial<Record<V30FloorplanScope, number>>
-  urgencyMultiplier: number
-  locationMultiplier: number
-  minPrice: number
-  maxPrice: number
-}
-
-export const DEFAULT_V30_PRICING_FORMULA: V30PricingFormulaConfig = {
-  baseAmount: 99,
-  sqftMultiplier: 0.05,
-  complexityFees: { simple: 0, moderate: 200, complex: 500 },
-  featureCosts: {
-    Design: 150,
-    Floorplan: 100,
-    Estimate: 200,
-    Permits: 250,
-    Videos: 400,
-    Support: 50,
-    CADExport: 149,
-    Marketing: 85,
-  },
-  floorplanScopeCosts: {
-    room: 80,
-    kitchen: 140,
-    bath: 100,
-    addition: 220,
-    whole_house: 280,
-    garden_landscape: 175,
-    exterior: 130,
-  },
-  urgencyMultiplier: 1,
-  locationMultiplier: 1,
-  minPrice: 99,
-  maxPrice: 9999,
-}
+export {
+  DEFAULT_V30_PRICING_FORMULA,
+  type V30PricingFormulaConfig,
+} from '@kealee/database/v30-pricing-config'
 
 function urgencyFromTimeline(timeline: string): number {
   const t = timeline.toLowerCase()

@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { AlertTriangle, ArrowRight, CheckCircle2, ClipboardCheck, Clock3 } from 'lucide-react'
 import { claimReview, createProfessionalProfile } from '@/lib/professional-review-actions'
-import { DISCIPLINES, displayProject, getProfessionalIdentity, reviewDb, type ReviewDiscipline } from '@/lib/professional-review'
+import { DISCIPLINES, displayProject, getProfessionalIdentity, reviewDb, reviewProductsFor, type ReviewDiscipline } from '@/lib/professional-review'
 
 /**
  * The review queue for one discipline. The engineer's route renders it as
@@ -66,6 +66,9 @@ export async function ReviewQueue({ discipline, children }: { discipline: Review
       ? reviewDb.sitePlanWorkflow.findMany({
           where: {
             professionalReviewRequired: true,
+            ...(discipline === 'professional_engineer'
+              ? { OR: [{ productId: { in: reviewProductsFor(discipline) } }, { productId: null }] }
+              : { productId: { in: reviewProductsFor(discipline) } }),
             status: 'ACTIVE',
             currentStage: { in: ['PROFESSIONAL_REVIEW', 'COMPLIANCE_AUDIT'] },
             NOT: { id: { in: claimedWorkflowIds } },

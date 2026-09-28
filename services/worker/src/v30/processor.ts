@@ -33,6 +33,7 @@ import {
   finalizeV30PackageIfComplete,
   type V30BotJobPayload,
 } from '@kealee/os-ai-orch'
+import { recordV30BotInKnowledge } from './knowledge'
 
 /**
  * How many bots may run concurrently across the whole worker.
@@ -283,6 +284,8 @@ async function runOne(
 
   try {
     const result = await runV30BotExecution(payload.executionId)
+    // Into the knowledge registry — the internal model's training supply. Never blocks delivery.
+    await recordV30BotInKnowledge(payload.executionId)
 
     await prisma.jobQueue.update({
       where: { id: claimed.id },

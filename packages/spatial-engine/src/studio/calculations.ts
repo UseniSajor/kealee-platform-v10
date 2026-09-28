@@ -485,7 +485,7 @@ def({
     return {
       equation: 'coverage = Σ A_building / A_lot', outputs: { coveragePct: r(pct), buildingAreaSf: r(area, 0), lotAreaSf: r(lotSf, 0), maxCoveragePct: max },
       source: `model; limit ${m.zoning?.citation ?? 'stated'}`, assumptions: ['Building footprints only; some ordinances also count accessory structures or decks.'],
-      reviewStatus: 'NOT_REVIEWED', status: max == null ? 'REQUIRES_INPUT' : pct <= max ? 'PASS' : 'FAIL', objectIds: [lot.id, ...bldg.map(o => o.id)],
+      reviewStatus: 'NOT_REVIEWED', status: max == null ? 'REQUIRES_INPUT' : pct <= max + 0.005 ? 'PASS' : 'FAIL', objectIds: [lot.id, ...bldg.map(o => o.id)],
       message: `${r(pct)}%` + (max != null ? ` of ${max}% allowed` : ' — no coverage limit in the zoning context'),
     }
   },
@@ -571,7 +571,7 @@ def({
       const need = requiredSeparation(utils[a].type, utils[b].type)
       if (need == null) continue
       const d = minDistance(utils[a].geometry, utils[b].geometry)
-      rows.push({ a: utils[a].id, b: utils[b].id, types: `${utils[a].type}/${utils[b].type}`, requiredFt: need, clearanceFt: r(d), status: d >= need ? 'PASS' : 'FAIL' })
+      rows.push({ a: utils[a].id, b: utils[b].id, types: `${utils[a].type}/${utils[b].type}`, requiredFt: need, clearanceFt: r(d), status: d + 0.01 >= need ? 'PASS' : 'FAIL' })
     }
     const fails = rows.filter(x => x.status === 'FAIL')
     return {

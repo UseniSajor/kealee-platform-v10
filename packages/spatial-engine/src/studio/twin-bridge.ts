@@ -113,13 +113,21 @@ export function twinToStudioObjects(twin: SiteTwin, ids: { organizationId: strin
   for (const f of twin.features) {
     const a = ((f as any).attributes ?? {}) as Record<string, unknown>
     let type: StudioObjectType | undefined = KIND_TO_TYPE[f.kind]
-    const proposed = f.kind === 'Building' ? !(f as any).existing : f.kind === 'ProposedFeature' || a.proposed === true || /^(proposed|buildable)/i.test(f.id)
+    // The generator tags everything it designs with sourceId 'design'
+    // (site-plan/design.ts); a demolition is design acting on an existing object.
+    const proposed = f.kind === 'DemolitionFeature' ? false
+      : f.kind === 'Building' ? !(f as any).existing
+      : a.improvement != null || f.sourceId === 'design' || f.kind === 'ProposedFeature' || a.proposed === true || /^(proposed|buildable)/i.test(f.id)
     if (f.kind === 'ProposedFeature' || f.kind === 'ExistingFeature' || f.kind === 'GenericFeature' as any) {
       const t = String(a.type ?? '').toLowerCase()
       type = f.id === 'buildable-envelope' || /buildable/.test(t) ? 'BuildableArea' : /graded/.test(t) ? 'GradingPad' : /swale/.test(t) ? 'Swale' : /silt|sediment|entrance/.test(t) ? 'Annotation' : 'Annotation'
     }
     if (f.kind === 'Utility') { const t = String(a.type ?? '').toLowerCase(); type = /water/.test(t) ? 'WaterLine' : /sewer|sanitary/.test(t) ? 'SewerLine' : /storm/.test(t) ? 'Pipe' : /gas/.test(t) ? 'GasLine' : /electric|power/.test(t) ? 'ElectricLine' : 'Utility' }
-    if (f.kind === 'Pavement' && !/drive/i.test(String(a.type ?? 'drive'))) type = 'Parking'
+    if (f.kind === 'Pavement') {
+      // Site improvements carry what they are (site-plan/site-improvements.ts).
+      const imp = String(a.improvement ?? a.type ?? 'Driveway')
+      type = /drive|apron/i.test(imp) ? 'Driveway' : /walk|stoop|sidewalk/i.test(imp) ? 'Sidewalk' : 'Parking'
+    }
     if (!type) continue
     const geometry = geometryOf(f)
     if (!geometry) continue

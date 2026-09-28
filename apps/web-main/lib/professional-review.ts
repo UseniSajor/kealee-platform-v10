@@ -60,6 +60,24 @@ export const DISCIPLINES: Record<ReviewDiscipline, DisciplineConfig> = {
   },
 }
 
+/** Products whose price includes each licensed review desk. */
+const REVIEW_PRODUCTS: Record<ReviewDiscipline, string[]> = {
+  professional_engineer: ['verified_site_feasibility', 'permit_site_plan'],
+  architect: ['permit_site_plan'],
+}
+
+export function reviewProductsFor(discipline: ReviewDiscipline): string[] {
+  return REVIEW_PRODUCTS[discipline]
+}
+
+export function productRequiresDiscipline(productId: string | null | undefined, discipline: ReviewDiscipline): boolean {
+  // Older workflows without a product predate the split and were routed to the
+  // engineer desk. Never expose them to the architect queue by accident.
+  return productId == null
+    ? discipline === 'professional_engineer'
+    : REVIEW_PRODUCTS[discipline].includes(productId)
+}
+
 export function disciplineConfig(id: string): DisciplineConfig {
   const c = DISCIPLINES[id as ReviewDiscipline]
   if (!c) throw new Error(`Unknown review discipline: ${id}`)

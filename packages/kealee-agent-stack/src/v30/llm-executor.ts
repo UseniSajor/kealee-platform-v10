@@ -2,7 +2,7 @@ import { getV30Bot, V30_PARALLEL_BOT_TYPES } from './bots'
 import { buildV30BotUserPrompt } from './bot-task-prompts'
 import { executeV30DesignBot } from './design-bot-executor'
 import { getV30SystemPrompt } from './prompts'
-import { executeV30BotWithoutModel, modelFreeForced } from './model-free'
+import { botMode, executeV30BotEngineFirst, executeV30BotWithoutModel, modelFreeForced } from './model-free'
 import {
   maxTokensForV30Bot,
   resolveV30AnthropicModel,
@@ -33,8 +33,13 @@ function isLlmBot(botType: V30BotType): boolean {
 export async function executeV30BotWithLlm(
   input: V30BotExecutionInput & { systemPrompt: string },
 ): Promise<V30BotExecutionResult> {
-  // No model configured (or model-free forced): the bot is computed from
-  // platform data. It never returns a hollow COMPLETE — see model-free/.
+  // Engine-first (default): Kealee's engines produce the bot; Qwen and Claude
+  // only polish its prose and reason where the engines stop (model-assist/).
+  if (botMode() === 'engine-first') {
+    return executeV30BotEngineFirst(input)
+  }
+  // model-first: the bot's own model prompt, the engines as fallback. With no
+  // model configured the engines produce it — never a hollow COMPLETE.
   if (!shouldUseV30Llm() || !isLlmBot(input.botType)) {
     return executeV30BotWithoutModel(input)
   }

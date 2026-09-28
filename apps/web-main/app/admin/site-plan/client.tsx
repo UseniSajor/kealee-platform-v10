@@ -51,6 +51,19 @@ interface Detail {
     countyCommentsIngested: string[]
   } | null
   staffRunnable: string[]
+  studio: {
+    studioProjectId?: string | null
+    readiness?: {
+      label?: string
+      draftingQa?: { status?: string; issues?: number }
+      engineeringCalculations?: { status?: string; reviewItems?: number; failing?: number }
+      jurisdictionRules?: { status?: string; failing?: number; reviewItems?: number }
+    }
+    worklist?: string[]
+    rules?: { total?: number; failing?: number; reviewRequired?: number }
+    calculations?: { total?: number; failing?: number; awaitingInput?: number }
+    error?: string | null
+  }
 }
 
 const PRODUCT_LABEL: Record<string, string> = {
@@ -342,6 +355,17 @@ function SitePlanRow(props: {
                   )}
                 </div>
                 <div className="space-y-5">
+                  <div>
+                    <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-2">Production workspace</h3>
+                    {d.studio?.studioProjectId ? (
+                      <div className="text-xs text-slate-700">
+                        <div><Badge tone={(d.studio.rules?.failing ?? 0) === 0 && (d.studio.calculations?.failing ?? 0) === 0 ? 'ok' : 'warn'}>{d.studio.readiness?.label ?? 'review required'}</Badge></div>
+                        <div className="mt-1 font-mono text-slate-400">{d.studio.studioProjectId}</div>
+                        <div className="mt-1">Rules: {d.studio.rules?.failing ?? 0} failing, {d.studio.rules?.reviewRequired ?? 0} for review · calculations: {d.studio.calculations?.failing ?? 0} failing, {d.studio.calculations?.awaitingInput ?? 0} awaiting input</div>
+                        {!!d.studio.worklist?.length && <ul className="mt-1 list-disc pl-4 text-slate-500">{d.studio.worklist.slice(0, 5).map(item => <li key={item}>{item}</li>)}</ul>}
+                      </div>
+                    ) : <div className="text-xs text-slate-400">{d.studio?.error ? `Studio persistence unavailable: ${d.studio.error}` : 'Production record has not been generated yet.'}</div>}
+                  </div>
                   <div>
                     <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-2">Order</h3>
                     <div className="text-xs text-slate-700">{d.order?.orderStatus ?? '—'} · {d.order?.fulfillmentStatus ?? '—'}</div>

@@ -102,6 +102,22 @@ describe('F/G/H — human disposition drives training eligibility; software cann
     expect(ledger.map(l => l.eventType)).toContain('GENERATION_REJECTED')
   })
 
+  it('accepting a mixed run preserves guard-rejected model responses as hard negatives', async () => {
+    const { k } = setup()
+    const { run, outputs } = await k.generation.recordGeneration({
+      productType: 'estimate', agent: 'EstimateBot',
+      outputs: [
+        { role: 'primary', artifactType: 'ESTIMATE', sourceSystem: 'estimates', sourceRecordId: 'e3', content: { total: 100 }, title: 'Estimate' },
+        { role: 'model_call_1', artifactType: 'MODEL_RESPONSE', sourceSystem: 'model_assist', sourceRecordId: 'e3#1', content: { output: 'invented $150 total' }, title: 'Rejected rewrite', approvalStatus: 'REJECTED' },
+      ],
+    })
+    await k.generation.disposeGeneration(run.id, 'accepted', { id: 'estimator-1' })
+    expect((await k.registry.getArtifact(outputs[0].id))?.approvalStatus).toBe('HUMAN_APPROVED')
+    const hardNegative = await k.registry.getArtifact(outputs[1].id)
+    expect(hardNegative?.approvalStatus).toBe('REJECTED')
+    expect(hardNegative?.trainingEligibility).toBe('EVAL_ELIGIBLE')
+  })
+
   it('an agent cannot set a human or jurisdiction approval', async () => {
     const { k } = setup()
     const a = await k.registry.ingestArtifact({ artifactType: 'SITE_PLAN', sourceSystem: 'x', sourceRecordId: '1', content: 'p', title: 'plan', generatedByAgent: 'bot' })

@@ -8,6 +8,16 @@
       "require": "./dist/index.js",
       "import": "./dist/index.js",
       "types": "./dist/index.d.ts"
+    },
+    "./v30-pricing-config": {
+      "require": "./dist/v30-pricing-config.js",
+      "import": "./dist/v30-pricing-config.js",
+      "types": "./dist/v30-pricing-config.d.ts"
+    }
+  },
+  "typesVersions": {
+    "*": {
+      "v30-pricing-config": ["dist/v30-pricing-config.d.ts"]
     }
   },
   "scripts": {
@@ -37,7 +47,6 @@
     "seed:gis": "tsx scripts/seed-gis-data.ts"
   },
   "dependencies": {
-    "@kealee/kealee-agent-stack": "workspace:*",
     "@prisma/client": "^5.22.0",
     "prisma": "^5.22.0"
   },

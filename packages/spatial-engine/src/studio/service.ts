@@ -98,17 +98,22 @@ export class StudioService {
     const project = await this.repo.getProject(projectId)
     if (!project) throw new StudioError(404, 'Project not found.')
     const a = authorize(actor, cap, { projectId, state: project.licenceState }, this.now())
-    if (!a.allowed) throw new StudioError(403, a.reason)
+    if ('reason' in a) throw new StudioError(403, a.reason)
     const model = await this.repo.getModel(projectId)
     if (!model) throw new StudioError(404, 'Project model not found.')
     return { project, model, licenceId: a.licenceId }
   }
 
   private async log(e: Omit<NewEvent, 'id' | 'occurredAt'> & { occurredAt?: string }): Promise<EngineeringEvent> {
-    const prev = await this.repo.lastEvent(e.organizationId)
-    const ev = appendEvent(prev, { ...e, id: this.newId() }, this.now().toISOString())
-    await this.repo.insertEvent(ev)
-    return ev
+    // Two writers can race for the next sequence number; the unique
+    // (organizationId, sequence) index makes the loser retry on the new tail.
+    for (let attempt = 0; ; attempt++) {
+      const prev = await this.repo.lastEvent(e.organizationId)
+      const ev = appendEvent(prev, { ...e, id: this.newId() }, this.now().toISOString())
+      try { await this.repo.insertEvent(ev); return ev } catch (err: any) {
+        if (attempt >= 4 || !(err?.code === 'P2002' || /unique/i.test(String(err?.message)))) throw err
+      }
+    }
   }
 
   private eventBase(actor: Actor, p: ProjectRecord): Omit<NewEvent, 'id' | 'eventType'> {
@@ -174,8 +179,8 @@ export class StudioService {
     if (decision === 'MODIFY' && !cmds.length) throw new StudioError(400, 'MODIFY needs the edited commands.')
     const revisionId = this.newId()
     const res = accept(model, row.proposal, { newId: this.newId, now, actorId: actor.userId, revisionId }, decision === 'MODIFY' ? cmds : undefined)
-    if (!res.ok) {
-      if (res.status === 'STALE') {
+    if ('reason' in res) {
+        if (res.status === 'STALE') {
         await this.repo.saveProposal({ ...row, proposal: { ...row.proposal, status: 'STALE' }, organizationId: project.organizationId, workspaceId: project.workspaceId })
         await this.log({ ...this.eventBase(actor, project), eventType: 'PROPOSAL_STALE', proposalId })
       }
@@ -215,7 +220,7 @@ export class StudioService {
     switch (compiled.kind) {
       case 'PROPOSAL': {
         const a = authorize(actor, 'PROPOSE_CHANGE', { projectId: project.id, state: project.licenceState }, this.now())
-        if (!a.allowed) throw new StudioError(403, a.reason)
+        if ('reason' in a) throw new StudioError(403, a.reason)
         return { compiled, proposal: await this.createProposal(actor, project, model, compiled.commands, { mode: req.mode, prompt: req.text, interpretation: compiled }) }
       }
       case 'ALTERNATIVES': {
@@ -288,7 +293,7 @@ export class StudioService {
       issuanceExecuted: !!current && iss!.state === 'EXECUTED',
       previouslySubmitted: project.previouslySubmitted,
     }, this.now())
-    if (!t.allowed) throw new StudioError(403, t.reason)
+    if ('reason' in t) throw new StudioError(403, t.reason)
     if (to === 'READY_FOR_SEAL' && iss?.state !== 'APPROVED') throw new StudioError(409, 'The PE must approve the prepared document before it is ready for seal.')
     const updated = { ...project, state: to, previouslySubmitted: project.previouslySubmitted || to === 'SUBMITTED', updatedAt: this.now().toISOString() }
     await this.repo.saveProject(updated)
@@ -312,7 +317,7 @@ export class StudioService {
     const iss = await this.repo.latestIssuance(projectId)
     if (!iss) throw new StudioError(404, 'No prepared issuance.')
     const r = approveIssuance(iss, { by: actor.userId, authorisedLicenceId: licenceId!, documentHash, currentRevision: model.revision, now: this.now().toISOString() })
-    if (!r.ok) throw new StudioError(409, r.reason)
+    if ('reason' in r) throw new StudioError(409, r.reason)
     await this.repo.saveIssuance(r.record)
     await this.log({ ...this.eventBase(actor, project), eventType: 'ISSUANCE_APPROVED', detail: { issuanceId: iss.id, licenceId } })
     return r.record
@@ -323,7 +328,7 @@ export class StudioService {
     const iss = await this.repo.latestIssuance(projectId)
     if (!iss) throw new StudioError(404, 'No issuance.')
     const r = await executeIssuance(iss, { by: actor.userId, authorisedLicenceId: licenceId!, method, signed, signedDocumentRef, verifier: this.deps.verifier ?? null, currentRevision: model.revision, now: this.now().toISOString() })
-    if (!r.ok) throw new StudioError(409, r.reason)
+    if ('reason' in r) throw new StudioError(409, r.reason)
     await this.repo.saveIssuance(r.record)
     await this.log({ ...this.eventBase(actor, project), eventType: 'ISSUANCE_EXECUTED', detail: { issuanceId: iss.id, signedDocumentHash: r.record.execution!.signedDocumentHash, method } })
     return r.record
@@ -335,7 +340,7 @@ export class StudioService {
     const { project, model } = await this.load(actor, projectId, 'IMPORT_SOURCE_DATA')
     const survey = authorize(actor, 'IMPORT_SURVEY', { projectId, state: project.licenceState }, this.now()).allowed
     const res = importRecords(model, { objects, importedBy: actor.userId, capabilities: { importSurvey: survey, importSourceData: true }, documentRef, revisionId: this.newId(), now: this.now().toISOString() })
-    if (!res.ok) throw new StudioError(403, res.reason)
+    if ('reason' in res) throw new StudioError(403, res.reason)
     const after = stateAfterMutation(project.state)
     const updated = { ...project, state: after.state, currentRevision: res.model.revision, updatedAt: this.now().toISOString() }
     await this.repo.commitRevision(updated, res.model, res.revision)

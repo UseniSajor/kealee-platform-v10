@@ -9,6 +9,16 @@
       "require": "./dist/index.js",
       "import": "./dist/index.js",
       "types": "./dist/index.d.ts"
+    },
+    "./assemblies": {
+      "require": "./dist/seed-assemblies.js",
+      "import": "./dist/seed-assemblies.js",
+      "types": "./dist/seed-assemblies.d.ts"
+    }
+  },
+  "typesVersions": {
+    "*": {
+      "assemblies": ["dist/seed-assemblies.d.ts"]
     }
   },
   "scripts": {

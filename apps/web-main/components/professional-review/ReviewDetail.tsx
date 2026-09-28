@@ -57,7 +57,7 @@ export async function ReviewDetail({ workflowId, discipline }: { workflowId: str
             {planDocuments.length > 0 && (
               <div className="mb-4 flex flex-wrap gap-2">
                 {planDocuments.map((document: any) => (
-                  <a key={document.id} href={`/api/engineer/review/${workflowId}/documents/${document.id}`} className="inline-flex items-center gap-2 rounded-lg bg-slate-950 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800">
+                  <a key={document.id} href={`/api/professional/review/${workflowId}/documents/${document.id}`} className="inline-flex items-center gap-2 rounded-lg bg-slate-950 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800">
                     <Download className="h-4 w-4" /> Download {document.name}
                   </a>
                 ))}

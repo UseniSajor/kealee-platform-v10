@@ -13,7 +13,7 @@
  */
 
 import { prisma } from '@kealee/database'
-import { Workflow, type EvidenceKind, type Discipline, type CountyComment } from '@kealee/pascal-agents/engine'
+import { Studio, Workflow, type EvidenceKind, type Discipline, type CountyComment } from '@kealee/pascal-agents/engine'
 import { productReviewDisciplines } from './delivery'
 
 /** Maps a runner status onto the SitePlanStageStatus the schema already has. */
@@ -93,6 +93,10 @@ export function productionCapabilities(opts: {
     fetchImpl: fetch,
     now: () => new Date(),
 
+    async persistStudioProject(input) {
+      return withOwner(owner, async (db) => Studio.persistGeneratedProject(db, input.result, input.meta))
+    },
+
     /**
      * One row per stage attempt.
      *
@@ -166,20 +170,20 @@ export function productionCapabilities(opts: {
      * category, version, fileUrl and format, and the portal already reads it.
      */
     async storeArtifact(a) {
-      // Idempotent by (workflow, job, filename). A stage that reruns — because
-      // its persist failed, or because of a redelivery — must not leave a
-      // second copy of the same PDF for the customer to choose between. The
-      // live run produced four before this was added.
-      const already = await prisma.document.findFirst({
-        where: { name: a.filename, category: { startsWith: 'site-plan' } },
-        select: { id: true },
-      })
-      if (already) return { documentId: already.id }
-
       const wf = await prisma.sitePlanWorkflow.findUnique({
         where: { id: a.workflowId },
         select: { projectId: true },
       })
+      // Idempotent by (workflow, job, filename). A stage that reruns — because
+      // its persist failed, or because of a redelivery — must not leave a
+      // second copy of the same PDF for the customer to choose between. The
+      // live run produced four before this was added. Project scope matters:
+      // two tenants can legitimately generate the same filename.
+      const already = await prisma.document.findFirst({
+        where: { projectId: wf?.projectId ?? null, name: a.filename, category: { startsWith: 'site-plan' } },
+        select: { id: true },
+      })
+      if (already) return { documentId: already.id }
 
       const doc = await prisma.document.create({
         data: {

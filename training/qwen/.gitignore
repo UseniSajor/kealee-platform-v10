@@ -1,0 +1,5 @@
+# Exported datasets carry customer project data and adapters are large: never commit either.
+data/
+adapters/
+__pycache__/
+*.pyc

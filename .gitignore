@@ -69,3 +69,6 @@ env-templates/railway-cli.env
 scratch/
 apps/web-main/find_replicate.js
 .venv-fp/
+
+# Local Supabase CLI state
+packages/database/supabase/.temp/

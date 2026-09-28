@@ -63,3 +63,7 @@ export * as Jurisdiction from './jurisdictions/determination'
 export * as Persistence from './persistence/index'
 export * as SitePlanOrders from './integration/index'
 export * as SelfPerform from './self-perform/lot-package'
+// Server-safe professional production model and Prisma adapter. The adapter
+// receives its database client from the host, so this does not pull Prisma
+// (or browser-only editor code) into the engine package.
+export * as Studio from './studio/index'

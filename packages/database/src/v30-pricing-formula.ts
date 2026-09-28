@@ -5,7 +5,7 @@ import {
   v30PricingFormulaToRow,
   type V30PricingFormulaConfig,
   type V30PricingFormulaRow,
-} from '@kealee/kealee-agent-stack'
+} from './v30-pricing-config'
 
 function rowToConfig(row: {
   baseAmount: unknown
