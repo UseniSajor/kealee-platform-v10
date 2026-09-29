@@ -21,7 +21,7 @@
     "@kealee/database": "workspace:*",
     "@prisma/client": "^5.22.0",
     "@kealee/core-events": "workspace:*",
-    "ioredis": "^5.3.2",
+    "ioredis": "^6.0.0",
     "zod": "^3.22.4"
   },
   "devDependencies": {

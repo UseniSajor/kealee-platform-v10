@@ -37,7 +37,7 @@
     "docusign-esign": "^8.0.0",
     "fastify": "^4.28.1",
     "googleapis": "^144.0.0",
-    "ioredis": "^5.4.1",
+    "ioredis": "^6.0.0",
     "node-cron": "^3.0.3",
     "pdfkit": "^0.15.0",
     "pino-pretty": "^11.0.0",
