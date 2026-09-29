@@ -139,6 +139,7 @@
     "@types/request": "2.48.13",
     "@types/serve-static": "1.15.10",
     "@types/three": "0.170.0",
+    "agent-browser": "0.38.1",
     "autoprefixer": "^10.4.23",
     "concurrently": "^9.0.1",
     "dotenv": "^17.2.3",

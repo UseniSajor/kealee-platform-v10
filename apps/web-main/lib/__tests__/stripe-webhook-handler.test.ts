@@ -204,7 +204,6 @@ describe('shared Stripe webhook handler', () => {
     ['permit_path_only', ['zoning', 'permit', 'project']],
     ['estimate_permit_bundle', ['estimate', 'zoning', 'permit', 'project']],
     ['design_estimate_permit_bundle', ['design', 'estimate', 'zoning', 'permit', 'project']],
-    ['preliminary_site_plan', ['zoning', 'permit', 'floorplan', 'project']],
     ['whole_home_concept', ['design', 'estimate', 'zoning', 'permit', 'floorplan', 'project']],
   ] as const)('routes %s to its exact automation set and preserves intake data', async (projectPath, botTypes) => {
     await processStripeWebhookEvent(checkoutEvent({ source: 'public_intake', projectPath }), request)
@@ -246,9 +245,6 @@ describe('shared Stripe webhook handler', () => {
   })
 
   it('leaves a site-plan order with the engine when its workflow activated', async () => {
-    // The v30 bots have no site-plan producer; before this the order was sent
-    // to the human queue even though the engine had just been enqueued for it.
-    mocks.triggerV30.mockResolvedValueOnce(null)
     await processStripeWebhookEvent(
       checkoutEvent({ source: 'public_intake', projectPath: 'preliminary_site_plan' }),
       request,
@@ -257,13 +253,14 @@ describe('shared Stripe webhook handler', () => {
       projectId: 'intake-test', productId: 'preliminary_site_plan', isSitePlan: true,
     }))
     expect(mocks.routeToManual).not.toHaveBeenCalled()
+    expect(mocks.ensureRun).not.toHaveBeenCalled()
+    expect(mocks.triggerV30).not.toHaveBeenCalled()
     expect(mocks.updates[0].form_data).toEqual(expect.objectContaining({
       sitePlanWorkflowId: 'wf-test', sitePlanWorkflowDisposition: 'CREATED',
     }))
   })
 
   it('still hands a site-plan order to a human when the engine failed to activate', async () => {
-    mocks.triggerV30.mockResolvedValueOnce(null)
     mocks.activateSitePlan.mockResolvedValueOnce({
       disposition: 'FAILED', workflowId: null, enqueued: [], summary: 'no org',
     })
@@ -274,6 +271,7 @@ describe('shared Stripe webhook handler', () => {
     expect(mocks.routeToManual).toHaveBeenCalledWith(
       expect.objectContaining({ intakeId: 'intake-test', projectPath: 'preliminary_site_plan' }),
     )
+    expect(mocks.triggerV30).not.toHaveBeenCalled()
   })
 
   it('does not send a site-plan order to the human queue when automation is off but the engine is on', async () => {

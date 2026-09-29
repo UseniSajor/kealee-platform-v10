@@ -167,11 +167,17 @@ describe('every buyable preconstruction product is fulfillable', () => {
     expect(deliverable.deliveryDays).toBeTruthy()
   })
 
-  it.each(['cost_estimate', 'certified_estimate', 'permit_path_only', 'preliminary_site_plan',
-    'verified_site_feasibility', 'permit_site_plan'])(
+  it.each(['cost_estimate', 'certified_estimate', 'permit_path_only'])(
     '%s resolves to an automation route',
     key => {
       expect(resolveProductAutomationRoute({ source: 'public_intake', projectPath: key })).toBeDefined()
+    },
+  )
+
+  it.each(['preliminary_site_plan', 'verified_site_feasibility', 'permit_site_plan'])(
+    '%s bypasses bot automation for the spatial-engine workflow',
+    key => {
+      expect(resolveProductAutomationRoute({ source: 'public_intake', projectPath: key })).toBeUndefined()
     },
   )
 

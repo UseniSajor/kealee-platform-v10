@@ -79,13 +79,9 @@ describe('Revenue Product Catalog', () => {
     expect(resolveProductAutomationRoute({ projectPath: 'design_estimate_permit_bundle' })?.fulfillmentBotTypes).toEqual(['design', 'estimate', 'zoning', 'permit', 'project'])
   })
 
-  it('routes every site-intelligence purchase into autonomous fulfillment', () => {
+  it('keeps base site-intelligence purchases out of concept-rendering automation', () => {
     for (const projectPath of ['preliminary_site_plan', 'verified_site_feasibility', 'permit_site_plan']) {
-      expect(resolveProductAutomationRoute({ projectPath })).toEqual({
-        fulfillmentBotTypes: ['zoning', 'permit', 'floorplan', 'project'],
-        workflowTemplateId: 'wf_permit_roadmap_v1',
-        propertyIntelligenceDepth: 'project',
-      })
+      expect(resolveProductAutomationRoute({ projectPath })).toBeUndefined()
     }
   })
 

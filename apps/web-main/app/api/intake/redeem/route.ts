@@ -95,7 +95,8 @@ export async function POST(req: NextRequest) {
       pricingModel: 'promo_code',
       promoCode: promoCode.trim().toUpperCase(),
     }
-    const formData = deliverable?.generatesConcept
+    const sitePlanOrder = isSitePlanOrder(projectPath)
+    const formData = deliverable?.generatesConcept && !sitePlanOrder
       ? {
           ...savedFormData,
           ...orderFields,
@@ -116,7 +117,7 @@ export async function POST(req: NextRequest) {
     // Mirrors processStripeWebhookEvent: rules first, then workflow activation,
     // both of which fold their results into form_data before the single write.
     let sitePlanEngineActive = false
-    if (isSitePlanOrder(projectPath)) {
+    if (sitePlanOrder) {
       if (savedFormData.sitePlanSlaVersion !== 1) {
         Object.assign(formData, createSitePlanSlaFormData(projectPath, new Date(orderFields.paidAt)))
       }
@@ -186,7 +187,25 @@ export async function POST(req: NextRequest) {
     // redemption. If dispatch is unavailable, record an explicit human handoff
     // instead of leaving the customer on an endless "generating" screen.
     let generationState: 'accepted' | 'ready' | 'manual' | 'not_applicable' = 'not_applicable'
-    if (deliverable?.generatesConcept) {
+    if (sitePlanOrder) {
+      if (sitePlanEngineActive) {
+        // Site plans are produced exclusively by the spatial engine. Keep
+        // this branch ahead of concept generation so a future catalog change
+        // cannot send a base plan to Replicate. Explicitly purchased video
+        // add-ons are handled separately by /api/concept/video.
+        generationState = 'accepted'
+        console.log('[intake/redeem] site-plan engine owns fulfilment', intakeId)
+      } else {
+        await routeToManualFulfillment({
+          intakeId,
+          projectPath,
+          reason: 'no_automated_route',
+          stripeSessionId: `promo:${promoCode.trim().toUpperCase()}`,
+          customerEmail: (savedOrder.contact_email as string | null) ?? null,
+        })
+        generationState = 'manual'
+      }
+    } else if (deliverable?.generatesConcept) {
       try {
         const generation = await requestCanonicalConceptGeneration(intakeId)
         generationState = generation.state
@@ -203,13 +222,6 @@ export async function POST(req: NextRequest) {
         })
         generationState = 'manual'
       }
-    } else if (sitePlanEngineActive) {
-      // The engine owns fulfilment: the worker drains the queue and its
-      // delivery bridge adds the human review step for the tiers that include
-      // it. Sending this to the manual queue too would tell ops to draft a
-      // plan the engine is already drafting.
-      generationState = 'accepted'
-      console.log('[intake/redeem] site-plan engine owns fulfilment', intakeId)
     } else {
       // Everything else that was redeemed but has no automated producer — a
       // quote-scoped product, a bundle handled by hand, or a site-plan order

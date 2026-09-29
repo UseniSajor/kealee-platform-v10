@@ -2,12 +2,14 @@ import { describe, expect, it } from 'vitest'
 import { INTAKE_PRICE_CENTS, isBundleProductKey } from '@kealee/core-rules'
 import { CANONICAL_PRODUCT_WORKFLOWS, resolveProductAutomationRoute } from '../product-automation'
 import { SERVICE_DELIVERABLES } from '../service-deliverables'
+import { isSitePlanOrder } from '../site-plan-rules'
 
 /**
  * Coverage audit for the paid-order fulfillment map.
  *
  * A Stripe checkout that completes hands the order to exactly one producer:
  *
+ *   site_plan  — deterministic spatial-engine workflow
  *   automation — `CANONICAL_PRODUCT_WORKFLOWS` route, run by the bot fleet
  *   concept    — canonical v30 adapter at `/api/concept/generate`, for `generatesConcept` services
  *   manual     — the human fulfillment queue
@@ -17,7 +19,7 @@ import { SERVICE_DELIVERABLES } from '../service-deliverables'
  * route here once, which meant a paid order matched neither branch and nothing
  * ran; this test exists so that cannot happen again unnoticed.
  */
-type Producer = 'automation' | 'concept' | 'manual'
+type Producer = 'site_plan' | 'automation' | 'concept' | 'manual'
 
 /**
  * Products delivered by a person by design. Both are scoped or matched before
@@ -29,6 +31,7 @@ const MANUAL_BY_DESIGN: Record<string, string> = {
 }
 
 function producerFor(projectPath: string): Producer {
+  if (isSitePlanOrder(projectPath)) return 'site_plan'
   if (resolveProductAutomationRoute({ projectPath })) return 'automation'
   const deliverable = SERVICE_DELIVERABLES[projectPath]
   // The webhook only reaches the concept generator for non-bundle purchases.
@@ -54,6 +57,14 @@ describe('Paid product fulfillment coverage', () => {
     for (const bundleKey of ['estimate_permit_bundle', 'design_estimate_permit_bundle']) {
       expect(isBundleProductKey(bundleKey)).toBe(true)
       expect(producerFor(bundleKey)).toBe('automation')
+    }
+  })
+
+  it('routes base site-plan purchases only to the spatial engine', () => {
+    for (const projectPath of ['preliminary_site_plan', 'verified_site_feasibility', 'permit_site_plan']) {
+      expect(producerFor(projectPath)).toBe('site_plan')
+      expect(resolveProductAutomationRoute({ projectPath })).toBeUndefined()
+      expect(SERVICE_DELIVERABLES[projectPath]?.generatesConcept).toBe(false)
     }
   })
 

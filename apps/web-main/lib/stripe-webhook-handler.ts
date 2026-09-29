@@ -405,7 +405,22 @@ async function handleCheckoutCompleted(
   // parallel bot service is explicitly enabled. Previously any automation
   // route entered V30 even when the feature flag was off; triggerV30Generation
   // then returned null and the paid order was left without a delivery.
-  if ((isV30Enabled() || isPermitAutomation) && (isV30 || automationRoute)) {
+  if (isSitePlanOrder(projectPath)) {
+    // Site-plan purchases are exclusively owned by the spatial-engine
+    // workflow activated above. This must be the first fulfillment branch:
+    // checkout metadata or a future catalog edit must never route the BASE
+    // plan into V30 concept rendering / Replicate. An explicitly purchased
+    // walkthrough-video add-on remains available through /api/concept/video,
+    // whose entitlement check reads form_data.addOns.
+    if (sitePlanEngineActive) {
+      console.log('[stripe-webhook] site-plan engine owns fulfilment', intakeId)
+    } else {
+      await routeToManualFulfillment({
+        ...manualFallbackContext,
+        reason: 'no_automated_route',
+      })
+    }
+  } else if ((isV30Enabled() || isPermitAutomation) && (isV30 || automationRoute)) {
     if (automationRoute) {
       try {
         const run = await ensureAutonomousFulfillmentRun({
@@ -464,11 +479,6 @@ async function handleCheckoutCompleted(
       )
       await routeToManualFulfillment({ ...manualFallbackContext, reason: 'automation_failed' })
     }
-  } else if (sitePlanEngineActive) {
-    // The site-plan engine is queued for this order; the worker drains it and
-    // its delivery bridge moves the order on. Sending it to the human queue
-    // too would tell ops to draft a plan the engine is already drafting.
-    console.log('[stripe-webhook] site-plan engine owns fulfilment', intakeId)
   } else {
     // Everything else that was paid for but has no automated producer —
     // quote-scoped products, bundles handled by hand, a site-plan order

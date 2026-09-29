@@ -80,24 +80,13 @@ export const CANONICAL_PRODUCT_WORKFLOWS: Readonly<Record<string, ProductAutomat
     workflowTemplateId: 'wf_design_estimate_permit_bundle_v1',
     propertyIntelligenceDepth: 'project',
   },
-  // Site Plan suite. These three were sellable (priced in INTAKE_PRICE_CENTS,
-  // listed on /site-plans) but had no route here, so a paid Site Plan order
-  // matched neither fulfillment branch in the Stripe webhook and nothing ran.
-  preliminary_site_plan: {
-    fulfillmentBotTypes: ['zoning', 'permit', 'floorplan', 'estimate', 'project'],
-    workflowTemplateId: 'wf_permit_roadmap_v1',
-    propertyIntelligenceDepth: 'project',
-  },
-  verified_site_feasibility: {
-    fulfillmentBotTypes: ['zoning', 'permit', 'floorplan', 'estimate', 'project'],
-    workflowTemplateId: 'wf_permit_roadmap_v1',
-    propertyIntelligenceDepth: 'project',
-  },
-  permit_site_plan: {
-    fulfillmentBotTypes: ['zoning', 'permit', 'floorplan', 'estimate', 'project'],
-    workflowTemplateId: 'wf_permit_roadmap_v1',
-    propertyIntelligenceDepth: 'project',
-  },
+  // Site-plan products intentionally do not appear here. They are owned by
+  // the deterministic spatial-engine workflow (siteplan.* jobs), which draws
+  // dimensionally true vector sheets from authoritative GIS and survey data.
+  // Sending the base package through the V30 bot fleet can reach concept
+  // rendering and Replicate, which is neither needed nor purchased here.
+  // A separately purchased video_presentation / interactive_walk add-on is
+  // produced later through /api/concept/video after entitlement is checked.
   whole_home_concept: {
     fulfillmentBotTypes: ['design', 'estimate', 'zoning', 'permit', 'floorplan', 'project'],
     workflowTemplateId: 'wf_design_estimate_permit_bundle_v1',
