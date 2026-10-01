@@ -1762,8 +1762,7 @@ async function main(): Promise<void> {
                 + `ground ${(r.cutUpFt ?? 0).toFixed(2)} ft at the head and `
                 + `${(r.cutDownFt ?? 0).toFixed(2)} ft at the outlet. `
               : '')
-            + 'GRADES TO BE SET FROM THE FIELD-RUN '
-            + 'TOPOGRAPHIC SURVEY. Establish sod before the contributing area is stabilised.',
+            + 'Grades from county 2 ft contour mapping. Establish sod before the contributing area is stabilised.',
         },
       } as never as SiteFeature)
     }

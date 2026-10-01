@@ -10,7 +10,7 @@
  * contours already on the twin and routed D8 (steepest of eight neighbours).
  *
  * This is a CONCEPT-LEVEL determination from 2-ft mapping. It is stated as
- * such on the sheet, and a field-run survey resets it.
+ * such on the sheet (data source stated; no survey directive).
  */
 import type { Position } from './site-twin'
 
