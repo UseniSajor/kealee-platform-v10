@@ -1,0 +1,462 @@
+{
+ "_source": "Boundary of record: plat 'LOTS 1-6 AND OUTLOT A, ESTATES AT INDIAN HEAD', Plat Book PM 228 Plat 83. Lot geometry from the county parcel layer (PGAtlas Address/MapServer/15), which reproduces the plat's bearings to the second and its distances to 0.02 ft (checked against the 2009 approved sheet, DPW&T permit 9399-2009). Estates Court dedication = the tract less the lots, closed at the Indian Head Hwy R/W on the plat's N 51-26-53 W 147.04' call. A Maryland licensed surveyor must confirm before technical plans are sealed.",
+ "basisOfBearings": "Maryland State Plane Coordinate System (NAD 83), per plat PM 228/83",
+ "programme": {
+  "totalFloorAreaSqFt": 2800,
+  "storeys": 2,
+  "hasBasement": true,
+  "garage": "attached_2_car",
+  "coveredPorch": true,
+  "garageEntry": "front",
+  "footprintSource": "DPW&T 9399-2009 approved sheet, transcribed"
+ },
+ "foundation": "basement",
+ "frontSetbackFt": 25,
+ "sideSetbackFt": 8,
+ "frontsOn": "ESTATES COURT",
+ "utilityMainLabel": "PROP. 8\" WATER & 8\" SEWER IN ESTATES COURT",
+ "frontDoorAboveStreetFt": 2.0,
+ "address": "205 ESTATES COURT",
+ "reference": {
+  "subdivisionName": "ESTATES AT INDIAN HEAD",
+  "liber": "PM 228",
+  "folio": "83",
+  "recordedIn": "Plat Book PM 228 Plat 83",
+  "lot": "4",
+  "account": "3987690",
+  "deed": "L.32062 F.043"
+ },
+ "pointOfBeginning": [
+  1311286.8481927062,
+  367200.34390675335
+ ],
+ "recordedAreaSqFt": 20024.0,
+ "calls": [
+  {
+   "kind": "line",
+   "bearing": "N 05-44-43 E",
+   "distanceFt": 102.84,
+   "label": "lot 4 line 1"
+  },
+  {
+   "kind": "line",
+   "bearing": "S 84-21-06 E",
+   "distanceFt": 17.0,
+   "label": "lot 4 line 2"
+  },
+  {
+   "kind": "line",
+   "bearing": "S 89-20-02 E",
+   "distanceFt": 10.42,
+   "label": "lot 4 line 3"
+  },
+  {
+   "kind": "line",
+   "bearing": "N 80-42-25 E",
+   "distanceFt": 10.42,
+   "label": "lot 4 line 4"
+  },
+  {
+   "kind": "line",
+   "bearing": "N 70-44-51 E",
+   "distanceFt": 10.42,
+   "label": "lot 4 line 5"
+  },
+  {
+   "kind": "line",
+   "bearing": "N 60-47-17 E",
+   "distanceFt": 10.42,
+   "label": "lot 4 line 6"
+  },
+  {
+   "kind": "line",
+   "bearing": "N 50-49-44 E",
+   "distanceFt": 10.42,
+   "label": "lot 4 line 7"
+  },
+  {
+   "kind": "line",
+   "bearing": "N 40-52-10 E",
+   "distanceFt": 10.42,
+   "label": "lot 4 line 8"
+  },
+  {
+   "kind": "line",
+   "bearing": "N 30-54-37 E",
+   "distanceFt": 10.42,
+   "label": "lot 4 line 9"
+  },
+  {
+   "kind": "line",
+   "bearing": "N 20-57-03 E",
+   "distanceFt": 10.42,
+   "label": "lot 4 line 10"
+  },
+  {
+   "kind": "line",
+   "bearing": "N 10-59-29 E",
+   "distanceFt": 10.42,
+   "label": "lot 4 line 11"
+  },
+  {
+   "kind": "line",
+   "bearing": "N 01-01-56 E",
+   "distanceFt": 10.42,
+   "label": "lot 4 line 12"
+  },
+  {
+   "kind": "line",
+   "bearing": "N 86-02-45 E",
+   "distanceFt": 107.92,
+   "label": "lot 4 line 13"
+  },
+  {
+   "kind": "line",
+   "bearing": "S 03-27-28 E",
+   "distanceFt": 90.53,
+   "label": "lot 4 line 14"
+  },
+  {
+   "kind": "line",
+   "bearing": "S 68-24-27 W",
+   "distanceFt": 88.03,
+   "label": "lot 4 line 15"
+  },
+  {
+   "kind": "line",
+   "bearing": "S 68-24-26 W",
+   "distanceFt": 105.32,
+   "label": "lot 4 line 16"
+  },
+  {
+   "kind": "line",
+   "bearing": "S 68-24-28 W",
+   "distanceFt": 25.5,
+   "label": "lot 4 line 17"
+  },
+  {
+   "kind": "line",
+   "bearing": "S 68-24-33 W",
+   "distanceFt": 2.8,
+   "label": "lot 4 line 18"
+  }
+ ],
+ "fixedFootprint": [
+  [
+   1311417.5852736763,
+   367332.1835677326
+  ],
+  [
+   1311439.0145840843,
+   367310.94122048747
+  ],
+  [
+   1311433.5164598015,
+   367304.3689224878
+  ],
+  [
+   1311442.174085399,
+   367295.5561146157
+  ],
+  [
+   1311418.3628769433,
+   367274.90805822465
+  ],
+  [
+   1311403.2208426357,
+   367289.7171335461
+  ],
+  [
+   1311394.801350617,
+   367280.8923092837
+  ],
+  [
+   1311378.9613958152,
+   367296.72084390174
+  ],
+  [
+   1311393.164252469,
+   367311.56216149236
+  ],
+  [
+   1311394.5202623964,
+   367310.1239880701
+  ]
+ ],
+ "fixedPaving": [
+  {
+   "kind": "Driveway",
+   "label": "PROP. DRIVEWAY \u2014 FRONT-LOAD GARAGE",
+   "ring": [
+    [
+     1311361.7733833445,
+     367317.65853655746
+    ],
+    [
+     1311368.5915814254,
+     367325.53816693777
+    ],
+    [
+     1311371.0052531003,
+     367329.56947718165
+    ],
+    [
+     1311392.281421776,
+     367311.9753423348
+    ],
+    [
+     1311384.1529450496,
+     367302.14576882013
+    ],
+    [
+     1311379.1306724993,
+     367296.89773007965
+    ],
+    [
+     1311357.8704628348,
+     367314.478667767
+    ]
+   ],
+   "note": "Front-load garage; drive the width of the door straight to the street."
+  },
+  {
+   "kind": "Apron",
+   "label": "DRIVEWAY APRON \u2014 DPW&T RURAL SWALE/CULVERT DRIVEWAY",
+   "ring": [
+    [
+     1311356.9639120009,
+     367344.15656330896
+    ],
+    [
+     1311356.9292764838,
+     367343.6587705667
+    ],
+    [
+     1311356.944430901,
+     367343.1600045124
+    ],
+    [
+     1311357.009224316,
+     367342.66523280076
+    ],
+    [
+     1311357.123011394,
+     367342.1793833033
+    ],
+    [
+     1311357.2846588276,
+     367341.70729502715
+    ],
+    [
+     1311357.492556627,
+     367341.2536699194
+    ],
+    [
+     1311357.7446341524,
+     367340.82302603585
+    ],
+    [
+     1311358.03838074,
+     367340.419652542
+    ],
+    [
+     1311358.3708707062,
+     367340.0475669931
+    ],
+    [
+     1311358.7387924877,
+     367339.7104753202
+    ],
+    [
+     1311370.9884657802,
+     367329.5637525537
+    ],
+    [
+     1311368.5743746464,
+     367325.5317248148
+    ],
+    [
+     1311368.5719832415,
+     367325.5280980596
+    ],
+    [
+     1311368.5692860524,
+     367325.5246925725
+    ],
+    [
+     1311361.7591944973,
+     367317.65444748587
+    ],
+    [
+     1311361.7562118848,
+     367317.6512889745
+    ],
+    [
+     1311361.7529663641,
+     367317.64840128203
+    ],
+    [
+     1311357.8548864634,
+     367314.4724705615
+    ],
+    [
+     1311346.0798869245,
+     367324.2260087207
+    ],
+    [
+     1311345.6728043316,
+     367324.5297106472
+    ],
+    [
+     1311345.2370123353,
+     367324.7905485923
+    ],
+    [
+     1311344.7770074566,
+     367325.0058312185
+    ],
+    [
+     1311344.2975360462,
+     367325.1733372303
+    ],
+    [
+     1311343.8035453106,
+     367325.29133829335
+    ],
+    [
+     1311343.3001322686,
+     367325.3586168674
+    ],
+    [
+     1311342.7924911575,
+     367325.37447876926
+    ],
+    [
+     1311342.285859841,
+     367325.33876033506
+    ],
+    [
+     1311341.7854657627,
+     367325.2518301092
+    ],
+    [
+     1311341.2964720111,
+     367325.11458504165
+    ],
+    [
+     1311340.8239240453,
+     367324.9284412329
+    ],
+    [
+     1311340.3726976358,
+     367324.69531932304
+    ],
+    [
+     1311340.4596388391,
+     367324.7459893152
+    ],
+    [
+     1311343.0096149526,
+     367326.4954694494
+    ],
+    [
+     1311345.423489242,
+     367328.42743167846
+    ],
+    [
+     1311348.4081632192,
+     367331.26907753194
+    ],
+    [
+     1311350.4566307517,
+     367333.5857215997
+    ],
+    [
+     1311352.9115501519,
+     367336.89579723164
+    ],
+    [
+     1311354.5334991387,
+     367339.52801085566
+    ],
+    [
+     1311355.9574157477,
+     367342.2724103704
+    ],
+    [
+     1311357.175804448,
+     367345.11469604704
+    ],
+    [
+     1311357.1806805076,
+     367345.1294560897
+    ],
+    [
+     1311357.0479924863,
+     367344.64842477854
+    ]
+   ],
+   "note": "Open section: 20 ft at the R/W line, 5-ft radius returns to the edge of pavement (following the cul-de-sac arc where it fronts the bulb); 15-in culvert or swale driveway per DPW&T Std. 600.02 / 100-series."
+  },
+  {
+   "kind": "Stoop",
+   "label": "STOOP",
+   "ring": [
+    [
+     1311405.7806753947,
+     367319.16076969367
+    ],
+    [
+     1311411.3118421154,
+     367324.94057892135
+    ],
+    [
+     1311407.6994613481,
+     367328.3975581217
+    ],
+    [
+     1311402.1682946275,
+     367322.61774889403
+    ]
+   ]
+  },
+  {
+   "kind": "Walk",
+   "label": "4' LEAD WALK",
+   "ring": [
+    [
+     1311393.935672216,
+     367310.74399979983
+    ],
+    [
+     1311393.164252469,
+     367311.56216149236
+    ],
+    [
+     1311392.8698696473,
+     367311.2545452812
+    ],
+    [
+     1311391.016614477,
+     367313.52462039137
+    ],
+    [
+     1311405.4752610724,
+     367325.3284419643
+    ],
+    [
+     1311407.6422949608,
+     367322.67401543306
+    ],
+    [
+     1311402.3565163175,
+     367317.61865024606
+    ]
+   ]
+  }
+ ],
+ "approvedLayout2009": {
+  "finishedFloorElevFtWsscDatum": 212.67,
+  "footprintSqFt": 1902
+ }
+}

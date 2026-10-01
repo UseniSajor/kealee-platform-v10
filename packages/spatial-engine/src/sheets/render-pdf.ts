@@ -210,7 +210,7 @@ function titleBlock(
   // Deduplicated: ten proposed lots on one parcel share one address, and the
   // block printed it ten times.
   const uniqueAddresses = [...new Set(lotAddresses)]
-  row('ADDRESS', uniqueAddresses.length ? uniqueAddresses.join('  ·  ') : ctx.twin.address)
+  row('ADDRESS', uniqueAddresses.length ? compactAddresses(uniqueAddresses) : ctx.twin.address)
   row('JURISDICTION', jurisdictionName(ctx.twin.jurisdictionCode))
   row('ZONE', ctx.twin.zoneCode ?? 'Not determined')
   row('SHEET', `${ctx.sheet} — ${SHEET_TITLES[ctx.sheet]}`)
@@ -1652,6 +1652,113 @@ function drawGeometry(doc: Doc, ctx: SheetContext, vp: Viewport, b: Bounds): voi
     })
   }
 
+  // ── Existing roads beyond the site ────────────────────────────────────────
+  //
+  // An approved PG sheet draws the road the entrance meets — MD 210's edges of
+  // road, lane lines and name — and the streets around the subdivision, so a
+  // reviewer reads the entrance against the highway and the lots against their
+  // neighbours' frontage. Drafted as the 2009 Landesign sheet does: edges of
+  // road solid, lane and centre lines dash-dot, rights-of-way long-dash.
+  {
+    const roadPen: Record<string, { width: number; color: string; dash?: number[] }> = {
+      'edge-of-road': { width: 0.9, color: '#333333' },
+      'lane-line': { width: 0.5, color: '#555555', dash: [10, 3, 2, 3] },
+      'centerline': { width: 0.6, color: '#555555', dash: [14, 3, 3, 3] },
+      'right-of-way': { width: 0.7, color: '#555555', dash: [18, 4] },
+      'shoulder': { width: 0.5, color: '#777777', dash: [4, 3] },
+    }
+    const named = new Set<string>()
+    for (const f of t.features) {
+      if (f.kind !== 'ExistingFeature') continue
+      const a = ((f as { attributes?: Record<string, unknown> }).attributes ?? {})
+      const type_ = String(a.roadLine ?? '')
+      const line = (f as { line?: Position[] }).line
+      if (!type_ || !line || line.length < 2) continue
+      const pts = line.map(q => P(q))
+      polyline(doc, pts, roadPen[type_] ?? roadPen['edge-of-road'], false)
+      const road = String(a.road ?? '')
+      const lbl = String(a.roadLabel ?? '')
+      // The road is named once, on the line nearest the middle of its run.
+      if (lbl && !named.has(road) && (type_ === 'centerline' || type_ === 'lane-line')) {
+        named.add(road)
+        const i = Math.floor(pts.length / 2)
+        const q0 = pts[Math.max(0, i - 1)], q1 = pts[Math.min(pts.length - 1, i)]
+        const mid: [number, number] = pts.length > 2 ? [pts[i][0], pts[i][1]] : [(pts[0][0] + pts[1][0]) / 2, (pts[0][1] + pts[1][1]) / 2]
+        void q0; void q1
+        L.add({
+          text: lbl, at: mid, dx: -110, dy: -14, width: 220, lines: 2, align: 'center',
+          size: 7.5, font: 'Helvetica-Bold', color: '#333333', priority: 88, required: true,
+          shifts: [[-110, 6], [-110, -28], [-110, 18]],
+        })
+      }
+    }
+  }
+
+  // ── Driveway culverts ─────────────────────────────────────────────────────
+  //
+  // An open-section street carries its roadside swale under every driveway in
+  // a pipe — DPW&T Std. 600.02's "culvert driveway". Drafted as a pipe is on a
+  // PG plan: a double line to scale, a flared end section at each end, and the
+  // size, material and length lettered once per culvert.
+  for (const g of genericOfKind(t, 'ProposedFeature')) {
+    const a = (g.attributes ?? {}) as { type?: string; sizeIn?: number; label?: string; lengthFt?: number; material?: string }
+    if (!/culvert/i.test(String(a.type ?? '')) || !g.line || g.line.length < 2) continue
+    const p0 = P(g.line[0] as Position), p1 = P(g.line[g.line.length - 1] as Position)
+    const dx = p1[0] - p0[0], dy = p1[1] - p0[1], ln = Math.hypot(dx, dy) || 1
+    const ux = dx / ln, uy = dy / ln, nx = -uy, ny = ux
+    const half = Math.max(1.2, ((a.sizeIn ?? 15) / 12 / 2) * vp.pointsPerFoot)
+    doc.save()
+    for (const sgn of [1, -1]) {
+      doc.moveTo(p0[0] + nx * half * sgn, p0[1] + ny * half * sgn)
+         .lineTo(p1[0] + nx * half * sgn, p1[1] + ny * half * sgn)
+    }
+    doc.lineWidth(1.1).strokeColor('#0d47a1').stroke()
+    // flared end sections, 2x the pipe width at the mouth
+    for (const [e, d] of [[p0, -1], [p1, 1]] as [[number, number], number][]) {
+      const fl = 2.2 * half
+      doc.moveTo(e[0] + nx * half, e[1] + ny * half)
+         .lineTo(e[0] + ux * d * fl + nx * half * 2, e[1] + uy * d * fl + ny * half * 2)
+         .lineTo(e[0] + ux * d * fl - nx * half * 2, e[1] + uy * d * fl - ny * half * 2)
+         .lineTo(e[0] - nx * half, e[1] - ny * half)
+         .lineWidth(0.9).strokeColor('#0d47a1').stroke()
+    }
+    doc.restore()
+    const mid: [number, number] = [(p0[0] + p1[0]) / 2, (p0[1] + p1[1]) / 2]
+    L.add({
+      text: `${a.sizeIn ?? 15}" ${a.material ?? 'RCP'} CULVERT${a.lengthFt ? `, L=${Math.round(a.lengthFt)}'` : ''}`,
+      at: mid, dx: 6, dy: -10, width: 96, size: 5.8, font: 'Helvetica-Bold', color: '#0d47a1',
+      priority: 78, required: true, shifts: [[6, 4], [-102, -10], [-102, 4], [6, -22]],
+    })
+  }
+
+  // ── Street lights ─────────────────────────────────────────────────────────
+  //
+  // The 2009 lighting plan's symbol: a filled disc with four rays, lettered
+  // once for the set with the fixture and the utility.
+  {
+    let lettered = false
+    for (const g of genericOfKind(t, 'ProposedFeature')) {
+      const a = (g.attributes ?? {}) as { type?: string; label?: string }
+      if (!/street light/i.test(String(a.type ?? '')) || !g.point) continue
+      const q = P(g.point as Position)
+      doc.save()
+      doc.circle(q[0], q[1], 2.6).fillColor('#000000').fill()
+      for (let k = 0; k < 4; k++) {
+        const an = Math.PI / 4 + k * Math.PI / 2
+        doc.moveTo(q[0] + Math.cos(an) * 3.2, q[1] + Math.sin(an) * 3.2)
+           .lineTo(q[0] + Math.cos(an) * 6, q[1] + Math.sin(an) * 6)
+      }
+      doc.lineWidth(0.8).strokeColor('#000000').stroke()
+      doc.restore()
+      L.add({
+        text: lettered ? 'SL' : (a.label ?? 'PROP. STREET LIGHT'), at: q, dx: 7, dy: -9,
+        width: lettered ? 14 : 120, size: lettered ? 5.5 : 6, font: 'Helvetica-Bold', color: '#000000',
+        priority: lettered ? 40 : 74, shifts: [[7, 3], [-127, -9], [-127, 3]],
+      })
+      lettered = true
+    }
+  }
+
   // ── Retaining walls ───────────────────────────────────────────────────────
   //
   // A wall is a STRUCTURE and is drafted as one: a heavy solid line with tick
@@ -2068,7 +2175,13 @@ function streetLabel(name: string | null): string {
   // A site plan shows the fronting street and names it. It is also how a
   // reviewer confirms which lot line is the front, and therefore which setback
   // applies where.
-  const streets = (t as { streets?: { name: string | null; paths: Position[][] }[] }).streets ?? []
+  // When the plan supplies its roads explicitly — traced off an approved sheet
+  // with edges of road and R/W — the county's compiled centrelines are not
+  // drawn as well: they duplicate those roads and wander across a proposed
+  // street's right-of-way.
+  const planRoads = t.features.some(f => f.kind === 'ExistingFeature'
+    && Boolean(((f as { attributes?: Record<string, unknown> }).attributes ?? {}).roadLine))
+  const streets = planRoads ? [] : ((t as { streets?: { name: string | null; paths: Position[][] }[] }).streets ?? [])
   for (const st of streets) {
     for (const path of st.paths) {
       if (path.length < 2) continue
@@ -2513,6 +2626,22 @@ const COUNTY_DETAILS: { file: string; title: string; std: string; credit?: strin
 ]
 
 /**
+ * The RURAL (open-section) standards — the ones an approved PG street tree and
+ * lighting plan on an open-section street carries: street light location,
+ * street tree placement with the standard swale and culvert driveways, and tree
+ * installation. Curb and gutter and a sidewalk ramp are wrong details on a
+ * street that has neither, so a plan record declaring `openSection` takes these.
+ */
+const COUNTY_DETAILS_RURAL: { file: string; title: string; std: string; credit?: string }[] = [
+  { file: 'dpwt-600-02-street-tree-placement-rural.png',
+    title: 'STREET TREE PLACEMENT IN RURAL R/W — SWALE & CULVERT DRIVEWAYS', std: 'PGC DPW&T STD. 600.02' },
+  { file: 'dpwt-500-10-street-light-rural.png',
+    title: 'STREET LIGHT LOCATION — RURAL RESIDENTIAL', std: 'PGC DPW&T STD. 500.10' },
+  { file: 'dpwt-600-04-street-tree-installation-rural.png',
+    title: 'STREET TREE INSTALLATION IN RURAL R/W', std: 'PGC DPW&T STD. 600.04' },
+]
+
+/**
  * Project-specific exhibits, keyed by the project they belong to.
  *
  * The WSSC water and sewer connection sketch was added straight into
@@ -2543,12 +2672,14 @@ const PROJECT_EXHIBITS: Record<string, { file: string; title: string; std: strin
 function countyDetails(
   doc: Doc, x: number, y: number, w: number, h: number, exhibits: string[] = [],
   jurisdictionCode?: string,
+  openSection = false,
 ): number {
   const dir = join(__dirname, '..', '..', 'assets', 'details')
   const extra = exhibits.map(k => PROJECT_EXHIBITS[k]).filter(Boolean)
   // PGC DPW&T standards govern only in PG. Reproduced on another
   // jurisdiction's plan they are the wrong standard under a real number.
-  const standards = (profileFor(jurisdictionCode)?.reproducesStandardDetails ?? true) ? COUNTY_DETAILS : []
+  const standards = (profileFor(jurisdictionCode)?.reproducesStandardDetails ?? true)
+    ? (openSection ? COUNTY_DETAILS_RURAL : COUNTY_DETAILS) : []
   const avail = [...standards, ...extra].filter(d => existsSync(join(dir, d.file)))
   if (!avail.length) return y
 
@@ -2661,6 +2792,7 @@ function preparerPanel(doc: Doc, x: number, y: number, w: number, ctx: SheetCont
 }
 
 function generalNotes(doc: Doc, x: number, y: number, twin?: SiteTwin): number {
+  const openSection = Boolean((twin as { platRecord?: { openSection?: unknown } } | undefined)?.platRecord?.openSection)
   // The boundary note has to match where the boundary CAME FROM.
   //
   // It said flatly that the boundary is compiled GIS and not a survey. On a
@@ -2696,7 +2828,9 @@ function generalNotes(doc: Doc, x: number, y: number, twin?: SiteTwin): number {
     // word-for-word against the State source and rendered on C-400 and C-700.
     // Duplicating it here — with the wrong citation — would put the error the
     // repo went to the trouble of catching back onto every sheet.
-    'CONNECT TO EXISTING PAVEMENT, CURB AND GUTTER, DRIVEWAY AND SIDEWALK IN LINE AND GRADE.',
+    openSection
+      ? 'CONNECT TO EXISTING PAVEMENT, SHOULDER AND ROADSIDE SWALE IN LINE AND GRADE.'
+      : 'CONNECT TO EXISTING PAVEMENT, CURB AND GUTTER, DRIVEWAY AND SIDEWALK IN LINE AND GRADE.',
     // THE CULVERT QUESTION, ANSWERED ON THE SHEET.
     //
     // "Is there a culvert under the driveway" is one of the first things a
@@ -2708,7 +2842,13 @@ function generalNotes(doc: Doc, x: number, y: number, twin?: SiteTwin): number {
     // depressed apron. This frontage is the second kind, the gutter is
     // existing, and the on-lot drainage runs the other way — to the swale in
     // the rear easement, which crosses no driveway on any of the four lots.
-    'NO DRIVEWAY CULVERT IS REQUIRED. THIS FRONTAGE IS AN EXISTING CURB AND GUTTER SECTION, NOT ' +
+    // On a rural open section the answer is the other one: every driveway
+    // crosses the roadside swale on a culvert (DPW&T Std. 600.02).
+    openSection
+      ? 'DRIVEWAY CULVERTS ARE REQUIRED. THE STREET IS A RURAL OPEN SECTION: EACH DRIVEWAY CROSSES THE ' +
+        'ROADSIDE SWALE ON A 15" RCP CULVERT WITH FLARED END SECTIONS PER DPW&T STD. 600.02. NO CURB AND ' +
+        'GUTTER IS PROPOSED.'
+      : 'NO DRIVEWAY CULVERT IS REQUIRED. THIS FRONTAGE IS AN EXISTING CURB AND GUTTER SECTION, NOT ' +
     'AN OPEN DITCH SECTION: GUTTER FLOW IS CARRIED THROUGH EACH ENTRANCE BY THE DEPRESSED CURB ' +
     `AT THE APRON PER ${(profileFor(twin?.jurisdictionCode)?.apronStandard ?? 'DPW&T STANDARD') === 'DPW&T STANDARD' ? 'DPW&T STD. 300.01 NOTE 6' : profileFor(twin?.jurisdictionCode)!.apronStandard}. ON-LOT DRAINAGE IS COLLECTED BY THE REAR-YARD ` +
     'SWALE IN THE REAR DRAINAGE EASEMENT AND CROSSES NO DRIVEWAY OR APRON.',
@@ -3621,6 +3761,22 @@ export interface RenderedPdf {
  * would leave nobody able to see what is wrong.
  */
 /**
+ * Several addresses on ONE street read as one: "200, 201, 202 ESTATES COURT".
+ * Six full addresses joined ran off the title column on a six-lot set.
+ */
+function compactAddresses(addresses: string[]): string {
+  const parsed = addresses.map(a => /^(\d+[A-Z]?)\s+(.+)$/i.exec(a.trim()))
+  if (addresses.length > 1 && parsed.every(Boolean)) {
+    const streets = new Set(parsed.map(m => m![2].toUpperCase()))
+    if (streets.size === 1) {
+      const nums = parsed.map(m => m![1]).sort((a, b) => parseInt(a, 10) - parseInt(b, 10))
+      return `${nums.join(', ')} ${parsed[0]![2]}`
+    }
+  }
+  return addresses.join('  ·  ')
+}
+
+/**
  * The cover plate — what stands in the drawing area of C-000.
  *
  * A cover sheet's job is to say what the set is, what is in it, who is
@@ -3640,7 +3796,7 @@ function coverPlate(doc: Doc, ctx: SheetContext, vp: Viewport, sheet: SheetSize)
   const lotAddresses = ((ctx.twin as unknown as {
     projectLots?: Array<{ address?: string }>
   }).projectLots ?? []).map(l => l.address).filter((a): a is string => Boolean(a))
-  label(doc, x + 24, y + 102, lotAddresses.length ? lotAddresses.join('   ·   ') : ctx.twin.address, 11)
+  label(doc, x + 24, y + 102, lotAddresses.length ? compactAddresses([...new Set(lotAddresses)]) : ctx.twin.address, 11)
   label(doc, x + 24, y + 120, jurisdictionName(ctx.twin.jurisdictionCode), 11)
   doc.save().lineWidth(1.4).strokeColor('#000000')
     .moveTo(x + 24, y + 140).lineTo(x + w - 24, y + 140).stroke().restore()
@@ -3900,7 +4056,18 @@ export function renderSheetSetPdf(input: RenderPdfInput): Promise<RenderedPdf> {
       if (ctx.sheet !== 'C-000') drawGeometry(doc, ctx, vp, b)
       doc.restore()
       doc.restore()
-      if (ctx.sheet === 'C-000') coverPlate(doc, ctx, vp, sheetSize)
+      // The cover is laid out in the DRAWING COLUMN, not the plan viewport:
+      // the viewport is fitted to the site and can run under the title column,
+      // which put the vicinity map and status box across the title block.
+      if (ctx.sheet === 'C-000') {
+        const coverX = sheetSize.marginPt + 12
+        const coverY = sheetSize.marginPt + 12
+        const coverRight = sheetSize.widthPt - sheetSize.marginPt - titleColW - 12
+        coverPlate(doc, ctx, {
+          ...vp, originX: coverX, originY: coverY,
+          drawWidthPt: coverRight - coverX, drawHeightPt: Math.min(vp.drawHeightPt, clipH - 24),
+        }, sheetSize)
+      }
 
       const drawRight = sheetSize.widthPt - sheetSize.marginPt - titleColW
       northArrow(doc, drawRight - 40, sheetSize.marginPt + 24)
@@ -3909,7 +4076,8 @@ export function renderSheetSetPdf(input: RenderPdfInput): Promise<RenderedPdf> {
       if (!planOnly) {
         countyDetails(doc, sheetSize.marginPt + 16, bandTop,
           drawRight - sheetSize.marginPt - 32, DETAILS_BAND_PT - 46,
-          (ctx as { exhibits?: string[] }).exhibits ?? [], ctx.twin.jurisdictionCode)
+          (ctx as { exhibits?: string[] }).exhibits ?? [], ctx.twin.jurisdictionCode,
+          Boolean((ctx.twin as { platRecord?: { openSection?: unknown } }).platRecord?.openSection))
       }
       graphicScale(doc, sheetSize.marginPt + 16, sheetSize.heightPt - sheetSize.marginPt - 26, vp)
       if (planOnly) {
