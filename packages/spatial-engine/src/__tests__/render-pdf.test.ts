@@ -143,12 +143,13 @@ describe('dimensional truth', () => {
 })
 
 describe('what the sheet must say', () => {
-  it('carries the preliminary disclosure when the data is Level 1', async () => {
+  it('carries the GIS source statement when the data is Level 1', async () => {
     const out = await renderSheetSetPdf({ sheets: [ctxFor('C-100')] })
     // pdfkit compresses content streams, so assert on the context rather than
     // the bytes — the renderer draws exactly what the context carries.
     expect(ctxFor('C-100').disclosure).toBe(LEVEL_1_DISCLOSURE)
-    expect(LEVEL_1_DISCLOSURE).toMatch(/NOT FOR PERMIT OR CONSTRUCTION/i)
+    expect(LEVEL_1_DISCLOSURE).toMatch(/NOT A FIELD SURVEY/i)
+    expect(LEVEL_1_DISCLOSURE).not.toMatch(/PRELIMINARY|NOT FOR PERMIT OR CONSTRUCTION/i)
     expect(out.buffer.length).toBeGreaterThan(1000)
   })
 

@@ -155,7 +155,7 @@ export async function claimReview(formData: FormData) {
             twinRevision,
             documentId: document.id,
             contentHash,
-            disclosure: 'Generated preliminary plan for licensed professional review. Not for permit or construction.',
+            disclosure: 'Final plan for engineer of record review and seal.',
           },
         })
       }

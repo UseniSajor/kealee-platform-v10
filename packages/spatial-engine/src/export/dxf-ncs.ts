@@ -259,12 +259,15 @@ export function unmappedKinds(twin: SiteTwin): string[] {
  * so the only statuses this writer can stamp are the unsealed ones.
  */
 export type CadDocumentStatus =
+  | 'FINAL_FOR_SEAL'
   | 'INTERNAL_DRAFT'
   | 'REVIEW_COPY'
   | 'PRELIMINARY_NOT_FOR_CONSTRUCTION'
   | 'PROFESSIONALLY_REVIEWED_UNSEALED'
 
 const STATUS_TEXT: Record<CadDocumentStatus, string> = {
+  FINAL_FOR_SEAL:
+    'FINAL - FOR ENGINEER OF RECORD REVIEW AND SEAL',
   INTERNAL_DRAFT:
     'INTERNAL DRAFT - NOT REVIEWED - NOT FOR CONSTRUCTION OR PERMIT SUBMISSION',
   REVIEW_COPY:
@@ -276,7 +279,7 @@ const STATUS_TEXT: Record<CadDocumentStatus, string> = {
 }
 
 export interface DxfExportOptions {
-  /** Defaults to PRELIMINARY. There is no SEALED option, deliberately. */
+  /** Defaults to FINAL_FOR_SEAL. There is no SEALED option, deliberately — the seal is the engineer's. */
   status?: CadDocumentStatus
   /** Coordinate reference system the twin's coordinates are in, for the stamp. */
   crs?: string | null
@@ -310,7 +313,7 @@ type GeometryBearing = { ring?: Ring; line?: number[][]; point?: number[] }
  */
 export function toDxfNcs(twin: SiteTwin, options: DxfExportOptions = {}): DxfExportResult {
   const dxf = new DxfWriter()
-  const status = options.status ?? 'PRELIMINARY_NOT_FOR_CONSTRUCTION'
+  const status = options.status ?? 'FINAL_FOR_SEAL'
 
   for (const lt of LINETYPES) {
     if (lt.name === 'CONTINUOUS') continue // present by default

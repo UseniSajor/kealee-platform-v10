@@ -50,7 +50,7 @@ export async function renderStudioSet(m: StudioModel, meta: StudioRenderMeta, op
   const twin = studioToTwin(m, { siteId: meta.siteId, address: meta.address, horizontalDatum: meta.horizontalDatum })
   const sheets = sheetsFor(m)
   const validation: ExportValidation[] = []
-  const contexts = sheets.map((sheet, i) => buildSheetContext({ sheet, twin, projectName: meta.projectName, sheetIndex: i + 1, sheetCount: sheets.length, status: 'PRELIMINARY', disclosure: meta.disclosure ?? null }))
+  const contexts = sheets.map((sheet, i) => buildSheetContext({ sheet, twin, projectName: meta.projectName, sheetIndex: i + 1, sheetCount: sheets.length, status: 'FINAL', disclosure: meta.disclosure ?? null }))
 
   const svgs = contexts.map(c => ({ sheet: c.sheet, svg: renderSheetSvg(c).svg }))
   const svgOk = svgs.every(s => s.svg.startsWith('<svg') || s.svg.includes('<svg'))

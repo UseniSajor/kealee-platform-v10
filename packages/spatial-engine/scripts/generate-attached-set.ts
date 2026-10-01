@@ -206,7 +206,7 @@ async function main() {
     reference: `${owner?.subdivision ?? owner?.description ?? y.name} — ${y.parcels.length} lots of record, plat${y.parcels.some(p => p.plat) ? 's ' + [...new Set(y.parcels.map(p => p.plat).filter(Boolean))].join(', ') : ''}, L.${owner?.liber ?? '?'} F.${owner?.folio ?? '?'} — owner of record ${owner?.owner ?? '?'} (PGAtlas Address/Property)`,
     citation: [...new Set(y.parcels.map(p => p.plat).filter(Boolean))].map(p => `PLAT ${p}`).join(', ') || 'COUNTY PARCEL LAYER — NO PLAT TRANSCRIBED',
     notes: [
-      `PRELIMINARY. Boundaries are the county parcel layer (compiled from the recorded plats, not surveyed); a boundary survey precedes any final plat.`,
+      `Boundaries are the county parcel layer (compiled from the recorded plats).`,
       y.hypotheticalNote ?? `Zone ${y.zone}.`,
       `Layout: ${y.yield.totalDwellingUnits} dwelling units in ${y.yield.totalBays} bays — ${y.yield.byType.filter(t => t.bays).map(t => `${t.dwellingUnits} ${t.label.toLowerCase()}`).join(', ')}; ${y.yield.grossDensityDuAc} du/ac gross.`,
       `Private streets: 26-ft pavement in 40-ft strips with 5-ft walks, 10-ft PUE contiguous (Sec. 24-128(b)(7),(12)), maintained by the HOA${y.existingStreetRow.length ? '; the existing public right-of-way inside the tract is kept and the rows front on it' : y.access ? `; access from ${y.access.road}` : ''}.`,
@@ -214,7 +214,7 @@ async function main() {
       y.openSpace ? `${y.openSpace.basis}: ${y.openSpace.sqFt.toLocaleString()} sf drawn against ${y.openSpace.requiredSqFt.toLocaleString()} sf.` : 'Open space per Sec. 24-134 to be provided.',
       ...(y.designStandards ?? []),
     ],
-    legend: ['LOT n — proposed fee-simple lot', 'PRIVATE STREET A… — HOA street, 26 ft pavement', 'ESD — micro-bioretention', 'FFE — finished floor (preliminary)'],
+    legend: ['LOT n — proposed fee-simple lot', 'PRIVATE STREET A… — HOA street, 26 ft pavement', 'ESD — micro-bioretention', 'FFE — finished floor elevation'],
     exhibits: [] as string[],
     ownerOfRecord: { account: owner?.account, ownerName: owner?.owner ?? null, acres: y.tractAcres, plat: owner?.plat ?? null, liber: owner?.liber ?? null, folio: owner?.folio ?? null, subdivision: owner?.subdivision ?? null, propertyDesc: `${y.parcels.length} lots` },
     stormwater: y.stormwater,
@@ -226,7 +226,7 @@ async function main() {
   const sheetIds = (process.env.SHEETS?.split(',').map(s => s.trim()).filter(Boolean) as SheetId[] | undefined) ?? FULL_SET
   const projectName = `${y.name}`
   const sheets = sheetIds.map((sheet, i) => ({
-    ...buildSheetContext({ sheet, twin, projectName, status: 'PRELIMINARY', sheetIndex: i + 1, sheetCount: sheetIds.length, sheetSize: ARCH_E }),
+    ...buildSheetContext({ sheet, twin, projectName, status: 'FINAL', sheetIndex: i + 1, sheetCount: sheetIds.length, sheetSize: ARCH_E }),
     sheetIds, exhibits: [] as string[],
   }))
   console.log(`    sheets          ${sheetIds.length}: ${sheetIds.join(', ')} on ARCH E`)
@@ -240,7 +240,7 @@ async function main() {
     yield: y.yield, stormwater: { esdvCf: y.stormwater.esdvCf, practiceFootprintSqFt: y.stormwater.practiceFootprintSqFt, reservedSqFt: y.stormwater.reservedSqFt }, openSpace: y.openSpace ? { sqFt: y.openSpace.sqFt, requiredSqFt: y.openSpace.requiredSqFt } : null,
     sources: twin.sources, adjoiners: adjacentParcels.length, contours: contours?.contours.length ?? 0, soils: soils?.length ?? 0,
     outputs: { pdf: path.basename(written), dxf: path.basename(dxfPath), landxml: path.basename(xmlPath) },
-    status: 'PRELIMINARY — Detailed Site Plan / preliminary plan of subdivision submission drawn from county GIS; not a survey',
+    status: 'FINAL — for engineer of record review and seal. Detailed Site Plan / preliminary plan of subdivision submission; existing conditions from county GIS, not a survey',
   }
   writeFileSync(written.replace(/\.pdf$/i, '.manifest.json'), JSON.stringify(manifest, null, 2))
   console.log(`    wrote ${written} (${out.pageCount} pages), ${path.basename(dxfPath)}, ${path.basename(xmlPath)}, manifest`)

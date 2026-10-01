@@ -392,6 +392,6 @@ export async function queryPgLayerAtPoint(
 
 /** Standard disclosure required on any output derived from these layers. */
 export const PG_LEVEL_1_DISCLOSURE =
-  'PRELIMINARY—BASED ON GIS/LIDAR DATA—NOT FOR PERMIT OR CONSTRUCTION. ' +
+  'EXISTING CONDITIONS FROM COUNTY GIS/LIDAR DATA—NOT A FIELD SURVEY. ' +
   "Source: M-NCPPC Prince George's County GIS. This is not a boundary survey " +
   'and does not establish property lines, easements, or elevations.'
