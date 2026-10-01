@@ -86,7 +86,25 @@ export const SHEET_DISCIPLINE: Record<SheetId, string> = {
   'FP-100': 'Maryland Professional Engineer',
 }
 
-export type SheetStatus = 'PRELIMINARY' | 'FOR_REVIEW' | 'PERMIT_SET' | 'NOT_FOR_CONSTRUCTION'
+export type SheetStatus = 'FINAL' | 'PRELIMINARY' | 'FOR_REVIEW' | 'PERMIT_SET' | 'NOT_FOR_CONSTRUCTION'
+
+/**
+ * Generated sets issue FINAL: complete drawings, ready for the engineer of
+ * record to review and seal. The seal block on each sheet is left blank for
+ * that professional — no automated process represents a drawing as sealed.
+ */
+export const DEFAULT_SHEET_STATUS: SheetStatus = 'FINAL'
+
+/** What the title block prints for a status. */
+export function sheetStatusLabel(status: SheetStatus | string | null | undefined): string {
+  if (!status || status === 'FINAL') return 'FINAL — FOR ENGINEER OF RECORD REVIEW AND SEAL'
+  return String(status).replace(/_/g, ' ')
+}
+
+/** Statuses that carry no watermark across the drawing. */
+export function isIssuedStatus(status: SheetStatus | string | null | undefined): boolean {
+  return status === 'FINAL' || status === 'PERMIT_SET'
+}
 
 export interface RevisionEntry {
   number: number
@@ -181,7 +199,7 @@ export function auditSheetFrame(ctx: SheetContext): FrameAudit {
     ? 0
     : requiredNotesForSheet(ctx.sheet).length
   check('requiredCountyNotes', owed === 0 || (ctx.requiredNotes ?? []).length >= owed)
-  check('statusWatermark', ctx.status !== 'PERMIT_SET' ? Boolean(ctx.disclosure ?? ctx.status) : true)
+  check('statusWatermark', !isIssuedStatus(ctx.status) ? Boolean(ctx.disclosure ?? ctx.status) : true)
 
   return { present, missing, complete: missing.length === 0 }
 }

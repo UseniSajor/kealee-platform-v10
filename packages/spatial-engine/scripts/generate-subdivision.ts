@@ -3016,7 +3016,7 @@ async function main(): Promise<void> {
   const sheets = sheetIds.map((sheet, i) => ({
     ...buildSheetContext({
       sheet, twin, projectName,
-      status: 'PRELIMINARY', sheetIndex: i + 1, sheetCount: sheetIds.length, sheetIds,
+      status: 'FINAL', sheetIndex: i + 1, sheetCount: sheetIds.length, sheetIds,
     }),
     // Carried on the context explicitly: `buildSheetContext` does not pass the
     // list through, and the cover sheet's index needs every sheet in the set,

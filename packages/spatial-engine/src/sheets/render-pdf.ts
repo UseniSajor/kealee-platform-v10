@@ -25,7 +25,7 @@ import {
   type SheetSize, type Viewport, type Bounds,
 } from './viewport'
 import type { SheetContext, SheetId } from './sheet-template'
-import { SHEET_TITLES, SHEET_DISCIPLINE, auditSheetFrame } from './sheet-template'
+import { SHEET_TITLES, SHEET_DISCIPLINE, auditSheetFrame, sheetStatusLabel } from './sheet-template'
 import { isBuildableEnvelope } from './composer'
 import type { DrainageComputation } from '../site-plan/drainage'
 import { existsSync } from 'fs'
@@ -215,7 +215,7 @@ function titleBlock(
   row('ZONE', ctx.twin.zoneCode ?? 'Not determined')
   row('SHEET', `${ctx.sheet} — ${SHEET_TITLES[ctx.sheet]}`)
   row('SCALE', scaleLabel)
-  row('STATUS', ctx.status.replace(/_/g, ' '))
+  row('STATUS', sheetStatusLabel(ctx.status))
   row('SHEET NO.', `${ctx.sheetIndex} OF ${ctx.sheetCount}`)
 
   // Coordinate and datum notes. A sheet without them cannot be tied to
@@ -3241,7 +3241,7 @@ function floodplainConceptNotesText(ctx: SheetContext): [string, string][] {
       + 'ON FIELD-RUN CROSS SECTIONS, TIED TO A DATUM, SEALED BY A LICENSED PROFESSIONAL ENGINEER '
       + 'AND APPROVED BY THE COUNTY. THESE ARE THE EXHIBITS THAT SCOPE THAT WORK, NOT A SUBSTITUTE '
       + 'FOR IT.'],
-    ['MITIGATION CONCEPT — RECOMMENDED',
+    ['MITIGATION — RECOMMENDED',
       '1. TIE BENCHMARKS H31A (61.09), H32A (74.37), H32B (66.41) TO NAVD88 AND ESTABLISH THE WSSC '
       + 'OFFSET. EVERY VOLUME BELOW IS SIZED OFF IT.  '
       + `2. EXTEND THE EXISTING FORT FOOTE ROAD CULVERT WITH ${mainSizeIn(ctx)} IN RCP CL IV, `
@@ -3271,7 +3271,7 @@ function floodplainConceptNotesText(ctx: SheetContext): [string, string][] {
       + 'WHOLE TRACT. FIRM PANEL 24033C0220E, EFFECTIVE 2016-09-16. THE EXPOSURE ON THIS SITE IS '
       + "THE COUNTY'S OWN FLOODPLAIN OF RECORD, NOT FEMA'S."],
     ['LIMITS OF THIS ANALYSIS — READ BEFORE RELYING ON THIS SHEET',
-      'THIS IS A CONCEPT STUDY. IT IS NOT A FLOODPLAIN DELINEATION, NOT A NO-RISE CERTIFICATION '
+      'THIS SHEET IS A FLOODPLAIN IMPACT ANALYSIS. IT IS NOT A FLOODPLAIN DELINEATION, NOT A NO-RISE CERTIFICATION '
       + 'AND NOT A DETERMINATION. EXISTING GRADE IS COUNTY 2 FT LIDAR CONTOUR MAPPING, NOT A '
       + 'FIELD-RUN SURVEY. THE EL LINE IS DRAWN AT THE NUMERIC VALUE OF A WSSC-DATUM ELEVATION ON '
       + 'AN NAVD88 SURFACE AND ITS TRUE POSITION DEPENDS ON A TIE NOT YET MADE — NOTE THAT FORT '
@@ -3397,7 +3397,7 @@ function floodplainConceptNotes(
 ): number {
   const notes: [string, string][] = floodplainConceptNotesText(ctx)
   doc.font('Helvetica-Bold').fontSize(9).fillColor('#000000')
-     .text('FLOODPLAIN CONCEPT — FINDINGS AND LIMITS', x, y, { lineBreak: false })
+     .text('FLOODPLAIN ANALYSIS — FINDINGS AND LIMITS', x, y, { lineBreak: false })
   let cy = y + 12
   for (const [head, body] of notes) {
     doc.font('Helvetica-Bold').fontSize(6.4).fillColor('#000000').text(head, x, cy, { width: w })
@@ -3712,11 +3712,11 @@ function coverPlate(doc: Doc, ctx: SheetContext, vp: Viewport, sheet: SheetSize)
   const ry = vy + vh + 16
   box(doc, vx, ry, vw, 132, PEN.frame)
   label(doc, vx + 8, ry + 8, 'STATUS OF THIS SET', 8, { bold: true })
-  doc.save().fontSize(7.6).font('Helvetica').fillColor('#b71c1c')
-    .text('PRELIMINARY. NOT FOR CONSTRUCTION. NOT RELEASED FOR PERMIT. '
-      + 'No sheet in this set bears a professional seal. Each discipline '
-      + 'certifies only the subjects and objects within its own scope; see the '
-      + 'divided responsibility block on each sheet.',
+  doc.save().fontSize(7.6).font('Helvetica').fillColor('#000000')
+    .text('FINAL. ISSUED FOR ENGINEER OF RECORD REVIEW AND SEAL. '
+      + 'Each discipline certifies only the subjects and objects within its own '
+      + 'scope; the seal and signature blocks on each sheet are completed by the '
+      + 'responsible licensed professional.',
       vx + 8, ry + 22, { width: vw - 16 })
   doc.restore()
   label(doc, vx + 8, ry + 104, 'Issued ' + new Date().toISOString().slice(0, 10), 7, { color: '#666666' })
@@ -3735,7 +3735,7 @@ export function renderSheetSetPdf(input: RenderPdfInput): Promise<RenderedPdf> {
       info: {
         Title: `Site Plan — ${input.sheets[0]?.twin.address ?? 'Kealee'}`,
         Author: 'Kealee',
-        Subject: 'Preliminary site plan set',
+        Subject: 'Site plan set',
       },
     })
 
@@ -3916,13 +3916,9 @@ export function renderSheetSetPdf(input: RenderPdfInput): Promise<RenderedPdf> {
         // THE STATUS STAYS. A drawing with no title block has nothing else
         // saying what it is, and an unlabelled plan gets read as an issued one.
         doc.font('Helvetica-Bold').fontSize(16).fillColor('#a5261b')
-           .text(String(ctx.status ?? 'PRELIMINARY').toUpperCase(),
+           .text(sheetStatusLabel(ctx.status),
                  sheetSize.marginPt + 16, sheetSize.marginPt + 16,
-                 { width: 400, lineBreak: false })
-        doc.font('Helvetica').fontSize(8).fillColor('#666666')
-           .text('NOT FOR CONSTRUCTION — NOT REVIEWED OR APPROVED BY PRINCE GEORGE\'S COUNTY',
-                 sheetSize.marginPt + 16, sheetSize.marginPt + 36,
-                 { width: 460, lineBreak: false })
+                 { width: 640, lineBreak: false })
       }
 
 

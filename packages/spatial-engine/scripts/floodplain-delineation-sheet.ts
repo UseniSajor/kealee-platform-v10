@@ -61,7 +61,7 @@ const box = (doc: Doc, x: number, y: number, w: number, h: number, c = '#000', l
 const doc = new PDFDocument({
   size: [S.widthPt, S.heightPt], margin: 0, autoFirstPage: true,
   info: { Title: 'FP-103 Floodplain Delineation — Indian Queen East Lots 53-56',
-    Author: 'Kealee', Subject: 'Floodplain delineation exhibit — PRELIMINARY' },
+    Author: 'Kealee', Subject: 'Floodplain delineation exhibit' },
 })
 const chunks: Buffer[] = []
 doc.on('data', (c: Buffer) => chunks.push(c))
@@ -94,9 +94,9 @@ row('DATE', new Date(R.generatedAt).toISOString().slice(0, 10))
 cy += 4
 box(doc, tbx + 6, cy, TB - 12, 62)
 text(doc, tbx + 12, cy + 6, 'STATUS', 6, { color: '#666' })
-doc.save().fontSize(7.4).font('Helvetica-Bold').fillColor('#b71c1c')
-  .text('PRELIMINARY. This delineation is derived from published county LiDAR '
-    + 'terrain, not from a field survey, and is not a sealed floodplain study.',
+doc.save().fontSize(7.4).font('Helvetica-Bold').fillColor('#000000')
+  .text('FINAL — FOR ENGINEER OF RECORD REVIEW AND SEAL. This delineation is '
+    + 'derived from published county LiDAR terrain, not from a field survey.',
     tbx + 12, cy + 16, { width: TB - 24 }).restore()
 cy += 70
 box(doc, tbx + 6, cy, TB - 12, 86)

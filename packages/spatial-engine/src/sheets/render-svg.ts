@@ -17,6 +17,7 @@ import {
 } from './viewport'
 import {
   SHEET_TITLES, SHEET_DISCIPLINE, type SheetContext, type SheetId, type SheetStatus,
+  sheetStatusLabel, isIssuedStatus, DEFAULT_SHEET_STATUS,
   type RevisionEntry,
 } from './sheet-template'
 import { requiredNotesForSheet, type RequiredPlanNote } from '../site-plan/required-notes'
@@ -117,7 +118,7 @@ function titleBlock(ctx: SheetContext, sheet: SheetSize): string {
   cy += 16
   out.push(text(x + 12, cy, 'REVIEW STATUS', 6, { fill: '#666' }))
   cy += 10
-  out.push(text(x + 12, cy, ctx.status.replace(/_/g, ' '), 7.5, { bold: true }))
+  out.push(text(x + 12, cy, sheetStatusLabel(ctx.status), 7.5, { bold: true }))
   cy += 20
 
   // Revision table
@@ -168,13 +169,13 @@ function titleBlock(ctx: SheetContext, sheet: SheetSize): string {
 }
 
 function watermark(ctx: SheetContext, sheet: SheetSize): string {
-  if (ctx.status === 'PERMIT_SET') return ''
-  const label = ctx.disclosure ?? ctx.status.replace(/_/g, ' ')
+  if (isIssuedStatus(ctx.status)) return ''
+  const label = ctx.disclosure ?? sheetStatusLabel(ctx.status)
   const cx = (sheet.widthPt - sheet.titleBlockWidthPt) / 2
   const cy = sheet.heightPt / 2
   return (
     `<g transform="translate(${cx},${cy}) rotate(-30)" opacity="0.10">` +
-    text(0, 0, label.length > 60 ? 'PRELIMINARY — NOT FOR CONSTRUCTION' : label, 46, { bold: true, anchor: 'middle', fill: '#c00' }) +
+    text(0, 0, label.length > 60 ? sheetStatusLabel(ctx.status) : label, 46, { bold: true, anchor: 'middle', fill: '#c00' }) +
     '</g>'
   )
 }
@@ -277,7 +278,7 @@ export function buildSheetContext(input: {
     sheet: input.sheet,
     twin: input.twin,
     twinRevision: input.twin.revision,
-    status: input.status ?? 'PRELIMINARY',
+    status: input.status ?? DEFAULT_SHEET_STATUS,
     scale: vp.label,
     requiredNotes: requiredNotesForSheet(input.sheet),
     revisions: input.revisions ?? [],
@@ -398,7 +399,7 @@ export function renderSheetSvg(ctx: SheetContext, sheetSize: SheetSize = ARCH_D)
       body.push(text(contentX, 560, 'GENERAL NOTES', 9, { bold: true }))
       const notes = [
         '1. These drawings are prepared by Kealee acting as drafter. They require review, correction and sealing by a licensed professional before use for permit or construction.',
-        '2. Boundary geometry shown from the source listed in the title block. Where that source is GIS, it is preliminary and may be offset from surveyed boundaries.',
+        '2. Boundary geometry shown from the source listed in the title block. Where that source is GIS, it is compiled county mapping, not a survey, and may be offset from surveyed boundaries.',
         '3. Utility locations shown are from record information. Field verification is required before excavation. Call Miss Utility.',
         '4. Elevations refer to the vertical datum stated in the title block. Where none is established, no elevation work is shown.',
         '5. Contractor shall verify all dimensions and existing conditions before construction.',

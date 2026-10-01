@@ -160,10 +160,11 @@ describe('export', () => {
 describe('professional document status', () => {
   const twin = twinWith([{ kind: 'Parcel', ring: LOT_RING } as never])
 
-  it('stamps PRELIMINARY by default', () => {
+  it('stamps FINAL for engineer of record review and seal by default', () => {
     const r = toDxfNcs(twin)
-    expect(r.status).toBe('PRELIMINARY_NOT_FOR_CONSTRUCTION')
-    expect(r.dxf).toContain('NOT FOR CONSTRUCTION OR PERMIT SUBMISSION')
+    expect(r.status).toBe('FINAL_FOR_SEAL')
+    expect(r.dxf).toContain('FINAL - FOR ENGINEER OF RECORD REVIEW AND SEAL')
+    expect(r.dxf).not.toMatch(/PRELIMINARY|NOT FOR CONSTRUCTION/)
   })
 
   it('never claims the drawing is sealed, under any status', () => {
@@ -171,7 +172,7 @@ describe('professional document status', () => {
     // "SEALED" inside another phrase. So the assertion is not "SEALED is
     // absent" — it is that EVERY occurrence of it is negated. No automated
     // process may represent a drawing as professionally certified.
-    const statuses = ['INTERNAL_DRAFT', 'REVIEW_COPY',
+    const statuses = ['FINAL_FOR_SEAL', 'INTERNAL_DRAFT', 'REVIEW_COPY',
       'PRELIMINARY_NOT_FOR_CONSTRUCTION', 'PROFESSIONALLY_REVIEWED_UNSEALED']
     for (const st of statuses) {
       const out = toDxfNcs(twin, { status: st as never })
