@@ -6,7 +6,8 @@
 
 | File | What it is |
 |---|---|
-| `estates-indian-head-2026-concept-submission.pdf` | **The plan set, 7 sheets.** SDC-1 and SDC-2 (DPIE concept sheets), then C-100, C-400, C-500, C-700 and L-100 from the engine. The duplicate sheets were dropped. |
+| `estates-indian-head-2026-concept-submission.pdf` | **The plan set, 8 sheets.** SDC-1 and SDC-2 (DPIE concept sheets), then C-100 and C-400 from the engine, **C-410 SWM concept narrative and computations** (CAD plot), then C-500, C-700 and L-100. See *SDC vs. engine* below before filing. |
+| `estates-indian-head.pdf` / `.dxf` (and the `-cad` copies) | The DXF-master CAD set, 8 sheets: C-000 cover/BMP table/checklist, C-100, C-200, C-300, C-400, **C-410**, C-500, C-600. |
 | `estates-indian-head-concept-SDC.pdf` | SDC-1: cover, County BMP Summary Table, site data, environmental features, POIs, notes. SDC-2: plan view and drainage area map at 1" = 40', drawn over the georeferenced 2009 plan. |
 | `estates-indian-head-permit-set.pdf` / `.dxf` / `.landxml.xml` | Engine sheets: existing conditions, grading, utility, sediment control, landscape (ARCH D). |
 | `estates-indian-head-DPIE-concept-application.pdf` | DPIE Concept Plan Application (rev. 07/28/2021) with the fields filled in. The owner's phone, email and signature are left blank. |
@@ -40,7 +41,46 @@ This is a **new submittal**. The prior approvals do not carry it on their own, b
 | Outlot A was part of the subdivision. | Outlot A now belongs to the Doyals (L.51565 F.455). The tract is 165,019 sf of record. |
 | Zone R-R. | Zone **RR** (2022 ordinance, Sec. 27-4202). All six lots conform. |
 | Street tree and lighting approval only. | DPIE Concept checklist items: BMP Summary Table (A-15), POIs (C-9), drainage areas and off-site area (C-11), 100-yr overflow path (C-10), environmental features (B), 5-inch approval strip (A-3), grid ticks (A-8), datum (A-9), vicinity map at 1" = 2,000' (A-6). |
-| Pre-2010 SWM. | **ESD to the maximum extent practicable:** 8 micro-bioretention (M-6) cells. ESDv required 3,866 cf, targets from MDE Table 5.3, HSG C. |
+| Pre-2010 SWM. | **ESD to the maximum extent practicable** (MDE Table 5.3, HSG C), plus the SWM concept report on C-410 (see below). |
+
+## Stormwater concept: C-410 (2026-10-01)
+
+The engine now writes the checklist D report (`src/site-plan/swm-concept.ts`) and the CAD plot draws it on **C-410**.
+
+- **Method:** NRCS TR-55 graphical peak discharge, Type II 24-hr, at each point of investigation (D8 routing on county 2-ft contours).
+- **Rainfall:** NOAA Atlas 14 depths for this site (38.6752 N, 77.0040 W). The 100-yr depth is 8.51 in.
+- **No ESD credit** is taken against the 100-yr.
+- **Pre-development cover** is open space. There is no woodland on the property.
+
+| POI-1 (3.81 ac, HSG C) | Existing | Proposed |
+|---|---|---|
+| Curve number | 74 | 79.4 (37,658 sf impervious, 22.7%) |
+| Tc | 0.285 hr | 0.285 hr |
+| 2-yr | 3.48 cfs | 5.06 cfs |
+| 10-yr | 8.87 cfs | 11.36 cfs |
+| 100-yr | 22.16 cfs | 24.85 cfs (+2.69) |
+| 100-yr runoff | 74,438 cf | 83,480 cf |
+
+- **ESDv:** 5,299 cf required, 7,893 cf provided, from 7 practices.
+- **Outfall swale:** 2-ft bottom, 3:1 sides, n 0.035, at 1.5%.
+  - 10-yr: 3.3 ft/s, against an allowable 4.0 ft/s.
+  - 100-yr: 4.0 ft/s at 1.14 ft depth.
+  - Rock outlet protection where the swale meets the MD 210 ditch.
+
+**Checklist status:** D-1, D-3 and D-4 are C. **D-10 stays O**: the downstream adequacy of the MD 210 roadside ditch (SHA) needs that ditch's section and capacity (SHA as-builts). If it is inadequate, add 10-yr quantity control.
+
+### SDC vs. engine: resolve before filing
+
+SDC-1 and SDC-2 come from the matplotlib script `estates_indian_head_concept.py`, which does its own routing. Its numbers do not match the engine's:
+
+| | SDC-1/SDC-2 | Engine (C-000, C-400, C-410) |
+|---|---|---|
+| POIs | 2 (89% / 10%) | 1 |
+| Off-site drainage | 2.67 ac | 0.49 ac |
+| ESD practices | 8 | 7 |
+| ESDv req / prov | 4,385 / 4,470 cf | 5,299 / 7,893 cf |
+
+Per the work-inside-the-engine rule, the engine set is authoritative. Either drop SDC-1/SDC-2 from the submission (C-000 already carries the BMP table, checklist and vicinity map), or make the SDC script read `estates-indian-head.sheetset.json` instead of computing its own.
 
 ## Design Review Checklist (rev. 08/25/2021): consultant column
 
@@ -55,7 +95,7 @@ C = shown/complete, O = outstanding, X = not applicable.
 | A-6 vicinity map | C | SDC-1, upper right |
 | A-7 bar scale | C | every sheet |
 | A-8 three grid ticks | C | SDC-2 |
-| A-9 datum | **O** | NAD 83 / NAVD 88. DPIE prefers NGVD 29, so the field-run update must state the datum. |
+| A-9 datum | C | NAD 83 / NAVD 88 stated on every sheet. |
 | A-10 general notes | C | SDC-1 |
 | A-11 ≤ 1" = 50' | C | 1" = 40' |
 | A-12 existing features / easements | C | 2009 underlay + PGAtlas |
@@ -64,12 +104,12 @@ C = shown/complete, O = outstanding, X = not applicable.
 | A-15 BMP Summary Table | C | SDC-1 |
 | B-1/B-2/B-6 stream, buffer, PMA | C | None on site (owner verified on PGAtlas; prior NRI-015-06 is base work, updated NRI required) |
 | B-3, B-4, B-12, B-13, B-14 | C | none found |
-| B-5 steep slopes | C | SDC-2 |
-| B-7 woodland | C | Per the updated NRI; prior NRI-015-06 / TCP2-016-09 are base work. TCP2 revision or new TCP / exemption as M-NCPPC determines. |
-| B-8 features 100 ft off site | C | SDC-2 |
+| B-5 steep slopes | X | None (owner; PGAtlas slope layer not carried) |
+| B-7 woodland | X | None on the property. Prior NRI-015-06 / TCP2-016-09 are base work; M-NCPPC determines TCP2 revision, new TCP or exemption. |
+| B-8 features 100 ft off site | X | None on or within 100 ft |
 | B-9 soils | C / **conflict** | PGAtlas NRCS and the 2009 plan both show BaB Beltsville (HSG C). The engine's soils table (C-sheets) lists Adelphia from its own SSURGO query. **Resolve before sealing.** |
 | B-10 TMDL / Tier II | C | Confirm the Piscataway Creek listing on the MDE TMDL site. |
-| B-11 highly erodible | C | note |
+| B-11 highly erodible | X | None |
 | C-1 layout | C | |
 | C-2 ESD locations | C | 8 × M-6 |
 | C-3 storm drain inlets | X | Open section: roadside swales, with a culvert under each driveway |
@@ -82,7 +122,9 @@ C = shown/complete, O = outstanding, X = not applicable.
 | C-10 100-yr overflow | C | SDC-2 |
 | C-11 drainage areas | C | per device, plus off-site 2.67 ac |
 | C-12 ponding | X | no fill across a drainage course |
-| D-1 to D-10 report / computations | **O** | Narrative, Qp10/Qf at each POI, downstream analysis. Not produced. |
+| D-1, D-3, D-4 report | C | C-410 |
+| D-2, D-5 to D-9 | X | not in the CBCA; no stream, existing SWM facility, rezoning, floodplain or waiver |
+| D-10 computations | **O** | ESDv (C-000) and 100-yr existing vs. proposed (C-410) done; downstream adequacy of the MD 210 ditch outstanding |
 | E-1/E-2 geotechnical | **O** | Soil borings and Sec. 32-131 infiltration tests |
 | E-3 notification affidavit | **O** | Letters to adjoiners within 7 days of submittal. The owners are listed on SDC-2. |
 | E-4 NRI | **O** | New submittal: updated/revised NRI in draft with this submission; approved copy before concept approval (Sec. 32-182(a)). NRI-015-06 is base work. |
@@ -95,5 +137,7 @@ C = shown/complete, O = outstanding, X = not applicable.
 4. **The engine's grading flags need an engineer's attention:**
    - Lot 1's front yard falls 66.6%, because the house sits near the MD 210 mouth.
    - The front yards on Lots 2–4 partly drain toward the houses.
-5. **Datum:** the 2009 survey is on WSSC datum and this set is on NAVD 88. The field-run update should state the datum and the conversion.
-6. Seal, owner signature, the fee ($500 + 5% technology fee) and the SWM narrative / H&H computations.
+5. **Datum:** the 2009 survey is on WSSC datum and this set is on NAVD 88 (M-NCPPC 2-ft mapping). The engineer of record states the datum basis.
+6. Seal, owner signature and the fee ($500 + 5% technology fee).
+7. **D-10 downstream analysis** of the MD 210 roadside ditch (SHA as-builts).
+8. **SDC vs. engine stormwater numbers:** see above.

@@ -1,5 +1,5 @@
 {
- "_source": "Boundary of record: plat 'LOTS 1-6 AND OUTLOT A, ESTATES AT INDIAN HEAD', Plat Book PM 228 Plat 83. Lot geometry from the county parcel layer (PGAtlas Address/MapServer/15), which reproduces the plat's bearings to the second and its distances to 0.02 ft (checked against the 2009 approved sheet, DPW&T permit 9399-2009). Estates Court dedication = the tract less the lots, closed at the Indian Head Hwy R/W on the plat's N 51-26-53 W 147.04' call. A Maryland licensed surveyor must confirm before technical plans are sealed.",
+ "_source": "Boundary of record: plat 'LOTS 1-6 AND OUTLOT A, ESTATES AT INDIAN HEAD', Plat Book PM 228 Plat 83. Lot geometry from the county parcel layer (PGAtlas Address/MapServer/15), which reproduces the plat's bearings to the second and its distances to 0.02 ft (checked against the 2009 approved sheet, DPW&T permit 9399-2009). Estates Court dedication = the tract less the lots, closed at the Indian Head Hwy R/W on the plat's N 51-26-53 W 147.04' call.",
  "basisOfBearings": "Maryland State Plane Coordinate System (NAD 83), per plat PM 228/83",
  "programme": {
   "totalFloorAreaSqFt": 2800,
@@ -119,12 +119,16 @@
    "label": "PROP. DRIVEWAY & SIDE-LOAD COURT (2009 LAYOUT)",
    "ring": [
     [
-     1311257.0909662852,
-     367256.64113216335
-    ],
-    [
      1311233.1470405352,
      367258.2807722689
+    ],
+    [
+     1311233.9909274331,
+     367270.6041871177
+    ],
+    [
+     1311234.7664959931,
+     367281.92993839364
     ],
     [
      1311234.8348143308,
@@ -153,6 +157,10 @@
     [
      1311258.7787400808,
      367281.287961861
+    ],
+    [
+     1311257.0909662852,
+     367256.64113216335
     ]
    ],
    "note": "Side-load garage; 24-ft turning court at the door, 12-ft drive. Layout per DPW&T 9399-2009."
@@ -162,31 +170,163 @@
    "label": "DRIVEWAY APRON \u2014 DPW&T RURAL SWALE/CULVERT DRIVEWAY",
    "ring": [
     [
-     1311245.0641408095,
-     367340.472680572
+     1311255.0355153887,
+     367341.4277006677
     ],
     [
-     1311256.0055875676,
-     367341.60614553996
+     1311254.5751576088,
+     367341.2595499438
     ],
     [
-     1311254.4501600845,
-     367308.0970613757
+     1311254.1334739546,
+     367341.04713643005
     ],
     [
-     1311248.4820982162,
-     367307.4788077568
+     1311253.714708192,
+     367340.792501029
     ],
     [
-     1311242.1936031776,
-     367308.1007896216
+     1311253.3228838888,
+     367340.4980903178
     ],
     [
-     1311234.1277805695,
-     367339.31952825136
+     1311252.961765755,
+     367340.1667330412
+    ],
+    [
+     1311252.6348234706,
+     367339.80161293224
+    ],
+    [
+     1311252.3451983486,
+     367339.4062381226
+    ],
+    [
+     1311252.0956731532,
+     367338.984407436
+    ],
+    [
+     1311251.8886453616,
+     367338.54017388826
+    ],
+    [
+     1311251.7261041298,
+     367338.07780574565
+    ],
+    [
+     1311251.6096111797,
+     367337.60174551426
+    ],
+    [
+     1311251.5402857936,
+     367337.11656725605
+    ],
+    [
+     1311251.5187940612,
+     367336.62693264044
+    ],
+    [
+     1311251.5453424782,
+     367336.1375461542
+    ],
+    [
+     1311254.540554626,
+     367307.22447414167
+    ],
+    [
+     1311254.5468930814,
+     367307.1075091751
+    ],
+    [
+     1311254.431112608,
+     367307.0897366689
+    ],
+    [
+     1311253.4467576589,
+     367306.9877636963
+    ],
+    [
+     1311242.3875429162,
+     367308.08160744846
+    ],
+    [
+     1311239.6133635605,
+     367334.86102858343
+    ],
+    [
+     1311239.53880148,
+     367335.3465844786
+    ],
+    [
+     1311239.416951253,
+     367335.82248000643
+    ],
+    [
+     1311239.248989095,
+     367336.2841213657
+    ],
+    [
+     1311239.0365363376,
+     367336.7270523503
+    ],
+    [
+     1311238.7816437797,
+     367337.14699736465
+    ],
+    [
+     1311238.4867718888,
+     367337.5399026957
+    ],
+    [
+     1311238.154767052,
+     367337.9019756436
+    ],
+    [
+     1311237.7888340992,
+     367338.22972113214
+    ],
+    [
+     1311237.392505367,
+     367338.5199754469
+    ],
+    [
+     1311236.9696066014,
+     367338.7699367742
+    ],
+    [
+     1311236.5242200275,
+     367338.977192247
+    ],
+    [
+     1311236.060644945,
+     367339.1397412363
+    ],
+    [
+     1311235.5833562256,
+     367339.25601466297
+    ],
+    [
+     1311235.0969611194,
+     367339.32489014417
+    ],
+    [
+     1311234.6061547794,
+     367339.3457028275
+    ],
+    [
+     1311234.1156749402,
+     367339.31825180893
+    ],
+    [
+     1311255.994423638,
+     367341.6251920779
+    ],
+    [
+     1311255.5101241036,
+     367341.54997298296
     ]
    ],
-   "note": "Open section: 12 ft at the R/W line, 5-ft flares at the edge of pavement; 15-in culvert or swale driveway per DPW&T Std. 600.02 / 100-series."
+   "note": "Open section: 12 ft at the R/W line, 5-ft radius returns to the edge of pavement (following the cul-de-sac arc where it fronts the bulb); 15-in culvert or swale driveway per DPW&T Std. 600.02 / 100-series."
   },
   {
    "kind": "Stoop",
@@ -215,8 +355,16 @@
    "label": "4' LEAD WALK",
    "ring": [
     [
-     1311234.9173583824,
-     367284.13300590747
+     1311234.9173583826,
+     367284.1330059096
+    ],
+    [
+     1311234.644085032,
+     367280.1423516179
+    ],
+    [
+     1311234.6440850317,
+     367280.1423516179
     ],
     [
      1311234.7664959931,

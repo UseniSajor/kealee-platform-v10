@@ -269,20 +269,16 @@ lod = unary_union([Polygon(fr(f)).buffer(0) for f in lods] + [row] +
 lod_offsite = unary_union([Polygon(fr(e)).buffer(0) for e in esmts if fr(e)]).difference(tract)
 lod = unary_union([lod, lod_offsite])
 
-# ── Environmental layers ─────────────────────────────────────────────────────
-steep = [(poly_of(f), f['attributes']['RANGE']) for f in envd(13)]
-canopy = unary_union([poly_of(f) for f in envd(17)])
+# ── Soils ────────────────────────────────────────────────────────────────────
+# NO environmental features on this property (owner, 2026-09-30): no streams,
+# wetlands, floodplain, PMA, steep slopes, woodland or highly erodible soils.
+# Only the NRCS soils are carried, for the HSG the ESD sizing needs.
 soils = [(poly_of(f), f['attributes']) for f in envd(14)]
-gi_reg = unary_union([poly_of(f) for f in envd(5) if f['attributes']['AREA_TYPE'] == 'Regulated Area'])
-view = tract.intersection(unary_union([poly_of(f) for f in envd(8)]))
 
 summary = {
     'pois': pois, 'rows': [{k: v for k, v in r.items() if k not in ('da', 'ring')} for r in rows], 'totals': tot,
     'tractSqFt': tract.area, 'siteImpervPct': tot_I, 'lodSqFt': lod.area, 'lodOnSiteSqFt': lod.intersection(tract).area,
     'offsiteDrainageSqFt': off_area, 'streetLowPoint': [lx, ly, lowz],
-    'steep15to25OnSiteSqFt': sum(p.intersection(tract).area for p, r in steep if r == 25),
-    'steep25OnSiteSqFt': sum(p.intersection(tract).area for p, r in steep if r == 90),
-    'canopyOnSiteSqFt': canopy.intersection(tract).area,
     'soilsOnSite': [{'musym': a['SOIL_NAME_MUSYM'], 'name': a['MUNAME'], 'hsg': a['HYDROLGRP'], 'k': a['KFACTWS'],
                      'sqft': p.intersection(tract).area} for p, a in soils if p.intersection(tract).area > 1],
 }
@@ -503,7 +499,7 @@ site = [
     ['MD 12-digit watershed', '021402030798 — Piscataway Creek (MD 8-digit 02140203); County watershed: Piscataway Creek'],
     ['Impaired / TMDL', 'Chesapeake Bay TMDL (N, P, sediment) applies; Piscataway Creek listings to be confirmed on MDE TMDL data center at submission'],
     ['Tier II / hotspot', 'No (no MDE Tier II catchment intersects) / No (single-family residential)'],
-    ['Ex. site imp. area', '0 sf (vacant, wooded; DEVELOPED = N on all six accounts)'],
+    ['Ex. site imp. area', '0 sf (vacant; DEVELOPED = N on all six accounts)'],
     ['New site imp. area', f"{tot['imp']:,.0f} sf ({tot_I:.1f}% of tract) — roofs, driveways, walks, Estates Court pavement, curb and sidewalk"],
     ['Est. disturbed area', f"{lod.area:,.0f} sf ({lod.area / 43560:.2f} ac), incl. {lod_offsite.area:,.0f} sf off-site in the WSSC easement (Outlot A, Lot 20)"],
     ['Marlboro clay / public project', 'No (PGAtlas Environmental/7: none within 100 ft) / No'],
@@ -513,18 +509,18 @@ site = [
 yS = table(ax, 0.9, yL, ['APPLICATION DATA', ''], site, [2.1, 7.6], 'SITE DATA (DPIE Concept Application, rev. 07/28/2021)', fs=5.8, rh=0.165)
 
 env = [
-    ['B-1/B-2 Streams & buffers', 'None on site (verified on PGAtlas; prior NRI-015-06). Updated NRI required (new submittal).'],
-    ['B-3 Wetlands', 'None mapped on or within 100 ft (DNR wetlands, WSSC). Confirm by NRI field delineation.'],
-    ['B-4 100-yr floodplain', 'None. FEMA Zone X (area of minimal flood hazard); no DPIE or consultant floodplain within 100 ft.'],
-    ['B-5 Steep slopes', f"15–25%: {summary['steep15to25OnSiteSqFt']:,.0f} sf;  >25%: {summary['steep25OnSiteSqFt']:,.0f} sf on site (PGAtlas Slope 2023) — isolated."],
-    ['B-6 PMA', 'None on site (prior NRI-015-06). Updated NRI required (new submittal).'],
-    ['B-7 Woodland', f"Per updated NRI (prior NRI-015-06/TCP2-016-09 = base work); TCP2 revision or new TCP per M-NCPPC."],
+    ['B-1/B-2 Streams & buffers', 'None (prior NRI-015-06 as base work; updated NRI with this submittal).'],
+    ['B-3 Wetlands', 'None.'],
+    ['B-4 100-yr floodplain', 'None. FEMA Zone X (area of minimal flood hazard).'],
+    ['B-5 Steep slopes', 'None.'],
+    ['B-6 PMA', 'None.'],
+    ['B-7 Woodland', 'None.'],
+    ['B-8 Features within 100 ft', 'None on or within 100 ft of the property.'],
     ['B-9 Soils', '; '.join(f"{s['musym']} {s['name']} (HSG {s['hsg']}, K {s['k']}) {100 * s['sqft'] / tract.area:.0f}%" for s in summary['soilsOnSite'])],
     ['B-10 TMDL / Tier II', 'Chesapeake Bay TMDL watershed; not within a Tier II catchment; DNR Stronghold watershed (021402030798).'],
-    ['B-11 Highly erodible', 'Slopes ≥15% with K ≥ 0.35 are highly erodible: the 15–25% patches on BaB (K .37) qualify — stabilize within 3 days.'],
-    ['B-12/B-13 Springs, bedrock, Marlboro clay', 'None observed (2005 field survey) or mapped. Geotechnical report to confirm (E-1, E-2).'],
-    ['B-14 Chesapeake Bay Critical Area', 'Not in the CBCA overlay (PGAtlas Zoning/3).'],
-    ['Other', 'FIDS habitat (DNR) overlaps 1.9 ac; Green Infrastructure Evaluation Area; Priority Woodlands for Retention; ESA 2 (Plan 2035).'],
+    ['B-11 Highly erodible', 'None.'],
+    ['B-12/B-13 Springs, bedrock, Marlboro clay', 'None.'],
+    ['B-14 Chesapeake Bay Critical Area', 'None — not in the CBCA overlay.'],
 ]
 yE = table(ax, 11.1, yL, ['ENVIRONMENTAL FEATURE (CHECKLIST B)', 'FINDING AND SOURCE'], env, [2.2, 6.8], 'ENVIRONMENTAL FEATURES', fs=5.5, rh=0.19)
 
@@ -545,8 +541,8 @@ idx = [['SDC-1', 'Site Development Concept Plan — Cover, BMP Summary Table, ES
 yI = table(ax, 0.9, yS - 0.4, ['SHEET', 'TITLE'], idx, [1.1, 8.6], 'INDEX OF SHEETS', fs=6, rh=0.2)
 
 gn = [
-    'Boundary: recorded plat PM 228 @ 83 (final plat 5-08238). Lot lines are the county parcel geometry, which reproduces the plat bearings to the second and distances to 0.02 ft; closure of every lot ≤ 0.04 ft. A Maryland licensed surveyor shall confirm the boundary and set the Indian Head Hwy R/W before technical plans.',
-    'Topography: M-NCPPC 2-ft contours (NAVD 88), extended ≥100 ft beyond the property (A-13). The 2009 approved sheet (2005 Landesign field survey, WSSC datum) is georeferenced and shown faint on SDC-2 for reference. V-1: DPIE prefers NGVD 29; the field-run update shall state the datum and conversion.',
+    'Boundary: recorded plat PM 228 @ 83 (final plat 5-08238). Lot lines are the county parcel geometry, which reproduces the plat bearings to the second and distances to 0.02 ft; closure of every lot ≤ 0.04 ft.',
+    'Topography: M-NCPPC 2-ft contours (NAVD 88), extended ≥100 ft beyond the property (A-13). The 2009 approved sheet (2005 Landesign field survey, WSSC datum) is georeferenced and shown faint on SDC-2 for reference. V-1: DPIE prefers NGVD 29.',
     'Outlot A (6,486 sf) was conveyed to M. & K. Doyal (L.51565 F.455) and is not part of this site. Water and sewer reach Estates Court through the recorded 30-ft WSSC easement across Outlot A and Lot 20, Treeview Estates (L.51799 F.399, Nov. 2025) and a 30-ft WSSC easement to be granted across Lot 4.',
     'Easement record discrepancies to resolve with WSSC before technical plans: Schedule A describes N 03°24\'09" W where the plat and Exhibit A show N 03°27\'26" W; the curve is written "N 043°07\'06" W"; the recited deed dates are inconsistent.',
     'Estates Court (60-ft R/W, 35,173 sf of record) is dedicated to public use on the plat and is not built. The entrance is on MD 210 (SHA): an SHA access permit and a sight-distance analysis (checklist item A.10) are required. The 30-ft R/W for use in common (L.10142 F.725) adjoins to the south-west and is not used.',
@@ -577,10 +573,7 @@ for c in contours:
     if major:
         L = LineString(ln); q = L.interpolate(0.5, normalized=True)
         axp.text(q.x, q.y, f'{z:.0f}', fontsize=4.5, color='#6d4c41', ha='center', va='center', bbox=dict(fc='white', ec='none', pad=0.1), zorder=2)
-# environmental
-draw_poly(axp, canopy.intersection(tract.buffer(110)), fc='#2e7d32', ec='none', alpha=0.07, zorder=1)
-for p, rng in steep:
-    draw_poly(axp, p.intersection(tract.buffer(110)), fc='#e57373' if rng == 25 else '#b71c1c', ec='none', alpha=0.45, zorder=2)
+# soils (NRCS)
 for p, a in soils:
     g = p.intersection(tract.buffer(110))
     draw_line(axp, g.boundary if not g.is_empty else g, color='#9e9e9e', lw=0.5, ls=(0, (1, 2)), zorder=2)
@@ -686,8 +679,6 @@ leg = [('line', INK, 2.2, '-', 'Site boundary (plat PM 228 @ 83)'), ('line', INK
        ('patch', '#81c784', None, None, 'ESD practice — micro-bioretention (M-6)'), ('hatch', '#c5e1a5', None, '..', 'ESD practice — roadside dry swale (M-8)'), ('line', '#f57f17', 0.9, '-.', 'Drainage area divide (to device)'),
        ('line', '#6a1b9a', 0.8, ':', 'Off-site drainage area onto site'), ('line', '#0d47a1', 0.9, (0, (6, 3)), '100-yr overflow path'),
        ('poi', '#b71c1c', None, None, 'Point of investigation'), ('line', '#e65100', 1.2, (0, (8, 2, 2, 2)), 'Limit of disturbance'),
-       ('patch', '#e57373', None, None, 'Slopes 15–25%'),
-       ('patch', '#b71c1c', None, None, 'Slopes > 25%'), ('patch', '#e8f5e9', None, None, 'Existing tree canopy (2023)'),
        ('line', '#9e9e9e', 0.5, (0, (1, 2)), 'Soil boundary (NRCS)'), ('hatch', 'white', None, '\\\\', 'WSSC easement (recorded / proposed)'),
        ('line', '#1565c0', 1.1, '-', 'Prop. 8" water main'), ('line', '#2e7d32', 1.1, '--', 'Prop. 8" sewer main'),
        ('line', '#8d6e63', 0.55, '-', 'Ex. contour, 2 ft (NAVD 88)'), ('patch', '#bdbdbd', None, None, '2009 approved sheet (reference)')]
@@ -699,9 +690,9 @@ for kind, col, lw, ls, txt in leg:
 ly -= 0.1
 pn = [
     'Plan scale 1" = 40\' (≤ 1" = 50\', A-11); the whole property is on this sheet. Three grid ticks (A-8) are State Plane NAD 83.',
-    'Drainage areas are the engine\'s per-lot catchments; POIs and the 100-yr overflow path are from D8 flow routing on the M-NCPPC 2-ft surface. Reset from the field-run survey.',
+    'Drainage areas are the engine\'s per-lot catchments; POIs and the 100-yr overflow path are from D8 flow routing on the M-NCPPC 2-ft surface.',
     'Every lot drains to one M-6 cell; Estates Court drains to roadside dry swales ESD-S1/S2 (M-8), which discharge at the entrance low point (EL ±' + f"{lowz:.1f}" + ') to the MD 210 roadside ditch (SHA review).',
-    'No disturbance in floodplain, wetlands or slopes > 25% (prior NRI-015-06; updated NRI required).',
+    'No environmental features on or within 100 ft of the property (streams, buffers, wetlands, floodplain, PMA, steep slopes, woodland).',
     'The faint underlay is the 2009 approved Street Tree & Lighting sheet (2005 field topography, WSSC datum), georeferenced to the plat (median residual 0.44 ft). Its houses, mains and street lights are superseded.',
     'Easements: 30\' WSSC L.51799 F.399 (Outlot A 906 sf; Lot 20 3,154 sf) recorded; 30\' WSSC across Lot 4 proposed. Private SWM easements over ESD-S1/S2 to be recorded with a maintenance agreement.',
 ]

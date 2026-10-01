@@ -175,6 +175,14 @@ export interface DesignInput {
    */
   omitSwmPractice?: boolean | null
   /**
+   * Where the designer wants the lot's ESD cell. The search still enforces
+   * every clearance (lot, dwelling, paving, easements, frontage strip); it
+   * only takes the fitting position NEAREST this point instead of the lot's
+   * southernmost corner, which on a long or skewed lot can be 150 ft from
+   * the roof leaders it is meant to take.
+   */
+  swmPracticeNear?: Position | null
+  /**
    * Rings the stormwater practice must stay clear of that are NOT on the twin.
    *
    * The subdivision-level easements — the private utility easement inside
@@ -746,7 +754,12 @@ export function generateDesign(input: DesignInput): DesignResult {
         ] as Position)
       }
       let swmAt: Position | null = null
-      for (const q of [...preferred, ...cands]) {
+      const near = input.swmPracticeNear
+      const order = near
+        ? [...cands].sort((a2, b2) =>
+            Math.hypot(a2[0] - near[0], a2[1] - near[1]) - Math.hypot(b2[0] - near[0], b2[1] - near[1]))
+        : [...preferred, ...cands]
+      for (const q of order) {
         if (fits(q)) { swmAt = q; break }
       }
       if (swmAt && !input.omitSwmPractice) {

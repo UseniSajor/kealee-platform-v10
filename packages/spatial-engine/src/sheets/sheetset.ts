@@ -12,9 +12,11 @@
 import type { Position, SiteTwin } from '../site-plan/site-twin'
 import { governingHsg, sizeEsd, type HydrologicSoilGroup, MDE_TABLE_5_3_CITATION } from '../site-plan/esd-mep'
 import { analysePois, type PoiAnalysis } from '../site-plan/poi'
+import { swmConceptReport, type Rainfall24hr, type SwmConceptReport } from '../site-plan/swm-concept'
 import { evaluateChecklist, DPIE_CONCEPT_CHECKLIST_EDITION, type ChecklistRow, type ChecklistFacts } from '../review/dpie-concept-checklist'
+import polygonClipping from 'polygon-clipping'
 
-export interface SheetSpec { id: string; title: string; kind: 'cover' | 'existing' | 'layout' | 'utility' | 'swm' | 'esc' | 'details'; scaleFtPerIn?: number }
+export interface SheetSpec { id: string; title: string; kind: 'cover' | 'existing' | 'layout' | 'utility' | 'swm' | 'swmreport' | 'esc' | 'details'; scaleFtPerIn?: number }
 
 export interface BmpRow {
   bmp: string; practice: string; mdeCode: string; location: string; ownership: string; poi: string
@@ -35,6 +37,8 @@ export interface SheetSet {
   twin: SiteTwin
   bmp: { rows: BmpRow[]; totals: Record<string, number>; byPoi: { poi: string; req: number; prov: number }[]; citation: string }
   poi: PoiAnalysis
+  /** SWM concept report (checklist D-1, D-3, D-4, D-10); null when the site's rainfall is not on record. */
+  swm: SwmConceptReport | null
   checklist: { edition: string; rows: ChecklistRow[] }
   tables: Record<string, { title: string; columns: string[]; rows: (string | number)[][]; note?: string }>
   notes: Record<string, string[]>
@@ -126,8 +130,31 @@ export function buildSheetSet(input: {
   const totals = { daSqFt: sum('daSqFt'), impSqFt: sum('impSqFt'), esdvReqCf: sum('esdvReqCf'), esdvProvCf: sum('esdvProvCf'), revReqCf: sum('revReqCf'), surfaceSqFt: sum('surfaceSqFt') }
   const byPoi = poi.pois.map(p => ({ poi: p.id, req: rows.filter(r => r.poi === p.id).reduce((s, r) => s + r.esdvReqCf, 0), prov: rows.filter(r => r.poi === p.id).reduce((s, r) => s + r.esdvProvCf, 0) }))
 
+  // ── SWM concept report (D-1, D-3, D-4, D-10) ───────────────────────────────
+  const lodRings = feats.filter(f => f.kind === 'LimitOfDisturbance' && f.ring?.coordinates?.length).map(f => f.ring.coordinates as Position[])
+  const lod = lodRings.reduce((s, r) => s + ringArea(r), 0)
+  const closed = (r: Position[]) => (r[0][0] === r[r.length - 1][0] && r[0][1] === r[r.length - 1][1] ? r : [...r, r[0]])
+  let lodOnSite = 0
+  if (lodRings.length) {
+    const [first, ...rest] = lodRings.map(r => [closed(r)] as [number, number][][])
+    const lodUnion = polygonClipping.union(first, ...rest)
+    for (const poly of polygonClipping.intersection(lodUnion, [closed(tract)] as [number, number][][])) {
+      lodOnSite += ringArea(poly[0] as Position[]) - poly.slice(1).reduce((s, h) => s + ringArea(h as Position[]), 0)
+    }
+  }
+  const rain = pr.rainfall24hr as Rainfall24hr | undefined
+  const swm: SwmConceptReport | null = rain && poi.pois.length ? swmConceptReport({
+    tractSqFt: ringArea(tract), poi, hsg, rainfall: rain,
+    woodsSqFt: env.woodsSqFt ?? null, proposedImpSqFt: totals.impSqFt, lodOnSiteSqFt: lodOnSite,
+    receiving: String(env.receiving ?? 'the existing roadside drainage'),
+    esdvReqCf: totals.esdvReqCf, esdvProvCf: totals.esdvProvCf, practices: rows.length,
+  }) : null
+  if (swm && !input.sheets && !sheets.some(s => s.kind === 'swmreport')) {
+    sheets.splice(sheets.findIndex(s => s.kind === 'swm') + 1, 0,
+      { id: 'C-410', title: 'STORMWATER MANAGEMENT CONCEPT NARRATIVE AND 100-YR COMPUTATIONS', kind: 'swmreport' })
+  }
+
   // ── Checklist ──────────────────────────────────────────────────────────────
-  const lod = feats.filter(f => f.kind === 'LimitOfDisturbance' && f.ring?.coordinates?.length).reduce((s, f) => s + ringArea(f.ring.coordinates), 0)
   const culverts = feats.filter(f => f.kind === 'ProposedFeature' && f.attributes?.type === 'culvert').length
   const facts: ChecklistFacts = {
     sheetSizeIn: [36, 24], sheets: sheets.map(s => ({ id: s.id, title: s.title })),
@@ -137,10 +164,11 @@ export function buildSheetSet(input: {
     contoursBeyondFt: 100, bmpRows: rows.length, pois: poi.pois.length, overflowPaths: poi.overflow.length,
     offsiteAreaSqFt: poi.offsiteAreaSqFt, esdPractices: rows.length, culverts, lodSqFt: lod,
     dedicationSqFt: Number(pr.proposedStreets?.[0]?.rowSqFt ?? 0),
+    swmReport: swm ? { sheet: 'C-410', narrative: swm.narrative, outstanding: swm.outstanding } : undefined,
     env: {
       streams: Boolean(env.streams), wetlands: Boolean(env.wetlands), floodplain: Boolean(env.floodplain), pma: Boolean(env.pma), cbca: Boolean(env.cbca),
       steep15SqFt: Number(env.steep15SqFt ?? 0), steep25SqFt: Number(env.steep25SqFt ?? 0),
-      woodland: String(env.woodland ?? 'Woodland per the NRI and TCP for this submittal.'), soils: String(env.soils ?? 'NRCS soils shown.'),
+      woodland: String(env.woodland ?? ''), soils: String(env.soils ?? 'NRCS soils shown.'),
       tmdl: String(env.tmdl ?? ''), tierII: Boolean(env.tierII), highlyErodible: String(env.highlyErodible ?? ''),
       marlboroClay: Boolean(env.marlboroClay), springs: Boolean(env.springs), wells: String(env.wells ?? ''), approvals: String(env.approvals ?? ''),
       nriCurrentForSubmittal: Boolean(env.nriCurrentForSubmittal),
@@ -193,7 +221,7 @@ export function buildSheetSet(input: {
     project: (pr.titleBlock ?? {}) as Record<string, string>,
     sheets, sheetSizeIn: [36, 24], approvalStripIn: 5, twin,
     bmp: { rows, totals, byPoi, citation: MDE_TABLE_5_3_CITATION },
-    poi, checklist: { edition: DPIE_CONCEPT_CHECKLIST_EDITION, rows: checklist },
+    poi, swm, checklist: { edition: DPIE_CONCEPT_CHECKLIST_EDITION, rows: checklist },
     tables, notes, details,
   }
 }

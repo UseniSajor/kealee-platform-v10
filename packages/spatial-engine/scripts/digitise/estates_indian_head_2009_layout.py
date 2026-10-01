@@ -212,6 +212,15 @@ for n, d in L2009.items():
         st_ = (cp_.x - ud_[0] * (DRIVE_W / 2 + 1), cp_.y - ud_[1] * (DRIVE_W / 2 + 1))
         drive = strip(st_, (pp_.x + ud_[0], pp_.y + ud_[1]), DRIVE_W)
         pp = pp_
+        # A drive that clips the dwelling is slid sideways (still inside the
+        # court's width) by the least amount that clears the house by 1 ft.
+        if drive.intersects(house.buffer(1.0)):
+            nd_ = (-ud_[1], ud_[0])
+            for off in sorted([k * 0.5 for k in range(-16, 17)], key=abs):
+                dv = translate(drive, nd_[0] * off, nd_[1] * off)
+                if not dv.intersects(house.buffer(1.0)) and dv.intersects(court):
+                    drive, pp = dv, Point(pp_.x + nd_[0] * off, pp_.y + nd_[1] * off)
+                    break
     if d.get('frontLoad'):
         # straight out of the door to the pavement, the door's width
         dm = ((A[0] + B[0]) / 2, (A[1] + B[1]) / 2)
@@ -222,17 +231,23 @@ for n, d in L2009.items():
         pp = ppf
     if drive.intersects(house.buffer(-0.5)):
         report[n] = {'warning': 'drive crosses the dwelling'}
-    on_lot = unary_union([court, drive]).intersection(lot).buffer(0)
+    # paving stops at the wall: nothing drawn inside the footprint
+    on_lot = unary_union([court, drive]).intersection(lot).difference(house).buffer(0)
     # apron: R/W line to pavement edge, 12 ft flaring to 22 ft
     rline = row.exterior
     q_row = drive.intersection(rline).centroid
     q_pav = Point(pp.x, pp.y)
     ua = unit((q_row.x, q_row.y), (q_pav.x, q_pav.y)); na = (-ua[1], ua[0])
     dw = min(math.dist(A, B), 20.0) if d.get('frontLoad') else DRIVE_W
-    h1, h2 = dw / 2, dw / 2 + FLARE
-    apron = Polygon([(q_row.x + na[0] * h1, q_row.y + na[1] * h1), (q_pav.x + na[0] * h2, q_pav.y + na[1] * h2),
-                     (q_pav.x - na[0] * h2, q_pav.y - na[1] * h2), (q_row.x - na[0] * h1, q_row.y - na[1] * h1)]).buffer(0)
-    apron = apron.difference(pave).intersection(row).buffer(0)
+    # The apron MEETS THE PAVEMENT EDGE IT ACTUALLY RUNS TO. A trapezoid with
+    # its flare corners on the tangent at q_pav leaves open wedges against the
+    # cul-de-sac's 42-ft arc. Instead: a throat the drive's width from the R/W
+    # line into the pavement, CLOSED against the pavement with FLARE-radius
+    # returns (morphological closing), then cut back to the pavement edge, so
+    # the radius returns and the arc are the same line on a bend or a bulb.
+    throat = strip((q_row.x - ua[0] * 1, q_row.y - ua[1] * 1), (q_pav.x + ua[0] * 8, q_pav.y + ua[1] * 8), dw)
+    closed = unary_union([throat, pave]).buffer(FLARE, join_style=1).buffer(-FLARE, join_style=1)
+    apron = closed.intersection(throat.buffer(FLARE + 1.0, cap_style=2)).difference(pave).intersection(row).buffer(0)
     # stoop and walk
     sp = d.get('stoop_world') or W(*d['stoop'])
     stoop = Polygon([(sp[0] + ue[0] * dx + nrm[0] * dy, sp[1] + ue[1] * dx + nrm[1] * dy) for dx, dy in ((-4, -2.5), (4, -2.5), (4, 2.5), (-4, 2.5))])
@@ -244,13 +259,27 @@ for n, d in L2009.items():
         {'kind': 'Driveway', 'label': "PROP. DRIVEWAY — FRONT-LOAD GARAGE" if d.get('frontLoad') else "PROP. DRIVEWAY & SIDE-LOAD COURT (2009 LAYOUT)", 'ring': geomlist(on_lot),
          'note': ('Front-load garage; drive the width of the door straight to the street.' if d.get('frontLoad') else f'Side-load garage; {COURT_D:.0f}-ft turning court at the door, {DRIVE_W:.0f}-ft drive. Layout per DPW&T 9399-2009.')},
         {'kind': 'Apron', 'label': "DRIVEWAY APRON — DPW&T RURAL SWALE/CULVERT DRIVEWAY", 'ring': geomlist(apron),
-         'note': "Open section: 12 ft at the R/W line, 5-ft flares at the edge of pavement; 15-in culvert or swale driveway per DPW&T Std. 600.02 / 100-series."},
+         'note': f"Open section: {dw:.0f} ft at the R/W line, {FLARE:.0f}-ft radius returns to the edge of pavement (following the cul-de-sac arc where it fronts the bulb); 15-in culvert or swale driveway per DPW&T Std. 600.02 / 100-series."},
         {'kind': 'Stoop', 'label': 'STOOP', 'ring': [list(p) for p in list(stoop.exterior.coords)[:-1]]},
     ]
     if walk is not None and not walk.is_empty:
         spec['fixedPaving'].append({'kind': 'Walk', 'label': "4' LEAD WALK", 'ring': geomlist(walk)})
     spec['programme'] = {**spec.get('programme', {}), 'garage': 'attached_2_car', 'garageEntry': 'front' if d.get('frontLoad') else 'side',
                          'footprintSource': 'DPW&T 9399-2009 approved sheet, transcribed'}
+    if n == 6:
+        # user 2026-09-30: Lot 6's M-6 cell was in the far south-west corner —
+        # bring it to the EAST side of the lot (the Lot 5 line), behind the house
+        # where the roof leaders reach it. The engine takes the nearest spot that fits.
+        # Aim at the Lot 5/6 line BEHIND the house (60 % of the way from the
+        # street end), 25 ft in — never the front yard, where the cell would
+        # sit between the house and the street mains.
+        east = lot.boundary.intersection(Polygon(_pp['5']['geometry']['rings'][0]).buffer(0.5))
+        el = max(east.geoms, key=lambda g: g.length) if hasattr(east, 'geoms') else east
+        if Point(el.coords[0]).distance(row) > Point(el.coords[-1]).distance(row):
+            el = LineString(list(el.coords)[::-1])
+        qe = el.interpolate(0.6, normalized=True)
+        ui = unit((qe.x, qe.y), (lot.centroid.x, lot.centroid.y))
+        spec['swmPracticeNear'] = [qe.x + ui[0] * 25, qe.y + ui[1] * 25]
     spec['approvedLayout2009'] = {'finishedFloorElevFtWsscDatum': d['ff'], 'footprintSqFt': round(house.area)}
     json.dump(spec, open(lotp, 'w'), indent=1)
     inside = lot.buffer(0.5).contains(house)

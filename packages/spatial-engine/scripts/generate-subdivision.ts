@@ -90,6 +90,8 @@ type PlatSpec = {
   /** What the lot's water and sewer services connect to, as lettered on the sheet. */
   utilityMainLabel?: string
   omitSwmPractice?: boolean
+  /** Where the lot's ESD cell should go — the nearest position that fits is taken. */
+  swmPracticeNear?: Position
   stormOutfall?: unknown
   /** The dwelling and its paving as drawn on an approved plan — see lot-package. */
   fixedFootprint?: Position[]
@@ -805,8 +807,7 @@ async function main(): Promise<void> {
     return {
       to: st.at as Position,
       label: `House drainage collected and conveyed to ${st.id} (${st.type}) on the shared storm `
-        + 'drain trunk in the rear easement. Invert to be set from the field-run topographic '
-        + 'survey; see the STORM DRAIN SCHEDULE for the trunk sizes and flows.',
+        + 'drain trunk in the rear easement. See the STORM DRAIN SCHEDULE for the trunk sizes and flows.',
     }
   }
 
@@ -906,6 +907,7 @@ async function main(): Promise<void> {
         omitWaterAndSewer: spec.omitWaterAndSewer ?? null,
         utilityMainLabel: spec.utilityMainLabel ?? null,
         omitSwmPractice: spec.omitSwmPractice ?? null,
+        swmPracticeNear: spec.swmPracticeNear ?? null,
         // EACH HOUSE IS CONNECTED TO THE TRUNK IN THE EASEMENT.
         //
         // The trunk was drawn and each lot was given its own structure, and
@@ -1753,8 +1755,7 @@ async function main(): Promise<void> {
                 + `ground ${(r.cutUpFt ?? 0).toFixed(2)} ft at the head and `
                 + `${(r.cutDownFt ?? 0).toFixed(2)} ft at the outlet. `
               : '')
-            + 'GRADES TO BE SET FROM THE FIELD-RUN '
-            + 'TOPOGRAPHIC SURVEY. Establish sod before the contributing area is stabilised.',
+            + 'Grades from county 2 ft contour mapping. Establish sod before the contributing area is stabilised.',
         },
       } as never as SiteFeature)
     }
@@ -1811,8 +1812,7 @@ async function main(): Promise<void> {
             + 'ROAD CULVERT. BURIED: outside diameter 4.17 ft, 1.5 ft minimum cover over the '
             + 'crown, so finished grade over this main shall be no lower than the invert plus '
             + '5.67 ft for its full length — where the existing ground is lower, fill is '
-            + 'required and is carried on the grading plan. Invert and slope to be set from the '
-            + 'field-run topographic survey and the existing inlet; bedding per P.G. County DER '
+            + 'required and is carried on the grading plan. Bedding per P.G. County DER '
             + 'SWM Std. and Specification #02200.',
         },
       } as never as SiteFeature)
@@ -1858,8 +1858,7 @@ async function main(): Promise<void> {
         + `${(odFt + COVER_FT).toFixed(2)} ft`)
       if (needUp != null && needDn != null) {
         console.log(`                    existing ground over the run: EL ${needUp.toFixed(1)} at `
-          + `the street end, EL ${needDn.toFixed(1)} at the rear — county 2 ft contour mapping; `
-          + 'inverts to be set from the field-run survey and the existing inlet')
+          + `the street end, EL ${needDn.toFixed(1)} at the rear — county 2 ft contour mapping`)
       }
     }
 
@@ -1924,7 +1923,7 @@ async function main(): Promise<void> {
         attributes: {
           label: `${st.id}  GR ${st.gradeEl.toFixed(1)}`, monument: true,
           note: `${st.type}${st.lot ? `, lot ${st.lot}` : ''}. Grade shown from county contour `
-            + 'mapping; TOP and INVERT to be set from the field-run topographic survey.',
+            + 'mapping.',
         },
       } as never as SiteFeature)
     }
@@ -3045,6 +3044,59 @@ async function main(): Promise<void> {
       attributes: { practice: sp.practice ?? 'Environmental Site Design', footprintSqFt: sp.footprintSqFt ?? null, requiredVolumeCf: sp.requiredVolumeCf ?? null, proposed: true },
     } as never)
     console.log(`    stormwater parcel ${sp.name}: ${sp.sqFt.toFixed(0)} sf, practice ${sp.footprintSqFt ?? '?'} sf for ${sp.requiredVolumeCf ?? '?'} cf`)
+  }
+
+  // ── House connections from the street mains, clear of everything built ──
+  // With mains in a proposed street, each lot's water service and sewer
+  // lateral are re-run from their own main to the dwelling, 10 ft apart and
+  // 3 ft clear of drives, aprons, walks, stoops, culverts and ESD cells, so no
+  // concrete or structure has to come out to lay or repair them.
+  {
+    const ringOf = (f: any): Position[] => f?.ring?.coordinates ?? []
+    const mainOf = (ty: string) => (merged as any[]).find(f => f.kind === 'Utility' && f.attributes?.type === ty && String(f.id).startsWith('prop-street-'))?.line as Position[] | undefined
+    const waterMain = mainOf('Water main'), sewerMain = mainOf('Sanitary sewer main')
+    if (waterMain && sewerMain) {
+      const { routeHouseConnections } = await import('../src/site-plan/house-connections')
+      // The run may use the street R/W and any WSSC easement (where the mains
+      // leave the street), besides the lot it serves.
+      const rows = [
+        ...(platRecord?.proposedStreets ?? []).flatMap(st => st.rowRings),
+        ...(merged as any[]).filter(f => f.kind === 'Easement' && /WSSC/i.test(`${f.beneficiary ?? ''} ${f.attributes?.label ?? ''} ${f.easementType ?? ''}`)).map(ringOf),
+      ]
+      const obstacles = (merged as any[]).flatMap(f => {
+        const imp = f.attributes?.improvement
+        if (f.kind === 'Pavement' && ['Driveway', 'Apron', 'Walk', 'Stoop'].includes(imp)) return [{ label: `${f.id}`, ring: ringOf(f) }]
+        if (f.kind === 'SWMPractice') return [{ label: `${f.id}`, ring: ringOf(f) }]
+        if (f.kind === 'ProposedFeature' && f.attributes?.type === 'culvert') return [{ label: `${f.id}`, line: f.line }]
+        return []
+      })
+      for (const parcel of (merged as any[]).filter(f => f.kind === 'Parcel' && /^l\d+-parcel$/.test(f.id))) {
+        const pre = String(parcel.id).replace(/parcel$/, '')
+        const house = (merged as any[]).find(f => f.kind === 'Building' && String(f.id).startsWith(pre))
+        const svc = (merged as any[]).filter(f => f.kind === 'Utility' && String(f.id).startsWith(pre))
+        const water = svc.find(f => /water service/i.test(f.attributes?.type ?? ''))
+        const sewer = svc.find(f => /sanitary lateral/i.test(f.attributes?.type ?? ''))
+        if (!house || !water || !sewer) continue
+        const others = (merged as any[]).filter(f => f.kind === 'Building' && f !== house).map(f => ({ label: f.id, ring: ringOf(f) }))
+        const route = (separationFt: number) => routeHouseConnections({
+          dwelling: ringOf(house), allowed: [ringOf(parcel), ...rows], waterMain, sewerMain,
+          obstacles: [...obstacles, ...others], separationFt, clearanceFt: 3,
+        })
+        // CONSOLIDATED where two separate trenches cannot both clear the
+        // paving: one common trench, water on a shelf above the sewer, which
+        // WSSC must accept — stated on the sheet, never assumed silently.
+        let r = route(10), commonTrench = false
+        if (!r) { r = route(2); commonTrench = !!r }
+        if (!r) {
+          console.log(`  !! ${pre.slice(0, -1).toUpperCase()}: no water/sewer route clear of the paving — services left as drawn, ENGINEER TO ROUTE`)
+          continue
+        }
+        if (commonTrench) console.log(`  !! ${pre.slice(0, -1).toUpperCase()}: no 10-ft corridor clear of the paving — water and sewer CONSOLIDATED in one common trench (WSSC approval)`)
+        water.line = r.water; sewer.line = r.sewer
+        for (const f of [water, sewer]) f.attributes = { ...f.attributes, from: 'main', routedClearOfPaving: true, commonTrench, lotLabel: house.attributes?.lotLabel ?? null }
+        console.log(`    services ${pre.slice(0, -1)}  water + sewer ${r.lengthFt.toFixed(0)} ft (${r.water.length + r.sewer.length > 4 ? 'one bend' : 'straight'}) from the street mains, ${commonTrench ? 'common trench' : '10 ft apart'}, ${Number.isFinite(r.minClearanceFt) ? r.minClearanceFt.toFixed(1) + ' ft' : 'over 3.5 ft'} min. clear of paving/structures`)
+      }
+    }
   }
 
   let twin: SiteTwin = {

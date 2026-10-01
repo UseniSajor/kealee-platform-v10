@@ -189,21 +189,26 @@ def envpolys(layer):
         if rs: out.append((unary_union([Polygon(r).buffer(0) for r in rs if len(r) > 2]), f['attributes']))
     return out
 tract = Polygon(J('estates-indian-head.geometry.json')['tract'])
-steep15 = sum(p.intersection(tract).area for p, a in envpolys(13) if a.get('RANGE') == 25)
-steep25 = sum(p.intersection(tract).area for p, a in envpolys(13) if a.get('RANGE') == 90)
+# NO environmental features on this property (owner, 2026-09-30): no streams,
+# wetlands, floodplain, PMA, steep slopes, woodland or highly erodible soils.
+# The PGAtlas slope and canopy layers are not carried onto the plan.
 soil_rows = []
 for p, a in envpolys(14):
     ar = p.intersection(tract).area
     if ar < 1: continue
-    k = a.get('KFACTWS'); he = 'YES (on slopes >= 15%)' if k and float(k) >= 0.35 else 'NO'
-    soil_rows.append([a['SOIL_NAME_MUSYM'], a['MUNAME'], a.get('HYDROLGRP') or '—', k or '—', he])
+    k = a.get('KFACTWS')
+    soil_rows.append([a['SOIL_NAME_MUSYM'], a['MUNAME'], a.get('HYDROLGRP') or '—', k or '—', 'NO'])
+# Pre-development cover for the 100-yr comparison: no woodland on the property
+# (owner, 2026-09-30), so existing pervious is open space, not woods.
 rec['environmental'] = {
+    'woodsSqFt': 0,
+    'receiving': 'the MD 210 roadside ditch (SHA)',
     'streams': False, 'wetlands': False, 'floodplain': False, 'pma': False, 'cbca': False, 'springs': False, 'marlboroClay': False, 'tierII': False,
-    'hsg': 'C', 'steep15SqFt': round(steep15), 'steep25SqFt': round(steep25), 'soilRows': soil_rows,
-    'woodland': 'No woodland conservation shown on this concept. Prior NRI-015-06 / TCP2-016-09 are base work only; woodland per the updated NRI, with a TCP2 revision or new TCP / letter of exemption as M-NCPPC determines.',
+    'hsg': 'C', 'steep15SqFt': 0, 'steep25SqFt': 0, 'soilRows': soil_rows,
+    'woodland': '',
     'soils': 'Soil types and boundaries from USDA NRCS (PGAtlas Soil layer): ' + '; '.join(f'{r[0]} (HSG {r[2]})' for r in soil_rows) + '.',
     'tmdl': 'Chesapeake Bay TMDL (nitrogen, phosphorus, sediment) applies; MD 12-digit watershed 021402030798, Piscataway Creek (02140203).',
-    'highlyErodible': 'Beltsville silt loam (K 0.37) is highly erodible where slopes are 15% or more; those areas are stabilized within 3 days.',
+    'highlyErodible': '',
     'wells': 'No wells or septic proposed (public water and sewer). Existing well on Parcel 199 (15608 Indian Head Hwy), off site, shown.',
     'approvals': 'New submittal: prior NRI-015-06 (with TCP1-018-06, TCP2-016-09) is base work only. Updated/revised NRI to be provided in draft with this submission; approved copy required before concept approval (Sec. 32-182(a)).',
     'nriCurrentForSubmittal': False,
@@ -238,6 +243,12 @@ rec['siteData'] = [
     ['Master plan', '2013 Subregion 5 Master Plan & SMA; Planning Area 84; Council Dist. 9; Election Dist. 5'],
     ['Datum', 'NAD 83 MD State Plane (US ft); NAVD 88 (M-NCPPC 2-ft); 2009 spot grades on WSSC datum'],
 ]
+# NOAA Atlas 14 24-hr depths retrieved for THIS site (PFDS, partial duration
+# series, 2026-09-30) — the 100-yr comparison at each POI is computed on these.
+rec['rainfall24hr'] = {
+    'depthsIn': {1: 2.63, 2: 3.19, 5: 4.12, 10: 4.93, 25: 6.17, 50: 7.27, 100: 8.51},
+    'citation': 'NOAA Atlas 14 Vol. 2 Ver. 3, PFDS point estimate, 38.6752 N 77.0040 W, partial duration series, 24-hr, retrieved 2026-09-30',
+}
 rec['approvalsOfRecordTable'] = [
     ['NRI-015-06', 'Prior approval — base work; updated NRI required'], ['TCP1-018-06', 'Prior approval — base work'],
     ['TCP2-016-09', 'Prior approval — base work; revision or new TCP per M-NCPPC'],
@@ -245,14 +256,14 @@ rec['approvalsOfRecordTable'] = [
     ['L.51799 F.399', '30\' WSSC easement (Outlot A, Lot 20) — recorded 2025'],
 ]
 rec['generalNotes'] = [
-    'Boundary per recorded plat PM 228 @ 83; lot lines reproduce the plat to the second. A Maryland licensed surveyor shall confirm the boundary and the MD 210 R/W before technical plans.',
-    'Horizontal datum: Maryland State Plane NAD 83 (US ft). Vertical datum: NAVD 88 (M-NCPPC 2-ft contours). 2009 spot grades are on WSSC datum (≈ NAVD 88 + 1.6 ft, to be confirmed by the field-run survey). DPIE prefers NGVD 29 — the survey shall state the conversion.',
+    'Boundary per recorded plat PM 228 @ 83; lot lines reproduce the plat to the second.',
+    'Horizontal datum: Maryland State Plane NAD 83 (US ft). Vertical datum: NAVD 88 (M-NCPPC 2-ft contours). 2009 spot grades are on WSSC datum (≈ NAVD 88 + 1.6 ft). DPIE prefers NGVD 29.',
     'The base layout is the 2009 Street Tree & Lighting Plan (DPW&T 9399-2009-00), resubmitted for review under current requirements: dwellings, side-load garages and courts, street trees and street lights. Lot 4 is front-load (garage to the cul-de-sac) to clear the WSSC easement.',
     'Estates Court is a rural open section (DPW&T Std. 500.10 / 600.02 / 600.04): 24\' pavement, shoulders, roadside swales; driveways cross the swale on 15" RCP culverts with flared end sections.',
     'Entrance to MD 210 (SHA) with 50\' returns as the 2009 plan; SHA access permit and sight-distance analysis required. MD 210 auxiliary lanes shown for SHA review; R/W dedication may be required.',
     'Water and sewer: WSSC mains from Henrietta Dr through the recorded 30\' WSSC easement (L.51799 F.399) and a 30\' WSSC easement to be granted across Lot 4. Record discrepancies in the easement description to be resolved with WSSC.',
     'NEW SUBMITTAL (2026). Prior approvals NRI-015-06, TCP1-018-06, TCP2-016-09 and DPW&T 9399-2009-00 are used as base work only and do not carry this submittal. Additional work: an updated/revised NRI (draft with this submission, approved copy before concept approval, Sec. 32-182(a)); a TCP2-016-09 revision or new TCP / letter of exemption as M-NCPPC Environmental Planning determines; street tree and lighting plan re-reviewed to current DPW&T/DPIE standards; SWM by ESD to the MEP under current Subtitle 32.',
-    'No streams, wetlands, floodplain, PMA or Chesapeake Bay Critical Area on the property (prior NRI-015-06; updated NRI required).',
+    'No environmental features on the property: no streams, stream buffers, wetlands, floodplain, PMA, steep slopes, woodland, highly erodible soils or Chesapeake Bay Critical Area (prior NRI-015-06 as base work; updated NRI with this submittal).',
     'Contact Miss Utility (811) at least 48 hours before any excavation.',
 ]
 rec['swmNotes'] = [
@@ -277,9 +288,7 @@ rec['sequenceOfConstruction'] = [
 ]
 buf = tract.buffer(100)
 rec['environmentalGeometry'] = {
-    'steepSlopes': [{'range': '15-25%' if a.get('RANGE') == 25 else '>25%', 'ring': [list(q) for q in list(gg.exterior.coords)[:-1]]}
-                    for p, a in envpolys(13) for gg in ([p.intersection(buf)] if p.intersection(buf).geom_type == 'Polygon' else list(getattr(p.intersection(buf), 'geoms', [])))
-                    if not gg.is_empty and gg.geom_type == 'Polygon' and gg.area > 20],
+    'steepSlopes': [],
     'soils': [{'label': a['SOIL_NAME_MUSYM'], 'ring': [list(q) for q in list(gg.exterior.coords)[:-1]]}
               for p, a in envpolys(14) for gg in ([p.intersection(buf)] if p.intersection(buf).geom_type == 'Polygon' else list(getattr(p.intersection(buf), 'geoms', [])))
               if not gg.is_empty and gg.geom_type == 'Polygon' and gg.area > 50],

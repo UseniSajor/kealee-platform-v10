@@ -2477,8 +2477,7 @@ function buildingData(doc: Doc, x: number, y: number, w: number, ctx: SheetConte
   })
   doc.font('Helvetica').fontSize(6).fillColor('#666666')
      .text('G garage slab · B basement · FF finished floor · SF subfloor · HT height · ' +
-           'STY storeys.  A DASH IS NOT ZERO: the elevation has not been established and must be ' +
-           'set from a field-run topographic survey before construction.', x, cy + 2, { width: w })
+           'STY storeys.  A DASH IS NOT ZERO: no elevation is shown for that item.', x, cy + 2, { width: w })
   return doc.y + 2
 }
 
@@ -2792,6 +2791,7 @@ function preparerPanel(doc: Doc, x: number, y: number, w: number, ctx: SheetCont
 }
 
 function generalNotes(doc: Doc, x: number, y: number, twin?: SiteTwin): number {
+  const openSection = Boolean((twin as { platRecord?: { openSection?: unknown } } | undefined)?.platRecord?.openSection)
   // The boundary note has to match where the boundary CAME FROM.
   //
   // It said flatly that the boundary is compiled GIS and not a survey. On a
@@ -2827,7 +2827,9 @@ function generalNotes(doc: Doc, x: number, y: number, twin?: SiteTwin): number {
     // word-for-word against the State source and rendered on C-400 and C-700.
     // Duplicating it here — with the wrong citation — would put the error the
     // repo went to the trouble of catching back onto every sheet.
-    'CONNECT TO EXISTING PAVEMENT, CURB AND GUTTER, DRIVEWAY AND SIDEWALK IN LINE AND GRADE.',
+    openSection
+      ? 'CONNECT TO EXISTING PAVEMENT, SHOULDER AND ROADSIDE SWALE IN LINE AND GRADE.'
+      : 'CONNECT TO EXISTING PAVEMENT, CURB AND GUTTER, DRIVEWAY AND SIDEWALK IN LINE AND GRADE.',
     // THE CULVERT QUESTION, ANSWERED ON THE SHEET.
     //
     // "Is there a culvert under the driveway" is one of the first things a
@@ -2839,7 +2841,13 @@ function generalNotes(doc: Doc, x: number, y: number, twin?: SiteTwin): number {
     // depressed apron. This frontage is the second kind, the gutter is
     // existing, and the on-lot drainage runs the other way — to the swale in
     // the rear easement, which crosses no driveway on any of the four lots.
-    'NO DRIVEWAY CULVERT IS REQUIRED. THIS FRONTAGE IS AN EXISTING CURB AND GUTTER SECTION, NOT ' +
+    // On a rural open section the answer is the other one: every driveway
+    // crosses the roadside swale on a culvert (DPW&T Std. 600.02).
+    openSection
+      ? 'DRIVEWAY CULVERTS ARE REQUIRED. THE STREET IS A RURAL OPEN SECTION: EACH DRIVEWAY CROSSES THE ' +
+        'ROADSIDE SWALE ON A 15" RCP CULVERT WITH FLARED END SECTIONS PER DPW&T STD. 600.02. NO CURB AND ' +
+        'GUTTER IS PROPOSED.'
+      : 'NO DRIVEWAY CULVERT IS REQUIRED. THIS FRONTAGE IS AN EXISTING CURB AND GUTTER SECTION, NOT ' +
     'AN OPEN DITCH SECTION: GUTTER FLOW IS CARRIED THROUGH EACH ENTRANCE BY THE DEPRESSED CURB ' +
     `AT THE APRON PER ${(profileFor(twin?.jurisdictionCode)?.apronStandard ?? 'DPW&T STANDARD') === 'DPW&T STANDARD' ? 'DPW&T STD. 300.01 NOTE 6' : profileFor(twin?.jurisdictionCode)!.apronStandard}. ON-LOT DRAINAGE IS COLLECTED BY THE REAR-YARD ` +
     'SWALE IN THE REAR DRAINAGE EASEMENT AND CROSSES NO DRIVEWAY OR APRON.',
@@ -3634,8 +3642,7 @@ function stormDrainSchedule(
         + `THE CROWN — FINISHED GRADE OVER IT SHALL BE NO LOWER THAN INVERT + `
         + `${((ep.sizeIn + 8) / 12 + 1.5).toFixed(2)} FT. FILL WHERE EXISTING GROUND IS LOWER.`
       : '',
-    'SWALE GRADES AND INVERTS TO BE SET FROM THE FIELD-RUN TOPOGRAPHIC SURVEY. '
-      + 'ESTABLISH SOD BEFORE THE CONTRIBUTING AREA IS STABILISED.',
+    'ESTABLISH SOD BEFORE THE CONTRIBUTING AREA IS STABILISED.',
     (() => {
       const ew = (ctx.twin as { earthwork?: {
         cutCubicYd: number; fillCubicYd: number; netCubicYd: number; gradedAreaSqFt: number
@@ -3646,7 +3653,7 @@ function stormDrainSchedule(
           + `${Math.abs(ew.netCubicYd).toLocaleString()} CY `
           + `${ew.netCubicYd >= 0 ? 'IMPORT' : 'EXPORT'} OVER `
           + `${ew.gradedAreaSqFt.toLocaleString()} SQ FT REGRADED. GRID SUMMATION AT 6 FT ON `
-          + 'COUNTY 2 FT CONTOUR MAPPING; CONFIRM AGAINST THE FIELD-RUN SURVEY.'
+          + 'COUNTY 2 FT CONTOUR MAPPING.'
         : ''
     })(),
   ].filter(Boolean)
