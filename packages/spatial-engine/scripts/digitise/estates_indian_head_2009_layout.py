@@ -258,6 +258,6 @@ for n, d in L2009.items():
                  'onLot': inside, 'shiftFt': [round(shift[0], 1), round(shift[1], 1)], 'rotationDeg': d.get('rotationDeg', 0), 'clearOfEasementFt': round(house.distance(esm), 1), 'drivewaySqFt': round(on_lot.area), 'apronSqFt': round(apron.area)}
 # the street is the 2009 rural open section
 rec['openSection'] = {'shoulderFt': 4, 'swaleFt': 10,
-                      'note': "Rural open section as approved in 2009 (DPW&T Std. 500.10 / 600.02 / 600.04): 24-ft pavement, 4-ft shoulders, roadside grass swales; driveways cross the swale on culverts."}
+                      'note': "Rural open section per the 2009 base plan, to be confirmed to current standards (DPW&T Std. 500.10 / 600.02 / 600.04): 24-ft pavement, 4-ft shoulders, roadside grass swales; driveways cross the swale on culverts."}
 json.dump(rec, open(os.path.join(proj, 'estates-indian-head.plat-record.json'), 'w'), indent=1)
 print(json.dumps(report, indent=1))

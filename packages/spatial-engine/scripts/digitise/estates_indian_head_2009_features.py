@@ -200,12 +200,13 @@ for p, a in envpolys(14):
 rec['environmental'] = {
     'streams': False, 'wetlands': False, 'floodplain': False, 'pma': False, 'cbca': False, 'springs': False, 'marlboroClay': False, 'tierII': False,
     'hsg': 'C', 'steep15SqFt': round(steep15), 'steep25SqFt': round(steep25), 'soilRows': soil_rows,
-    'woodland': 'Woodland per approved NRI-015-06 and TCP2-016-09 (current); woodland conservation per the approved TCP2.',
+    'woodland': 'No woodland conservation shown on this concept. Prior NRI-015-06 / TCP2-016-09 are base work only; woodland per the updated NRI, with a TCP2 revision or new TCP / letter of exemption as M-NCPPC determines.',
     'soils': 'Soil types and boundaries from USDA NRCS (PGAtlas Soil layer): ' + '; '.join(f'{r[0]} (HSG {r[2]})' for r in soil_rows) + '.',
     'tmdl': 'Chesapeake Bay TMDL (nitrogen, phosphorus, sediment) applies; MD 12-digit watershed 021402030798, Piscataway Creek (02140203).',
     'highlyErodible': 'Beltsville silt loam (K 0.37) is highly erodible where slopes are 15% or more; those areas are stabilized within 3 days.',
     'wells': 'No wells or septic proposed (public water and sewer). Existing well on Parcel 199 (15608 Indian Head Hwy), off site, shown.',
-    'approvals': 'NRI-015-06 approved (current); TCP1-018-06 and TCP2-016-09 (current).',
+    'approvals': 'New submittal: prior NRI-015-06 (with TCP1-018-06, TCP2-016-09) is base work only. Updated/revised NRI to be provided in draft with this submission; approved copy required before concept approval (Sec. 32-182(a)).',
+    'nriCurrentForSubmittal': False,
 }
 lots_attrs = {f['attributes']['LOT']: f['attributes'] for f in J('source/pgatlas-parcels.json')['features']
               if f['attributes']['SUB_NAME'] == 'ESTATES AT INDIAN HEAD' and f['attributes']['LOT']}
@@ -237,18 +238,20 @@ rec['siteData'] = [
     ['Datum', 'NAD 83 MD State Plane (US ft); NAVD 88 (M-NCPPC 2-ft); 2009 spot grades on WSSC datum'],
 ]
 rec['approvalsOfRecordTable'] = [
-    ['NRI-015-06', 'Approved — current'], ['TCP1-018-06', 'Current'], ['TCP2-016-09', 'Approved — current'],
-    ['5-08238', 'Final plat, PM 228 @ 83 — recorded'], ['DPW&T 9399-2009-00', 'Street tree & lighting plan (2009) — layout followed'],
+    ['NRI-015-06', 'Prior approval — base work; updated NRI required'], ['TCP1-018-06', 'Prior approval — base work'],
+    ['TCP2-016-09', 'Prior approval — base work; revision or new TCP per M-NCPPC'],
+    ['5-08238', 'Final plat, PM 228 @ 83 — recorded'], ['DPW&T 9399-2009-00', 'Street tree & lighting plan (2009) — base layout; re-review to current standards'],
     ['L.51799 F.399', '30\' WSSC easement (Outlot A, Lot 20) — recorded 2025'],
 ]
 rec['generalNotes'] = [
     'Boundary per recorded plat PM 228 @ 83; lot lines reproduce the plat to the second. A Maryland licensed surveyor shall confirm the boundary and the MD 210 R/W before technical plans.',
     'Horizontal datum: Maryland State Plane NAD 83 (US ft). Vertical datum: NAVD 88 (M-NCPPC 2-ft contours). 2009 spot grades are on WSSC datum (≈ NAVD 88 + 1.6 ft, to be confirmed by the field-run survey). DPIE prefers NGVD 29 — the survey shall state the conversion.',
-    'The layout follows the approved 2009 Street Tree & Lighting Plan (DPW&T 9399-2009-00): dwellings, side-load garages and courts, street trees and street lights. Lot 4 is front-load (garage to the cul-de-sac) to clear the WSSC easement.',
+    'The base layout is the 2009 Street Tree & Lighting Plan (DPW&T 9399-2009-00), resubmitted for review under current requirements: dwellings, side-load garages and courts, street trees and street lights. Lot 4 is front-load (garage to the cul-de-sac) to clear the WSSC easement.',
     'Estates Court is a rural open section (DPW&T Std. 500.10 / 600.02 / 600.04): 24\' pavement, shoulders, roadside swales; driveways cross the swale on 15" RCP culverts with flared end sections.',
     'Entrance to MD 210 (SHA) with 50\' returns as the 2009 plan; SHA access permit and sight-distance analysis required. MD 210 auxiliary lanes shown for SHA review; R/W dedication may be required.',
     'Water and sewer: WSSC mains from Henrietta Dr through the recorded 30\' WSSC easement (L.51799 F.399) and a 30\' WSSC easement to be granted across Lot 4. Record discrepancies in the easement description to be resolved with WSSC.',
-    'Approvals of record NRI-015-06, TCP1-018-06 and TCP2-016-09 are current. No streams, wetlands, floodplain, PMA or Chesapeake Bay Critical Area on the property.',
+    'NEW SUBMITTAL (2026). Prior approvals NRI-015-06, TCP1-018-06, TCP2-016-09 and DPW&T 9399-2009-00 are used as base work only and do not carry this submittal. Additional work: an updated/revised NRI (draft with this submission, approved copy before concept approval, Sec. 32-182(a)); a TCP2-016-09 revision or new TCP / letter of exemption as M-NCPPC Environmental Planning determines; street tree and lighting plan re-reviewed to current DPW&T/DPIE standards; SWM by ESD to the MEP under current Subtitle 32.',
+    'No streams, wetlands, floodplain, PMA or Chesapeake Bay Critical Area on the property (prior NRI-015-06; updated NRI required).',
     'Contact Miss Utility (811) at least 48 hours before any excavation.',
 ]
 rec['swmNotes'] = [

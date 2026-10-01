@@ -490,7 +490,7 @@ site = [
     ['Project name', 'Estates at Indian Head, Lots 1–6'],
     ['Geographic location', 'S. side of MD 210 (Indian Head Hwy), ±3,000 ft NE of MD 210 / MD 373 (Livingston Rd)'],
     ['Street address', '200, 201, 202, 203, 204, 205 Estates Court, Accokeek, MD 20607'],
-    ['Companion cases', 'NRI-015-06, TCP1-018-06, TCP2-016-09 (current); final plat 5-08238 (PM 228 @ 83); DPW&T 9399-2009-00 street tree & lighting'],
+    ['Companion cases', 'Prior (base work, not carrying this submittal): NRI-015-06, TCP1-018-06, TCP2-016-09, DPW&T 9399-2009-00 street tree & lighting. Of record: final plat 5-08238 (PM 228 @ 83)'],
     ['Lots / area', '6 lots + public R/W; 165,902 sf (3.809 ac) computed, 165,019 sf of record (plat 171,505 sf less Outlot A)'],
     ['Tax accounts', ', '.join(lots[n][1]['ACCOUNT'] for n in sorted(lots))],
     ['Tax map / WSSC 200\'', '151 F-3  /  220SE01'],
@@ -513,12 +513,12 @@ site = [
 yS = table(ax, 0.9, yL, ['APPLICATION DATA', ''], site, [2.1, 7.6], 'SITE DATA (DPIE Concept Application, rev. 07/28/2021)', fs=5.8, rh=0.165)
 
 env = [
-    ['B-1/B-2 Streams & buffers', 'None on site (verified on PGAtlas; approved NRI-015-06).'],
+    ['B-1/B-2 Streams & buffers', 'None on site (verified on PGAtlas; prior NRI-015-06). Updated NRI required (new submittal).'],
     ['B-3 Wetlands', 'None mapped on or within 100 ft (DNR wetlands, WSSC). Confirm by NRI field delineation.'],
     ['B-4 100-yr floodplain', 'None. FEMA Zone X (area of minimal flood hazard); no DPIE or consultant floodplain within 100 ft.'],
     ['B-5 Steep slopes', f"15–25%: {summary['steep15to25OnSiteSqFt']:,.0f} sf;  >25%: {summary['steep25OnSiteSqFt']:,.0f} sf on site (PGAtlas Slope 2023) — isolated."],
-    ['B-6 PMA', 'None on site (approved NRI-015-06).'],
-    ['B-7 Woodland', f"Per approved NRI-015-06 and TCP2-016-09 (current); the 2009 layout is followed, so the approved TCP2 woodland conservation governs. 2023 canopy {summary['canopyOnSiteSqFt']:,.0f} sf shown for reference."],
+    ['B-6 PMA', 'None on site (prior NRI-015-06). Updated NRI required (new submittal).'],
+    ['B-7 Woodland', f"Prior NRI-015-06 / TCP2-016-09 are base work only. Woodland per the updated NRI; TCP2 revision or new TCP / exemption as M-NCPPC determines. 2023 canopy {summary['canopyOnSiteSqFt']:,.0f} sf shown for reference."],
     ['B-9 Soils', '; '.join(f"{s['musym']} {s['name']} (HSG {s['hsg']}, K {s['k']}) {100 * s['sqft'] / tract.area:.0f}%" for s in summary['soilsOnSite'])],
     ['B-10 TMDL / Tier II', 'Chesapeake Bay TMDL watershed; not within a Tier II catchment; DNR Stronghold watershed (021402030798).'],
     ['B-11 Highly erodible', 'Slopes ≥15% with K ≥ 0.35 are highly erodible: the 15–25% patches on BaB (K .37) qualify — stabilize within 3 days.'],
@@ -554,7 +554,7 @@ gn = [
     'All six lots are vacant (no existing impervious area, no structures to remove). No wells or septic systems are proposed; the existing well on Parcel 199 (15608 Indian Head Hwy) is ≥100 ft from the proposed mains.',
     'Stormwater management is ESD to the MEP: each lot drains to one micro-bioretention cell (M-6) sized for its own roof and paving; Estates Court sheet-flows off the shoulders into roadside dry swales (M-8) with check dams, north and south, draining west to the entrance. Rooftop and non-rooftop disconnection (N-1, N-2) are to be credited at technical design and will reduce the cells.',
     'Quantity: the site is < 1 ac of new impervious area on HSG C soils. The 10-yr and 100-yr (Qp10/Qf) analyses at each POI accompany this plan in the concept narrative; ESD storage is subtracted per MDE Ch. 5. Outfalls as tabulated; each discharges as sheet flow through a level spreader.',
-    'Approvals of record (current): NRI-015-06, TCP1-018-06, TCP2-016-09. Still to be submitted: geotechnical report with Sec. 32-131 infiltration tests (E-1, E-2), soil borings, affidavit of the adjacent-owner notification (Sec. 32-182(g), mailed within 7 days of submittal), and the application fee ($500 + 5% technology fee).',
+    'NEW SUBMITTAL (2026). Prior approvals NRI-015-06, TCP1-018-06, TCP2-016-09 and DPW&T 9399-2009-00 are used as base work only and do not carry this submittal. Additional work: an updated/revised NRI (draft with this submission, approved copy before concept approval, Sec. 32-182(a)); a TCP2-016-09 revision or new TCP / letter of exemption as M-NCPPC Environmental Planning determines; street tree and lighting plan re-reviewed to current DPW&T/DPIE standards; SWM by ESD to the MEP under current Subtitle 32. Also still to be submitted: geotechnical report with Sec. 32-131 infiltration tests (E-1, E-2), soil borings, affidavit of the adjacent-owner notification (Sec. 32-182(g), mailed within 7 days of submittal), and the application fee ($500 + 5% technology fee).',
     'Contact Miss Utility (811) at least 48 hours before any excavation.',
 ]
 notes(ax, 0.9, yI - 0.35, 'GENERAL NOTES', gn, width_chars=150, fs=5.6, lh=0.1)
@@ -701,7 +701,7 @@ pn = [
     'Plan scale 1" = 40\' (≤ 1" = 50\', A-11); the whole property is on this sheet. Three grid ticks (A-8) are State Plane NAD 83.',
     'Drainage areas are the engine\'s per-lot catchments; POIs and the 100-yr overflow path are from D8 flow routing on the M-NCPPC 2-ft surface. Reset from the field-run survey.',
     'Every lot drains to one M-6 cell; Estates Court drains to roadside dry swales ESD-S1/S2 (M-8), which discharge at the entrance low point (EL ±' + f"{lowz:.1f}" + ') to the MD 210 roadside ditch (SHA review).',
-    'No disturbance in floodplain, wetlands or slopes > 25% (approved NRI-015-06).',
+    'No disturbance in floodplain, wetlands or slopes > 25% (prior NRI-015-06; updated NRI required).',
     'The faint underlay is the 2009 approved Street Tree & Lighting sheet (2005 field topography, WSSC datum), georeferenced to the plat (median residual 0.44 ft). Its houses, mains and street lights are superseded.',
     'Easements: 30\' WSSC L.51799 F.399 (Outlot A 906 sf; Lot 20 3,154 sf) recorded; 30\' WSSC across Lot 4 proposed. Private SWM easements over ESD-S1/S2 to be recorded with a maintenance agreement.',
 ]

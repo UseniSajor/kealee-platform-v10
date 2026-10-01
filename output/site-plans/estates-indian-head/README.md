@@ -14,6 +14,17 @@
 | `*.plat.json`, `*.plat-record.json` | Engine inputs: six recorded lots with the 2009 house footprints and paving, tract, Estates Court as measured from the 2009 sheet, WSSC easements. |
 | `source/` | Archived PGAtlas layers, the 2009 sheet at 200 dpi, and its georeference. |
 
+## New submittal — prior approvals are base work (user, 2026-09-30)
+
+This is a **new submittal**. The prior approvals do not carry it on their own, but the prior approval work is acceptable as a base, with additional work.
+
+| Prior case | Use in this submittal | Additional work |
+|---|---|---|
+| NRI-015-06 | Base data (no streams, PMA, wetlands) | Updated/revised NRI: draft with this submission, approved before concept approval (E-4, Sec. 32-182(a)) |
+| TCP1-018-06 / TCP2-016-09 | Base woodland record | TCP2 revision, or new TCP / letter of exemption, as M-NCPPC Environmental Planning determines |
+| DPW&T 9399-2009-00 street tree & lighting | Base layout (houses, courts, trees, lights, open section) | Re-review to current DPW&T/DPIE standards |
+| — | — | Current-code items: ESD to the MEP (Subtitle 32), RR zone (2022 ordinance), DPIE concept checklist rev. 08/25/2021 |
+
 ## How the 2009 plan was used as the base
 
 - The 2009 Street Tree & Lighting sheet (DPW&T 9399-2009-00) was fitted to the plat lot lines.
@@ -51,10 +62,10 @@ C = shown/complete, O = outstanding, X = not applicable.
 | A-13 2-ft contours 100 ft beyond | C | M-NCPPC 2-ft |
 | A-14 existing utilities | **O** | Size and location of the WSSC mains in Henrietta Dr are not in hand. Get the WSSC 220SE01 sheet. |
 | A-15 BMP Summary Table | C | SDC-1 |
-| B-1/B-2/B-6 stream, buffer, PMA | C | None on site (owner verified on PGAtlas; approved NRI-015-06) |
+| B-1/B-2/B-6 stream, buffer, PMA | C | None on site (owner verified on PGAtlas; prior NRI-015-06 is base work, updated NRI required) |
 | B-3, B-4, B-12, B-13, B-14 | C | none found |
 | B-5 steep slopes | C | SDC-2 |
-| B-7 woodland | C | Approved NRI-015-06 and TCP2-016-09 (current) |
+| B-7 woodland | C | Per the updated NRI; prior NRI-015-06 / TCP2-016-09 are base work. TCP2 revision or new TCP / exemption as M-NCPPC determines. |
 | B-8 features 100 ft off site | C | SDC-2 |
 | B-9 soils | C / **conflict** | PGAtlas NRCS and the 2009 plan both show BaB Beltsville (HSG C). The engine's soils table (C-sheets) lists Adelphia from its own SSURGO query. **Resolve before sealing.** |
 | B-10 TMDL / Tier II | C | Confirm the Piscataway Creek listing on the MDE TMDL site. |
@@ -74,7 +85,7 @@ C = shown/complete, O = outstanding, X = not applicable.
 | D-1 to D-10 report / computations | **O** | Narrative, Qp10/Qf at each POI, downstream analysis. Not produced. |
 | E-1/E-2 geotechnical | **O** | Soil borings and Sec. 32-131 infiltration tests |
 | E-3 notification affidavit | **O** | Letters to adjoiners within 7 days of submittal. The owners are listed on SDC-2. |
-| E-4 NRI | C | NRI-015-06 approved (current); TCP1-018-06, TCP2-016-09 current |
+| E-4 NRI | **O** | New submittal: updated/revised NRI in draft with this submission; approved copy before concept approval (Sec. 32-182(a)). NRI-015-06 is base work. |
 
 ## Open items before this can be filed
 

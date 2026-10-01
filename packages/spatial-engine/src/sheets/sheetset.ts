@@ -140,9 +140,10 @@ export function buildSheetSet(input: {
     env: {
       streams: Boolean(env.streams), wetlands: Boolean(env.wetlands), floodplain: Boolean(env.floodplain), pma: Boolean(env.pma), cbca: Boolean(env.cbca),
       steep15SqFt: Number(env.steep15SqFt ?? 0), steep25SqFt: Number(env.steep25SqFt ?? 0),
-      woodland: String(env.woodland ?? 'Woodland per the approved NRI and TCP2.'), soils: String(env.soils ?? 'NRCS soils shown.'),
+      woodland: String(env.woodland ?? 'Woodland per the NRI and TCP for this submittal.'), soils: String(env.soils ?? 'NRCS soils shown.'),
       tmdl: String(env.tmdl ?? ''), tierII: Boolean(env.tierII), highlyErodible: String(env.highlyErodible ?? ''),
       marlboroClay: Boolean(env.marlboroClay), springs: Boolean(env.springs), wells: String(env.wells ?? ''), approvals: String(env.approvals ?? ''),
+      nriCurrentForSubmittal: Boolean(env.nriCurrentForSubmittal),
     },
   }
   const checklist = evaluateChecklist(facts, pr.checklistOverrides ?? {})
