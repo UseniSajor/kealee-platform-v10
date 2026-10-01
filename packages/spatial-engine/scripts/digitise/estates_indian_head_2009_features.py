@@ -154,7 +154,7 @@ if ent:
     geoms = list(ent_poly.geoms) if hasattr(ent_poly, 'geoms') else [ent_poly]
     big = max(geoms, key=lambda x: x.area)
     entrance = {'ring': [list(q) for q in list(big.exterior.coords)[:-1]], 'areaSqFt': round(big.area),
-                'label': "STREET ENTRANCE APRON — 50' RETURNS TO MD 210 EDGE OF ROAD (2009 PLAN) — SHA ACCESS PERMIT",
+                'label': "STREET ENTRANCE APRON — 50' RETURNS TO MD 210 EDGE OF ROAD — SHA ACCESS PERMIT",
                 'returnRadiusFt': ent['returnRadiusFt']}
 
 # ── MD 210 frontage improvements, both sides of the entrance ──────────────
@@ -176,7 +176,7 @@ rec['roadImprovements'] = [
      'lengthFt': SOUTH_END_AL - S_RETURN_AL},
 ]
 rec['roadImprovementsNote'] = ("MD 210 frontage improvements are shown for SHA review. At the entrance the MD 210 R/W line lies about 6 ft "
-                               "off the edge of road (2009 sheet), so a 12-ft lane needs R/W dedication along Lots 1 and 6 or SHA agreement. "
+                               "off the edge of road, so a 12-ft lane needs R/W dedication along Lots 1 and 6 or SHA agreement. "
                                "Lane lengths and tapers are set by SHA's access-permit review and traffic study.")
 # ── Sheet content: title block, site data, approvals, environment, notes ──
 envdir = os.path.join(proj, 'source', 'pgatlas-environmental')
@@ -227,7 +227,7 @@ rec['titleBlock'] = {
     'status': 'CONCEPT SUBMISSION 1 — NOT SEALED',
     'date': '2026-09-30',
     'jobNo': 'KEA-EIH-2026',
-    'basisNote': 'New submittal; base layout from the prior 2009 Street Tree & Lighting Plan, DPW&T 9399-2009-00.',
+    'basisNote': 'New submittal to the DPIE Site Development Concept checklist (rev. 08/25/2021).',
 }
 rec['siteData'] = [
     ['Project', 'Estates at Indian Head, Lots 1–6 and Estates Court'],
@@ -241,7 +241,7 @@ rec['siteData'] = [
     ['Water / sewer', 'W-3 / S-3 (WSSC) — mains from Henrietta Dr via 30\' WSSC esmt L.51799 F.399 and prop. Lot 4 esmt'],
     ['Watershed', 'Piscataway Creek, MD 021402030798; not Tier II; not CBCA; FEMA Zone X'],
     ['Master plan', '2013 Subregion 5 Master Plan & SMA; Planning Area 84; Council Dist. 9; Election Dist. 5'],
-    ['Datum', 'NAD 83 MD State Plane (US ft); NAVD 88 (M-NCPPC 2-ft); 2009 spot grades on WSSC datum'],
+    ['Datum', 'NAD 83 MD State Plane (US ft); NAVD 88 (M-NCPPC 2-ft); spot grades on WSSC datum'],
 ]
 # NOAA Atlas 14 24-hr depths retrieved for THIS site (PFDS, partial duration
 # series, 2026-09-30) — the 100-yr comparison at each POI is computed on these.
@@ -252,15 +252,14 @@ rec['rainfall24hr'] = {
 rec['approvalsOfRecordTable'] = [
     ['NRI-015-06', 'Prior approval — base work; updated NRI required'], ['TCP1-018-06', 'Prior approval — base work'],
     ['TCP2-016-09', 'Prior approval — base work; revision or new TCP per M-NCPPC'],
-    ['5-08238', 'Final plat, PM 228 @ 83 — recorded'], ['DPW&T 9399-2009-00', 'Street tree & lighting plan (2009) — base layout; re-review to current standards'],
-    ['L.51799 F.399', '30\' WSSC easement (Outlot A, Lot 20) — recorded 2025'],
+    ['5-08238', 'Final plat, PM 228 @ 83 — recorded'],    ['L.51799 F.399', '30\' WSSC easement (Outlot A, Lot 20) — recorded 2025'],
 ]
 rec['generalNotes'] = [
     'Boundary per recorded plat PM 228 @ 83; lot lines reproduce the plat to the second.',
-    'Horizontal datum: Maryland State Plane NAD 83 (US ft). Vertical datum: NAVD 88 (M-NCPPC 2-ft contours). 2009 spot grades are on WSSC datum (≈ NAVD 88 + 1.6 ft). DPIE prefers NGVD 29.',
-    'The base layout is the 2009 Street Tree & Lighting Plan (DPW&T 9399-2009-00), resubmitted for review under current requirements: dwellings, side-load garages and courts, street trees and street lights. Lot 4 is front-load (garage to the cul-de-sac) to clear the WSSC easement.',
+    'Horizontal datum: Maryland State Plane NAD 83 (US ft). Vertical datum: NAVD 88 (M-NCPPC 2-ft contours). Spot grades are on WSSC datum (≈ NAVD 88 + 1.6 ft). DPIE prefers NGVD 29.',
+    'Six single-family dwellings with side-load garages and courts, street trees and street lights, laid out to current requirements. Lot 4 is front-load (garage to the cul-de-sac) to clear the WSSC easement.',
     'Estates Court is a rural open section (DPW&T Std. 500.10 / 600.02 / 600.04): 24\' pavement, shoulders, roadside swales; driveways cross the swale on 15" RCP culverts with flared end sections.',
-    'Entrance to MD 210 (SHA) with 50\' returns as the 2009 plan; SHA access permit and sight-distance analysis required. MD 210 auxiliary lanes shown for SHA review; R/W dedication may be required.',
+    'Entrance to MD 210 (SHA) with 50\' returns; SHA access permit and sight-distance analysis required. MD 210 auxiliary lanes shown for SHA review; R/W dedication may be required.',
     'Water and sewer: WSSC mains from Henrietta Dr through the recorded 30\' WSSC easement (L.51799 F.399) and a 30\' WSSC easement to be granted across Lot 4. Record discrepancies in the easement description to be resolved with WSSC.',
     'NEW SUBMITTAL (2026). Prior approvals NRI-015-06, TCP1-018-06 and TCP2-016-09 are used as base work only and do not carry this submittal. Additional work: an updated/revised NRI (draft with this submission, approved copy before concept approval, Sec. 32-182(a)); a TCP2-016-09 revision or new TCP / letter of exemption as M-NCPPC Environmental Planning determines; street trees and lighting reviewed to current DPW&T/DPIE standards; SWM by ESD to the MEP under current Subtitle 32.',
     'No environmental features on the property: no streams, stream buffers, wetlands, floodplain, PMA, steep slopes, woodland, highly erodible soils or Chesapeake Bay Critical Area.',
@@ -299,7 +298,7 @@ rec['streetTrees'] = trees
 rec['streetLights'] = lights
 rec['roadsideSwales'] = swales
 rec['culverts'] = culverts
-rec['spotElevationsFromPlan'] = {'datum': 'WSSC datum (2009 plan); reads about 1.6 ft above NAVD 88 county contours (scatter 1.2 ft) — reset by field survey',
+rec['spotElevationsFromPlan'] = {'datum': 'WSSC datum; reads about 1.6 ft above NAVD 88 county contours (scatter 1.2 ft)',
                                  'replaceGenerated': True, 'points': spots}
 if entrance: rec['entranceApron'] = entrance
 json.dump(rec, open(os.path.join(proj, 'estates-indian-head.plat-record.json'), 'w'), indent=1)

@@ -6,13 +6,24 @@
 
 | File | What it is |
 |---|---|
-| `estates-indian-head-2026-concept-submission.pdf` | **The plan set, 7 sheets.** SDC-1 and SDC-2 (DPIE concept sheets), then C-100, C-400, C-500, C-700 and L-100 from the engine. The duplicate sheets were dropped. |
-| `estates-indian-head-concept-SDC.pdf` | SDC-1: cover, County BMP Summary Table, site data, environmental features, POIs, notes. SDC-2: plan view and drainage area map at 1" = 40', drawn over the georeferenced 2009 plan. |
-| `estates-indian-head-permit-set.pdf` / `.dxf` / `.landxml.xml` | Engine sheets: existing conditions, grading, utility, sediment control, landscape (ARCH D). |
+| `estates-indian-head.pdf` / `estates-indian-head.dxf` | **The plan set, 9 sheets, drawn and plotted with the DXF CAD tools (`packages/cad-plot`).** C-000 cover, C-001 general notes and DPIE checklist, C-100 existing conditions, C-200 layout/grading/paving, C-300 utility/street light/street tree, C-400 SWM concept and drainage areas, C-410 SWM narrative and 100-yr computations, C-500 sediment and erosion control, C-600 details. The DXF is the master; the PDF is its plot. |
+| `estates-indian-head.sheetset.json` | The engine's sheet-set specification that cad-plot draws from. |
+| `estates-indian-head-permit-set.pdf` / `.landxml.xml` | Engine PDFKit sheets (legacy path, kept until cad-plot covers every paid sheet type). |
 | `estates-indian-head-DPIE-concept-application.pdf` | DPIE Concept Plan Application (rev. 07/28/2021) with the fields filled in. The owner's phone, email and signature are left blank. |
-| `estates-indian-head.concept-computations.json` | ESD, POI, LOD and environmental quantities behind SDC-1. |
-| `*.plat.json`, `*.plat-record.json` | Engine inputs: six recorded lots with the 2009 house footprints and paving, tract, Estates Court as measured from the 2009 sheet, WSSC easements. |
-| `source/` | Archived PGAtlas layers, the 2009 sheet at 200 dpi, and its georeference. |
+| `*.plat.json`, `*.plat-record.json` | Engine inputs: six recorded lots, house footprints and paving, tract, Estates Court, WSSC easements. |
+| `source/` | Archived PGAtlas layers and the georeferenced base sheet. |
+| `estates-indian-head-concept-SDC.pdf`, `estates-indian-head-2026-concept-submission.pdf`, `estates-indian-head-cad.*` | **Superseded** (2026-09-30). The SDC sheets were drawn with matplotlib over the 2009 underlay; kept only as the record. Do not submit. |
+
+## Revision 2026-10-01: Yocum-format CAD set
+
+User direction, 2026-10-01:
+
+- **Drawn and written with the DXF CAD tools.** The set is authored as DXF by `packages/cad-plot` and plotted from it.
+- **No 2009 plan references on the sheets.** The geometry read off the 2009 sheet stays (it is the base work); every label, note, legend entry, schedule title and approvals row that cited it was removed. Checked by grepping every TEXT/MTEXT entity in the DXF. The only "2009" left is in regulatory citations: the MDE Design Manual's 2009 supplement and the DPIE checklist's own "Soil Survey (Dec. 2009 or latest)".
+- **Sheet format follows the County-approved Yocum Property plans** (Fine Grading 15919-2020-00 / Street Construction 15927-2020-00, in `existing site plans/`). That means a vertical title strip on the right edge (engineer, project, revisions, title, date/scale/sheet N OF M), a cover with a large centred title, Lot Coverage Analysis, Address List, a NEW/EXISTING legend, Index of Drawings, Grading Certification, Utility Certificate and Certification of Compliance, and Miss Utility and Stabilization notes plus an Owner/Developer box on every plan sheet. Lot labels are boxed with their area. The ePlan 3 x 3 in stamp space (top left) and the 5 x 3 in County approval block (lower right) are kept blank.
+- **Water and sewer mains stop just past the Lot 1 east property line.** They end 44 ft past it, at Lot 6's tap: Lot 6 cannot reach a main ending sooner without running under its own driveway or across Lot 5. Water is capped with a blow-off and sewer ends at a terminal manhole. Nothing runs on toward MD 210.
+- **Every lot's connection is drawn and labelled** (LOT n — 1" W.H.C. / 4" S.H.C.), each tapped at the main. Lots 1 and 6 are in common trenches (139 ft and 164 ft) and need WSSC acceptance.
+- General notes and the checklist moved to **C-001**. A-10 and B-10 now point there.
 
 ## How the 2009 plan was used as the base
 

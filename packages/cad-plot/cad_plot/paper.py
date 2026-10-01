@@ -1,11 +1,17 @@
 """
 Paper space: the sheets. Units are inches on a 36 x 24 in (ARCH D) sheet.
 
-Layout, left to right:
-  drawing area  0.5 .. 27.5   (plan viewport over a band of legend / tables / notes)
-  title column 27.5 .. 30.5   (compact: every block sized to its content)
-  DPIE strip   30.5 .. 35.5   (5-in full-height area kept open for the County
-                               approval block — checklist A-3)
+Layout follows the County-approved Yocum Property technical plans
+(15919-2020 / 15927-2020), left to right:
+  left column   0.5 ..  3.5   ePlan stamp space 3 x 3 in at the top (kept blank),
+                              legend and key map below it
+  drawing area  3.75 .. 32.85 plan viewport over a band of tables / notes; the
+                              band stops at 27.85 — under the viewport's right
+                              end sit the PE certification and the 5 x 3 in
+                              County approval block (ePlan 5-in right margin,
+                              checklist A-3)
+  title strip  33.1 .. 35.5   vertical title block: engineer, project, revisions,
+                              sheet title, date / scale / sheet N OF M
 """
 import math
 import os
@@ -15,11 +21,42 @@ from ezdxf.enums import TextEntityAlignment
 from .style import SHEET_LAYERS, LAYERS
 
 W, H, M = 36.0, 24.0, 0.5
-STRIP_W = 5.0
-TB_W = 3.0
-TB_X = W - M - STRIP_W - TB_W          # 27.5
-DRAW_X0, DRAW_X1 = M + 0.25, TB_X - 0.25
-CW = 0.68                               # Arial caps average char width / height (with margin)
+TS_W = 2.4                              # vertical title strip
+TS_X = W - M - TS_W                     # 33.1
+RC_W = 5.0                              # ePlan right margin: County approval block + PE certification
+RC_X = TS_X - RC_W                      # 28.1
+LC_W = 3.0                              # left column: ePlan stamp, legend, key map
+STAMP = 3.0
+DRAW_X0, DRAW_X1 = M + LC_W + 0.25, TS_X - 0.25
+BAND_X1 = RC_X - 0.25                   # the band under the viewport stops short of the approval block
+CW = 0.74                               # Arial caps average char width / height (with margin)
+
+MISS_UTILITY_NOTE = (
+    'Information concerning existing underground utilities was obtained from available records. The contractor must field verify '
+    'the exact locations and elevations as required for applicable horizontal and vertical clearances by digging test pits by hand, '
+    'well in advance of excavation. Contact "Miss Utility" at 1-800-257-7777 (811), 48 hours prior to the start of any excavation. '
+    'Provide results of test pits to the design engineer and coordinate with the engineer, owner/developer and utility company before '
+    'proceeding with construction to resolve any conflicts or clearances with other utilities, storm drains, grading or other improvements.')
+STABILIZATION_NOTE = (
+    'Stabilization practices on all projects must be in compliance with the requirements of COMAR 26.17.01.08 G. Following initial soil '
+    'disturbance or re-disturbance, permanent or temporary stabilization must be completed within: three (3) calendar days as to the '
+    'surface of all perimeter dikes, swales, ditches, perimeter slopes and all slopes steeper than 3 horizontal to 1 vertical (3:1); and '
+    'seven (7) calendar days as to all other disturbed or graded areas on the project site not under active grading.')
+CERTIFICATIONS = [
+    ('GRADING CERTIFICATION',
+     "I hereby certify that this plan conforms to the requirements of Subtitle 32, Division 2 of the Code of Prince George's County "
+     '(Water Resources Protection and Grading Code), and that drainage flows from uphill properties onto this site, and from this site '
+     'onto downhill properties, have been addressed in substantial accordance with applicable codes. Signed, sealed and dated by a '
+     'professional engineer licensed in the State of Maryland.'),
+    ('UTILITY CERTIFICATE',
+     'I hereby certify, to the best of my professional knowledge, information and belief, that the existing and/or proposed underground '
+     'utility information shown hereon has been correctly duplicated from utility company records. Furthermore, this project has been '
+     'carefully coordinated with each involved utility and information relative to this plan has been solicited from them.'),
+    ('CERTIFICATION OF COMPLIANCE',
+     'I certify that these plans represent a practicable and workable plan based on my personal knowledge of the site, and that this '
+     "plan was prepared in accordance with the requirements of the Prince George's County Design Manual and Standard Specifications "
+     'and other jurisdictional federal and state permits.'),
+]
 
 
 def _txt(ps, s, x, y, h, bold=False, align=TextEntityAlignment.TOP_LEFT, layer='G-ANNO-TEXT', rot=0):
@@ -32,6 +69,11 @@ def _box(ps, x0, y0, x1, y1, layer='G-ANNO-TTLB', lw=None):
     kw = {'layer': layer}
     if lw is not None: kw['lineweight'] = lw
     ps.add_lwpolyline([(x0, y0), (x1, y0), (x1, y1), (x0, y1)], close=True, dxfattribs=kw)
+
+
+def _vtxt(ps, s, x, y, h, bold=False, align=TextEntityAlignment.MIDDLE_CENTER, layer='G-ANNO-TEXT'):
+    """Text turned 90 degrees (reads bottom to top), as the title strip carries it."""
+    return _txt(ps, s, x, y, h, bold=bold, align=align, layer=layer, rot=90)
 
 
 def _line(ps, a, b, layer='G-ANNO-TABL', lw=None):
@@ -145,98 +187,123 @@ class Sheets:
         tx = [p[0] for p in sheetset['tract']]; ty = [p[1] for p in sheetset['tract']]
         self.site_c = ((min(tx) + max(tx)) / 2, (min(ty) + max(ty)) / 2)
         # the plan view: the site plus MD 210's full width to the west and the
-        # Jennifer Drive frontage to the north, as the 2009 sheet frames it
-        self.plan_c = ((min(tx) - 140 + max(tx) + 20) / 2, (min(ty) - 10 + max(ty) + 80) / 2)
+        # Jennifer Drive frontage to the north
+        self.plan_c = ((min(tx) - 140 + max(tx) + 60) / 2, (min(ty) - 10 + max(ty) + 80) / 2)
         self.site_bb = (min(tx), min(ty), max(tx), max(ty))
 
-    # ── frame and title column ─────────────────────────────────────────────
+    # ── frame, title strip, right and left columns ─────────────────────────
     def frame(self, ps, sheet, idx):
         _box(ps, M, M, W - M, H - M, lw=70)
-        _box(ps, W - M - STRIP_W, M, W - M, H - M, lw=35)
-        _txt(ps, 'RESERVED FOR PRINCE GEORGE\'S COUNTY DPIE APPROVAL BLOCK', W - M - STRIP_W / 2, H - M - 0.2, 0.09,
-             align=TextEntityAlignment.TOP_CENTER, bold=True)
-        _txt(ps, '(5-IN FULL-HEIGHT AREA KEPT OPEN — CHECKLIST A-3)', W - M - STRIP_W / 2, H - M - 0.36, 0.07,
-             align=TextEntityAlignment.TOP_CENTER)
-        self.title_column(ps, sheet, idx)
+        self.title_strip(ps, sheet, idx)
+        self.right_column(ps)
+        self.left_column(ps, sheet)
 
-    def title_column(self, ps, sheet, idx):
+    def right_column(self, ps):
+        """ePlan 5-in right margin: the County approval block (5 x 3 in, kept blank)
+        and, above it, the professional certification with the seal."""
         p = self.s.get('project') or {}
-        x0, x1 = TB_X, TB_X + TB_W
+        _box(ps, RC_X, M, TS_X, M + 3.0, lw=35)
+        _txt(ps, "RESERVED FOR PRINCE GEORGE'S COUNTY DPIE APPROVAL", RC_X + RC_W / 2, M + 2.85, 0.09, bold=True,
+             align=TextEntityAlignment.TOP_CENTER)
+        _txt(ps, '5" x 3" — KEEP BLANK (ePLAN 5" RIGHT MARGIN, CHECKLIST A-3)', RC_X + RC_W / 2, M + 2.68, 0.065,
+             align=TextEntityAlignment.TOP_CENTER)
+        y0, y1 = M + 3.1, M + 4.5
+        _box(ps, RC_X, y0, TS_X, y1, lw=35)
+        cert = ('I hereby certify that these documents were prepared or approved by me, and that I am a duly licensed professional '
+                'engineer under the laws of the State of Maryland. License No. ________  Expiration date: ________')
+        y = y1 - 0.1
+        for w_ in _wrap(cert, RC_W - 1.6, 0.065):
+            _txt(ps, w_, RC_X + 0.1, y, 0.065); y -= 0.095
+        _txt(ps, p.get('status', 'NOT SEALED — DRAFT'), RC_X + 0.1, y0 + 0.12, 0.075, bold=True, align=TextEntityAlignment.BOTTOM_LEFT)
+        r = (y1 - y0) / 2 - 0.08
+        ps.add_circle((TS_X - r - 0.12, (y0 + y1) / 2), r, dxfattribs={'layer': 'G-ANNO-TTLB'})
+        _txt(ps, 'SEAL', TS_X - r - 0.12, (y0 + y1) / 2, 0.08, align=TextEntityAlignment.MIDDLE_CENTER)
+
+    def left_column(self, ps, sheet):
+        """ePlan stamp space at the top left (3 x 3 in, kept blank); key map and north arrow at the foot."""
+        _box(ps, M, H - M - STAMP, M + STAMP, H - M, lw=35)
+        _txt(ps, 'RESERVED FOR COUNTY ePLAN STAMP', M + STAMP / 2, H - M - 0.12, 0.075, bold=True, align=TextEntityAlignment.TOP_CENTER)
+        _txt(ps, '3" x 3" — KEEP BLANK', M + STAMP / 2, H - M - 0.26, 0.065, align=TextEntityAlignment.TOP_CENTER)
+        _line(ps, (M + LC_W, M), (M + LC_W, H - M - STAMP), layer='G-ANNO-TTLB')
+        if sheet.get('kind') == 'cover':
+            return
+        x0 = M + 0.15
+        _txt(ps, 'KEY MAP', x0, M + 2.25, 0.075, bold=True)
+        self.key_map(ps, x0, M + 0.2, LC_W - 0.3 - 0.7, 1.9, sheet)
+        ps.add_blockref('NORTH', (M + LC_W - 0.4, M + 1.0), dxfattribs={'layer': 'G-ANNO-TTLB'})
+
+    def title_strip(self, ps, sheet, idx):
+        """The vertical title block down the right edge, read with the sheet turned:
+        engineer at the top, then the project, revisions, sheet title, and
+        date / scale / sheet number at the foot."""
+        p = self.s.get('project') or {}
+        x0, x1 = TS_X, W - M
         _box(ps, x0, M, x1, H - M, lw=50)
-        y = H - M - 0.12
-        pad = 0.1
-        def block(label, lines, h=0.085, bold=False, gap=0.08):
-            nonlocal y
-            _txt(ps, label, x0 + pad, y, 0.055, layer='G-ANNO-TTLB')
-            y -= 0.1
-            for ln in lines:
-                for w_ in _wrap(ln, TB_W - 2 * pad, h):
-                    _txt(ps, w_, x0 + pad, y, h, bold=bold)
-                    y -= h * 1.35
-            y -= gap
-            _line(ps, (x0, y + gap / 2), (x1, y + gap / 2), layer='G-ANNO-TTLB')
-        block('PLAN TYPE', [p.get('planType', 'SITE DEVELOPMENT CONCEPT PLAN')], h=0.12, bold=True)
-        block('PROJECT', [p.get('project', ''), p.get('location', ''), p.get('record', ''), p.get('districts', '')], h=0.075)
-        block('OWNER / APPLICANT', [p.get('owner', '')], h=0.07)
-        block('ENGINEER OF RECORD', [p.get('engineer', '')], h=0.07)
-        block('SHEET TITLE', [sheet['title']], h=0.11, bold=True)
-        # key map
-        _txt(ps, 'KEY MAP', x0 + pad, y, 0.055, layer='G-ANNO-TTLB'); y -= 0.1
-        km_h = 1.35
-        self.key_map(ps, x0 + pad, y - km_h, TB_W - 2 * pad, km_h, sheet)
-        y -= km_h + 0.1
-        _line(ps, (x0, y + 0.04), (x1, y + 0.04), layer='G-ANNO-TTLB')
-        # scale + north
+        cuts = [M, M + 2.7, M + 7.3, M + 10.3, M + 16.9, H - M]
+        for y in cuts[1:-1]:
+            _line(ps, (x0, y), (x1, y), layer='G-ANNO-TTLB', lw=35)
+
+        def stack(lines, ya, yb, x=None):
+            """Rotated lines across the strip, left to right, centred along the segment."""
+            seg = yb - ya - 0.3
+            x = x if x is not None else x0 + 0.12
+            for s_, h, bold in lines:
+                for w_ in _wrap(s_, seg, h):
+                    x += h * 0.75
+                    _vtxt(ps, w_, x, (ya + yb) / 2, h, bold=bold)
+                    x += h * 0.75
+            return x
+
+        # engineer
+        eng = str(p.get('engineer', ''))
+        firm, _, rest = eng.partition(' — ')
+        stack([(firm or 'ENGINEER OF RECORD', 0.24, True), (rest, 0.1, False),
+               (f"PREPARED WITH {p.get('preparedWith', 'KEALEE')}", 0.065, False)], cuts[4], cuts[5])
+        # project
+        name, _, lots = str(p.get('project', '')).partition(' — ')
+        n = len(self.s['twin'].get('projectLots') or [])
+        lots = f'LOTS 1 THRU {n}' if n else lots
+        street = ((self.s.get('extras') or {}).get('proposedStreet') or {}).get('name', '')
+        stack([(name, 0.3, True), (p.get('planType', 'SITE DEVELOPMENT CONCEPT PLAN'), 0.15, True),
+               (f"{lots}{' & ' + street.upper() if street else ''}", 0.2, False),
+               (p.get('districts', ''), 0.08, False), (p.get('location', ''), 0.08, False), (p.get('record', ''), 0.08, False),
+               (f"OWNER: {p.get('owner', '')}", 0.065, False)], cuts[3], cuts[4])
+        # revisions: one strip per row, DATE at the foot, DESCRIPTION above
+        ya, yb = cuts[2], cuts[3]
+        yd = ya + 0.9
+        _vtxt(ps, 'REVISIONS', x0 + 0.2, (ya + yb) / 2, 0.13, bold=True)
+        strips = [('DATE', 'DESCRIPTION', True), (p.get('date', ''), 'CONCEPT SUBMISSION 1', False), ('', '', False), ('', '', False), ('', '', False)]
+        xs = x0 + 0.38
+        wst = (x1 - xs) / len(strips)
+        _line(ps, (xs, ya), (xs, yb), layer='G-ANNO-TTLB')
+        _line(ps, (xs, yd), (x1, yd), layer='G-ANNO-TABL')
+        for k, (d, desc, hdr) in enumerate(strips):
+            cx = xs + wst * (k + 0.5)
+            if d: _vtxt(ps, d, cx, (ya + yd) / 2, 0.075, bold=hdr)
+            if desc: _vtxt(ps, desc, cx, (yd + yb) / 2, 0.075, bold=hdr)
+            _line(ps, (xs + wst * (k + 1), ya), (xs + wst * (k + 1), yb), layer='G-ANNO-TABL')
+        # sheet title + drawn / designed / checked
+        ya, yb = cuts[1], cuts[2]
+        _vtxt(ps, 'TITLE:', x0 + 0.1, yb - 0.1, 0.065, align=TextEntityAlignment.MIDDLE_RIGHT)
+        xe = stack([(sheet['title'], 0.17, True)], ya, yb, x=x0 + 0.15)
+        _vtxt(ps, sheet['id'], xe + 0.3, (ya + yb) / 2, 0.36, bold=True)
+        xr = x1 - 0.75
+        _line(ps, (xr, ya), (xr, yb), layer='G-ANNO-TTLB')
+        for k, (lab, val) in enumerate((('DRAWN:', 'KEALEE CAD-PLOT'), ('DESIGNED:', p.get('designedBy', '')), ('CHECKED:', p.get('checkedBy', '')))):
+            cx = xr + 0.125 + 0.25 * k
+            _vtxt(ps, lab, cx, ya + 0.1, 0.06, align=TextEntityAlignment.MIDDLE_LEFT)
+            _vtxt(ps, val, cx, ya + 0.85, 0.07, align=TextEntityAlignment.MIDDLE_LEFT)
+            if k: _line(ps, (cx - 0.125, ya), (cx - 0.125, yb), layer='G-ANNO-TABL')
+        # date / scale / sheet
+        ya, yb = cuts[0], cuts[1]
         sc = sheet.get('scaleFtPerIn')
-        _txt(ps, 'SCALE', x0 + pad, y, 0.055, layer='G-ANNO-TTLB')
-        _txt(ps, f'1" = {sc:.0f}\'' if sc else 'AS NOTED', x0 + pad, y - 0.1, 0.11, bold=True)
-        ps.add_blockref('NORTH', (x1 - 0.45, y - 0.35), dxfattribs={'layer': 'G-ANNO-TTLB'})
-        _txt(ps, 'DATUM: NAD 83 MD STATE PLANE (US FT) / NAVD 88', x0 + pad, y - 0.32, 0.055)
-        y -= 0.75
-        _line(ps, (x0, y + 0.04), (x1, y + 0.04), layer='G-ANNO-TTLB')
-        # revisions
-        _txt(ps, 'REVISIONS', x0 + pad, y, 0.055, layer='G-ANNO-TTLB'); y -= 0.1
-        cols = [0.35, 0.65, TB_W - 2 * pad - 1.0]
-        rowsr = [('NO.', 'DATE', 'DESCRIPTION'), ('0', p.get('date', ''), 'CONCEPT SUBMISSION 1'), ('', '', ''), ('', '', '')]
-        for r_ in rowsr:
-            cx = x0 + pad
-            for c, w_ in zip(r_, cols):
-                _txt(ps, c, cx + 0.03, y - 0.02, 0.06, bold=(r_[0] == 'NO.'))
-                cx += w_
-            y -= 0.13
-            _line(ps, (x0 + pad, y + 0.02), (x1 - pad, y + 0.02), layer='G-ANNO-TABL')
-        y -= 0.08
-        _line(ps, (x0, y + 0.04), (x1, y + 0.04), layer='G-ANNO-TTLB')
-        # professional certification + seal
-        _txt(ps, 'PROFESSIONAL CERTIFICATION', x0 + pad, y, 0.055, layer='G-ANNO-TTLB'); y -= 0.1
-        cert = ('I hereby certify that these documents were prepared or approved by me, and that I am a duly licensed '
-                'professional engineer under the laws of the State of Maryland. License No. ______  Exp. ______')
-        for w_ in _wrap(cert, TB_W - 2 * pad, 0.058):
-            _txt(ps, w_, x0 + pad, y, 0.058); y -= 0.08
-        seal = 1.25
-        ps.add_circle((x0 + TB_W / 2, y - seal / 2 - 0.05), seal / 2 - 0.05, dxfattribs={'layer': 'G-ANNO-TTLB'})
-        _txt(ps, 'SEAL', x0 + TB_W / 2, y - seal / 2 - 0.05, 0.08, align=TextEntityAlignment.MIDDLE_CENTER)
-        y -= seal + 0.08
-        _txt(ps, p.get('status', 'NOT SEALED — DRAFT'), x0 + pad, y, 0.075, bold=True); y -= 0.14
-        _txt(ps, f"DATE {p.get('date', '')}   ·   JOB {p.get('jobNo', '')}", x0 + pad, y, 0.065); y -= 0.12
-        _txt(ps, f"PREPARED WITH {p.get('preparedWith', 'KEALEE')}", x0 + pad, y, 0.055); y -= 0.12
-        _line(ps, (x0, y + 0.04), (x1, y + 0.04), layer='G-ANNO-TTLB')
-        # sheet number at the foot
-        foot = M + 0.95
-        _line(ps, (x0, foot), (x1, foot), layer='G-ANNO-TTLB')
-        _txt(ps, 'SHEET', x0 + pad, foot - 0.08, 0.055, layer='G-ANNO-TTLB')
-        _txt(ps, sheet['id'], x0 + pad, foot - 0.2, 0.36, bold=True)
-        _txt(ps, f'{idx + 1} OF {len(self.sheets)}', x1 - pad, foot - 0.25, 0.12, bold=True, align=TextEntityAlignment.TOP_RIGHT)
-        # the rest of the column: the sheet index (no empty block)
-        avail = y - foot - 0.1
-        if avail > 0.4:
-            _txt(ps, 'SHEET INDEX', x0 + pad, y, 0.055, layer='G-ANNO-TTLB'); y -= 0.12
-            for s in self.sheets:
-                if y - 0.12 < foot: break
-                mark = '►' if s['id'] == sheet['id'] else ' '
-                for k, w_ in enumerate(_wrap(f"{s['id']}  {s['title']}", TB_W - 2 * pad - 0.1, 0.06)):
-                    _txt(ps, (mark if k == 0 else ' ') + ' ' + w_, x0 + pad, y, 0.06, bold=s['id'] == sheet['id'])
-                    y -= 0.085
+        cells = [('DATE:', p.get('date', '')), ('SCALE:', f'1" = {sc:.0f}\'' if sc else 'AS NOTED'), ('SHEET:', f'{idx + 1} OF {len(self.sheets)}')]
+        wc = TS_W / 3
+        for k, (lab, val) in enumerate(cells):
+            cx = x0 + wc * (k + 0.5)
+            _vtxt(ps, lab, cx - wc * 0.25, ya + 0.1, 0.065, align=TextEntityAlignment.MIDDLE_LEFT)
+            _vtxt(ps, val, cx + 0.08, (ya + yb) / 2 + 0.2, 0.2, bold=True)
+            if k: _line(ps, (x0 + wc * k, ya), (x0 + wc * k, yb), layer='G-ANNO-TABL')
 
     def key_map(self, ps, x, y, w, h, sheet):
         bx0, by0, bx1, by1 = self.site_bb
@@ -271,11 +338,12 @@ class Sheets:
                        ('C-ROAD-PVMT-N', 'Proposed pavement'), ('C-ROAD-SWAL-N', 'Roadside swale (flowline)'),
                        ('C-STRM-CULV-N', 'Driveway culvert, 15" RCP w/ end sections'), ('C-BLDG-FTPR-N', 'Proposed dwelling'),
                        ('V-PROP-BRL', 'Building restriction line'), ('C-TOPO-MAJR-N', 'Proposed contour'),
-                       ('C-TOPO-MINR-E', 'Existing contour'), ('C-TOPO-SPOT-N', 'Spot elevation (2009 plan, WSSC datum)'),
+                       ('C-TOPO-MINR-E', 'Existing contour'), ('C-TOPO-SPOT-N', 'Spot elevation (WSSC datum)'),
                        ('C-ESC-LOD', 'Limit of disturbance'), ('C-ROAD-IMPR-N', 'MD 210 auxiliary lane (SHA)')],
             'utility': [('C-WATR-MAIN-N', 'Proposed 8" water main'), ('C-SSWR-MAIN-N', 'Proposed 8" sanitary sewer'),
-                        ('C-UTIL-SVCS-N', 'House connection'), ('V-ESMT', 'WSSC easement (recorded / proposed)'),
-                        ('L-PLNT-TREE-N', 'Street tree — Red Maple (2009 plan)'), ('E-LITE-N', 'Street light (2009 plan)')],
+                        ('C-WATR-SVCS-N', '1" water house connection (W.H.C.)'), ('C-SSWR-SVCS-N', '4" sewer house connection (S.H.C.)'),
+                        ('V-ESMT', 'WSSC easement (recorded / proposed)'),
+                        ('L-PLNT-TREE-N', 'Street tree — Red Maple'), ('E-LITE-N', 'Street light')],
             'swm': [('C-SWM-ESD-N', 'ESD practice — micro-bioretention (M-6)'), ('C-ROAD-SWAL-N', 'Roadside dry swale (M-8)'),
                     ('C-SWM-DRAN-N', 'Drainage area to practice'), ('C-SWM-OFFS', 'Off-site area draining onto site'),
                     ('C-SWM-FLOW', '100-yr overflow path'), ('C-SWM-POI', 'Point of investigation'),
@@ -289,8 +357,10 @@ class Sheets:
             aci, lt, lw = LAYERS[lay]
             ps.add_line((x, y - h / 2), (x + 0.55, y - h / 2), dxfattribs={'layer': lay, 'lineweight': lw, 'linetype': lt,
                                                                           'ltscale': 1.0 / 12.0 * 0.4})
-            _txt(ps, lbl, x + 0.65, y, h)
-            y -= h * 1.6
+            for w_ in _wrap(lbl, LC_W - 0.95, h):
+                _txt(ps, w_, x + 0.65, y, h)
+                y -= h * 1.4
+            y -= h * 0.3
         return y
 
     # ── the sheets ─────────────────────────────────────────────────────────
@@ -317,12 +387,31 @@ class Sheets:
         self.viewport(ps, sh['kind'], DRAW_X0, self.band_top(), DRAW_X1, top, sc, centre=self.plan_c)
         _box(ps, DRAW_X0, self.band_top(), DRAW_X1, top, layer='G-ANNO-TABL')
         bar_scale(ps, DRAW_X0 + 0.15, self.band_top() + 0.25, sc, 200)
-        # the band
+        self.legend(ps, M + 0.15, H - M - STAMP - 0.2, sh['kind'], h=0.08)
+        # the band: sheet tables and notes, then the standard notes column
         y0 = self.band_top() - 0.15
-        x = DRAW_X0
-        yl = self.legend(ps, x, y0, sh['kind'])
-        x += 3.2
-        return x, y0
+        self.std_notes(ps, self.band_x1() + 0.3, y0, BAND_X1 - self.band_x1() - 0.3)
+        return DRAW_X0, y0
+
+    def band_x1(self):
+        # right edge of the sheet's own band content; the standard notes take the rest
+        return BAND_X1 - 4.6
+
+    def std_notes(self, ps, x, y, w, owner=True):
+        """The notes every approved sheet carries: Miss Utility, stabilization, owner/developer."""
+        y = paragraphs(ps, x, y, w, 'MISS UTILITY NOTE', [MISS_UTILITY_NOTE], h=0.07, numbered=False)
+        y = paragraphs(ps, x, y - 0.05, w, 'STABILIZATION NOTE', [STABILIZATION_NOTE], h=0.07, numbered=False)
+        if owner:
+            p = self.s.get('project') or {}
+            lines = _wrap(p.get('owner', ''), w - 0.2, 0.08)
+            top = y - 0.05
+            _txt(ps, 'OWNER / DEVELOPER', x + 0.1, top - 0.08, 0.085, bold=True)
+            yy = top - 0.26
+            for ln in lines:
+                _txt(ps, ln, x + 0.1, yy, 0.08); yy -= 0.12
+            _box(ps, x, yy - 0.02, x + w, top, layer='G-ANNO-TABL', lw=35)
+            y = yy - 0.1
+        return y
 
     def sheet_existing(self, ps, sh):
         x, y0 = self.sheet_plan(ps, sh)
@@ -331,7 +420,7 @@ class Sheets:
         x += w + 0.3
         env = [[r['id'], r['status'], r['comment']] for r in self.s['checklist']['rows'] if r['id'].startswith('B-')]
         table(ps, x, y0, 'ENVIRONMENTAL FEATURES — DPIE CHECKLIST B', ['ITEM', 'C/X/O', 'FINDING'], env, h=0.075,
-              wrap_cols={2: DRAW_X1 - x - 1.2})
+              wrap_cols={2: self.band_x1() - x - 1.2})
 
     def sheet_layout(self, ps, sh):
         x, y0 = self.sheet_plan(ps, sh)
@@ -341,25 +430,26 @@ class Sheets:
         x2 = x + w + 0.3
         items = [n for n in (self.s['notes'].get('general') or [])[:5]]
         if note: items.append(note)
-        paragraphs(ps, x2, y0, DRAW_X1 - x2, 'SITE, ROAD AND GRADING NOTES', items, h=0.1)
+        paragraphs(ps, x2, y0, self.band_x1() - x2, 'SITE, ROAD AND GRADING NOTES', items, h=0.09)
 
     def sheet_utility(self, ps, sh):
         x, y0 = self.sheet_plan(ps, sh)
         trees = sum(1 for f in self.s['twin']['features'] if f.get('kind') == 'Tree' and (f.get('attributes') or {}).get('streetTree'))
         lights = sum(1 for f in self.s['twin']['features'] if f.get('kind') == 'ProposedFeature' and (f.get('attributes') or {}).get('type') == 'street light')
-        yb, w = table(ps, x, y0, 'STREET TREE AND STREET LIGHT SCHEDULE (2009 PLAN)',
+        yb, w = table(ps, x, y0, 'STREET TREE AND STREET LIGHT SCHEDULE',
                       ['SYMBOL', 'QTY', 'ITEM', 'SIZE / TYPE', 'STANDARD'],
                       [['TREE', trees, 'ACER RUBRUM — RED MAPLE', '2 1/2"–3" CAL., B&B', 'DPW&T 600.02 / 600.04'],
                        ['LIGHT', lights, 'STREET LIGHT (SMECO)', '100 W HPS COLONIAL POST-TOP, TYPE IV, BLACK FIBERGLASS', 'DPW&T 500.10']],
                       h=0.095, wrap_cols={3: 3.0})
         x2 = x + w + 0.3
-        paragraphs(ps, x2, y0, DRAW_X1 - x2, 'UTILITY NOTES', [
+        paragraphs(ps, x2, y0, self.band_x1() - x2, 'UTILITY NOTES', [
             'Water and sewer by WSSC (W-3 / S-3). Mains from the existing WSSC mains in Henrietta Drive through the recorded 30\' WSSC easement (L.51799 F.399, Outlot A and Lot 20) and a 30\' WSSC easement to be granted across Lot 4 along the Lot 3/4 line.',
-            'Sizes and inverts of the Henrietta Drive mains to be verified on WSSC 200\' sheet 220SE01 before technical design.',
-            'Street lights and street trees follow the approved 2009 Street Tree & Lighting Plan (DPW&T 9399-2009; light permit 09.09399); electric service by SMECO.',
+            'The 8" water and 8" sewer mains stop just past the Lot 1 east property line, at the Lot 6 tap (15 ft past the Lot 5 / Lot 6 front corner): water capped with a blow-off, sewer at a terminal manhole. No main runs on toward MD 210; Lot 1 connects at the end of the mains.',
+            'Sizes and inverts of the Henrietta Drive mains per WSSC 200\' sheet 220SE01.',
+            'Street lights and street trees per DPW&T Std. 500.10, 600.02 and 600.04; electric service by SMECO.',
             'Keep street trees 10 ft from water meters and storm structures and 15 ft from street lights (DPW&T 600.02).',
             *self._service_notes(),
-            'Contact Miss Utility (811) at least 48 hours before excavation.'], h=0.1)
+            ], h=0.085)
 
     def _service_notes(self):
         svc = [f for f in self.s['twin']['features'] if f.get('kind') == 'Utility' and (f.get('attributes') or {}).get('routedClearOfPaving')]
@@ -385,7 +475,7 @@ class Sheets:
                  f"{next((b['req'] for b in self.s['bmp']['byPoi'] if b['poi'] == p['id']), 0):,}",
                  f"{next((b['prov'] for b in self.s['bmp']['byPoi'] if b['poi'] == p['id']), 0):,}"] for p in self.s['poi']['pois']]
         yb2, w2 = table(ps, x2, y0, 'POINTS OF INVESTIGATION (C-9)', ['POI', 'LOCATION', 'SHARE', 'ESDv REQ', 'ESDv PROV'], prow, h=0.09)
-        paragraphs(ps, x2, yb2 - 0.15, DRAW_X1 - x2, 'SWM NOTES', (self.s['notes'].get('swm') or []) + [self.s['poi']['method']], h=0.09)
+        paragraphs(ps, x2, yb2 - 0.15, self.band_x1() - x2, 'SWM NOTES', (self.s['notes'].get('swm') or []) + [self.s['poi']['method']], h=0.09)
 
     def sheet_swmreport(self, ps, sh):
         """C-410: the SWM concept narrative (checklist D-1, D-3, D-4) and the 100-yr computations (D-10)."""
@@ -425,13 +515,13 @@ class Sheets:
 
     def sheet_esc(self, ps, sh):
         x, y0 = self.sheet_plan(ps, sh)
-        yb = paragraphs(ps, x, y0, 7.5, 'SEDIMENT AND EROSION CONTROL NOTES', self.s['notes'].get('esc') or [], h=0.1)
-        paragraphs(ps, x + 7.8, y0, DRAW_X1 - x - 7.8, 'SEQUENCE OF CONSTRUCTION', self.s['notes'].get('sequence') or [], h=0.1)
+        yb = paragraphs(ps, x, y0, 7.5, 'SEDIMENT AND EROSION CONTROL NOTES', self.s['notes'].get('esc') or [], h=0.09)
+        paragraphs(ps, x + 7.8, y0, self.band_x1() - x - 7.8, 'SEQUENCE OF CONSTRUCTION', self.s['notes'].get('sequence') or [], h=0.09)
 
     def sheet_details(self, ps, sh):
         self.plan_title(ps, sh)
         x = DRAW_X0; top = H - M - 0.6
-        # the county standards, reproduced from the approved 2009 sheet
+        # the county standards (DPW&T standard details)
         for d in self.s['details']:
             if not os.path.exists(d['file']): continue
             from PIL import Image
@@ -470,7 +560,7 @@ class Sheets:
             yy = base - 0.45 - 0.22 * (i // 2)
             _line(ps, (cx + a * s, yy), (cx + b * s, yy), layer='G-ANNO-TABL')
             _txt(ps, lab, cx + (a + b) / 2 * s, yy + 0.03, 0.06, align=TextEntityAlignment.BOTTOM_CENTER)
-        notes = ['1 1/2" SURFACE + 2 1/2" BASE BIT. CONC. ON 6" GAB (DPW&T PAVEMENT SCHEDULE FOR RURAL RESIDENTIAL — CONFIRM)',
+        notes = ['1 1/2" SURFACE + 2 1/2" BASE BIT. CONC. ON 6" GAB (DPW&T PAVEMENT SCHEDULE, RURAL RESIDENTIAL)',
                  'CROSS SLOPE 2%; 4-FT STABILIZED SHOULDERS; SWALE FLOWLINE 20 FT OFF CENTRELINE, 3:1 SIDE SLOPES',
                  'DRIVEWAYS CROSS THE SWALE ON 15" RCP CULVERTS WITH FLARED END SECTIONS (DPW&T STD. 600.02)']
         yy = base - 1.3
@@ -498,24 +588,38 @@ class Sheets:
         _txt(ps, '3:1', x + 0.45, b + 1.05, 0.06); _txt(ps, '3:1', x + 2.9, b + 1.05, 0.06)
         _txt(ps, 'CHECK DAMS AT 6" MAX. HEAD; UNDERDRAIN IN HSG C SOILS', x, b - 0.2, 0.06)
 
+    # ── cover (laid out as the approved Yocum Property cover) ─────────────
     def sheet_cover(self, ps, sh):
         s = self.s
         p = s.get('project') or {}
-        _txt(ps, p.get('planType', 'SITE DEVELOPMENT CONCEPT PLAN'), DRAW_X0, H - M - 0.2, 0.42, bold=True)
-        _txt(ps, p.get('project', ''), DRAW_X0, H - M - 0.78, 0.22)
-        _txt(ps, f"{p.get('location', '')}  ·  {p.get('record', '')}  ·  {p.get('districts', '')}", DRAW_X0, H - M - 1.1, 0.1)
-        _txt(ps, 'Stormwater management by Environmental Site Design to the Maximum Extent Practicable (MDE Design Manual Ch. 5; PGC Subtitle 32). '
-             + p.get('basisNote', ''), DRAW_X0, H - M - 1.28, 0.085)
+        name, _, _ = str(p.get('project', '')).partition(' — ')
+        n = len(s['twin'].get('projectLots') or [])
+        street = ((s.get('extras') or {}).get('proposedStreet') or {}).get('name', '')
+        cx = (DRAW_X0 + RC_X) / 2
+        y = H - M - 0.25
+        for txt, h, bold in ((name, 0.62, True), (f'LOTS 1 THRU {n}' if n else '', 0.44, False),
+                             (p.get('planType', 'SITE DEVELOPMENT CONCEPT PLAN'), 0.38, True),
+                             (f"({street.upper() + ' — ' if street else ''}{p.get('location', '')})", 0.2, False)):
+            if not txt: continue
+            _txt(ps, txt, cx, y, h, bold=bold, align=TextEntityAlignment.TOP_CENTER)
+            y -= h * 1.35
+        _txt(ps, f"{p.get('record', '')}  ·  {p.get('districts', '')}", cx, y, 0.11, align=TextEntityAlignment.TOP_CENTER)
+        y -= 0.3
+        if p.get('basisNote'):
+            _txt(ps, p['basisNote'], cx, y, 0.09, align=TextEntityAlignment.TOP_CENTER)
+            y -= 0.25
+        title_bottom = y
+
         # vicinity map, upper right
-        vx0, vx1 = DRAW_X1 - 6.4, DRAW_X1
-        vy1 = H - M - 0.2; vy0 = vy1 - 4.3
+        vx0, vx1 = DRAW_X1 - 5.6, DRAW_X1
+        vy1 = H - M - 0.2; vy0 = vy1 - 4.2
         self.viewport(ps, 'vicinity', vx0, vy0, vx1, vy1, 2000.0)
         _box(ps, vx0, vy0, vx1, vy1, layer='G-ANNO-TABL', lw=35)
         _txt(ps, 'VICINITY MAP   SCALE: 1" = 2,000\'', vx0 + 0.08, vy1 - 0.08, 0.09, bold=True)
         ps.add_blockref('NORTH', (vx1 - 0.35, vy1 - 0.75), dxfattribs={'layer': 'G-ANNO-TTLB'})
         bar_scale(ps, vx0 + 0.15, vy0 + 0.18, 2000.0, 4000)
-        # BMP summary, full width under the title (left of the vicinity map)
-        y = H - M - 1.6
+
+        # County BMP summary table (checklist A-15: on the cover)
         rows = [[r['bmp'], r['practice'], r['mdeCode'], r['location'], r['ownership'], r['poi'], f"{r['daSqFt']:,}", f"{r['impSqFt']:,}",
                  f"{r['percentImpervious']:.1f}", r['hsg'], f"{r['peIn']:.1f}", f"{r['rv']:.3f}", f"{r['esdvReqCf']:,}", f"{r['esdvProvCf']:,}",
                  f"{r['revReqCf']:,}", f"{r['surfaceSqFt']:,}", f"N {r['at'][1]:,.0f}  E {r['at'][0]:,.0f}"] for r in s['bmp']['rows']]
@@ -524,28 +628,101 @@ class Sheets:
             rows.append(['', f"SUBTOTAL {b_['poi']}", '', '', '', b_['poi'], '', '', '', '', '', '', f"{b_['req']:,}", f"{b_['prov']:,}", '', '', ''])
         rows.append(['TOTAL', f"{len(s['bmp']['rows'])} ESD practices", '', '', '', '', f"{t['daSqFt']:,}", f"{t['impSqFt']:,}", '', '', '', '',
                      f"{t['esdvReqCf']:,}", f"{t['esdvProvCf']:,}", f"{t['revReqCf']:,}", f"{t['surfaceSqFt']:,}", ''])
-        yb, w = table(ps, DRAW_X0, y, "PRINCE GEORGE'S COUNTY BMP SUMMARY TABLE — ESD BY POINT OF INVESTIGATION (A-15, C-9)",
+        ytab = min(title_bottom, H - M - STAMP - 0.1) - 0.1
+        yb, _ = table(ps, DRAW_X0, ytab, "PRINCE GEORGE'S COUNTY BMP SUMMARY TABLE — ESD BY POINT OF INVESTIGATION (A-15, C-9)",
                       ['BMP', 'PRACTICE', 'MDE', 'LOCATION', 'OWNERSHIP / MAINT.', 'POI', 'DA SF', 'IMP SF', '%I', 'HSG', 'P_E IN', 'Rv',
                        'ESDv REQ CF', 'ESDv PROV CF', 'Rev REQ CF', 'SURFACE SF', 'COORDINATES (NAD 83)'],
-                      rows, h=0.085, max_width=vx0 - DRAW_X0 - 0.3, bold_last=True, wrap_cols={4: 1.6, 1: 1.5})
-        _txt(ps, f"P_E from {s['bmp']['citation']}; HSG {s['bmp']['rows'][0]['hsg'] if s['bmp']['rows'] else 'C'} governing. Rv = 0.05 + 0.009·I; ESDv = P_E·Rv·A/12; "
-             'Rev = S·Rv·A/12 (S = 0.13 in, HSG C), met within ESDv. M-8 provided = 6 cf per ft (4-ft bottom, 6" ponding, 2.5\' media at n 0.40).',
+                      rows, h=0.08, max_width=vx0 - DRAW_X0 - 0.3, bold_last=True, wrap_cols={4: 1.5, 1: 1.5})
+        _txt(ps, f"P_E from {s['bmp']['citation']}; HSG {s['bmp']['rows'][0]['hsg'] if s['bmp']['rows'] else 'C'} governing. Rv = 0.05 + 0.009·I; "
+             'ESDv = P_E·Rv·A/12; Rev = S·Rv·A/12 (S = 0.13 in, HSG C), met within ESDv. M-8 provided = 6 cf per ft (4-ft bottom, 6" ponding, 2.5\' media at n 0.40).',
              DRAW_X0, yb - 0.06, 0.06)
-        # three columns below
-        ytop = min(yb, vy0) - 0.35
+
+        # four columns below: lot tables | legend | index + notes + owner | certifications
+        top = min(yb - 0.35, vy0 - 0.35)
+        xA, xB, xC, xD = DRAW_X0, DRAW_X0 + 6.7, DRAW_X0 + 12.6, DRAW_X0 + 19.0
+        lc = s['tables'].get('lotCoverage')
+        y = top
+        if lc and lc['rows']:
+            y, _ = table(ps, xA, y, lc['title'], lc['columns'], lc['rows'], h=0.085, wrap_cols={c: 1.0 for c in range(1, 6)})
+            _txt(ps, 'LOT COVERAGE = DRIVEWAY, WALK AND STOOP + DWELLING FOOTPRINT, ON THE LOT.', xA, y - 0.06, 0.065)
+            y -= 0.4
+        ad = s['tables'].get('addresses')
+        if ad and ad['rows']:
+            y, _ = table(ps, xA, y, ad['title'], ad['columns'], ad['rows'], h=0.1)
+        self.cover_legend(ps, xB, top)
+        y = top
+        idx_rows = [[str(i + 1), x['id'], x['title']] for i, x in enumerate(self.sheets)]
+        y, _ = table(ps, xC, y, 'INDEX OF DRAWINGS', ['NO.', 'SHEET', 'TITLE'], idx_rows, h=0.085, wrap_cols={2: 4.4})
+        self.std_notes(ps, xC, y - 0.3, 6.0)
+        y = top
+        wD = DRAW_X1 - xD
+        for title, body in CERTIFICATIONS:
+            y0 = y
+            y = paragraphs(ps, xD + 0.12, y - 0.12, wD - 0.24, title, [body], h=0.075, numbered=False)
+            for lab in ('SIGNATURE: ______________________________   MD P.E. LICENSE NO. ________',
+                        'PRINTED NAME: ___________________________   DATE: ____________'):
+                _txt(ps, lab, xD + 0.12, y - 0.05, 0.075); y -= 0.2
+            _box(ps, xD, y - 0.05, xD + wD, y0, layer='G-ANNO-TABL', lw=35)
+            y -= 0.3
+            if y < M + 4.8: break
+
+    def cover_legend(self, ps, x, y):
+        """LEGEND with NEW and EXISTING columns, drawn from the same layers the plan uses."""
+        rows = [('PROPERTY LINE', 'V-PROP-BNDY', 'V-PROP-ADJN'), ('LOT LINE', 'V-PROP-LOTS', None),
+                ('RIGHT-OF-WAY', 'C-ROAD-ROWL-N', 'C-ROAD-ROWL-E'), ('EDGE OF PAVEMENT', 'C-ROAD-PVMT-N', 'C-ROAD-EDGE-E'),
+                ('CENTER LINE', 'C-ROAD-CNTR-N', 'C-ROAD-CNTR-E'), ('CONTOURS', 'C-TOPO-MAJR-N', 'C-TOPO-MAJR-E'),
+                ('EASEMENT (WSSC)', 'V-ESMT', 'V-ESMT'), ('BUILDING', 'C-BLDG-FTPR-N', None),
+                ('WATER MAIN', 'C-WATR-MAIN-N', None), ('SANITARY SEWER', 'C-SSWR-MAIN-N', None),
+                ('WATER HOUSE CONNECTION', 'C-WATR-SVCS-N', None), ('SEWER HOUSE CONNECTION', 'C-SSWR-SVCS-N', None),
+                ('ROADSIDE SWALE', 'C-ROAD-SWAL-N', None), ('DRIVEWAY CULVERT', 'C-STRM-CULV-N', None),
+                ('ESD PRACTICE (M-6)', 'C-SWM-ESD-N', None), ('DRAINAGE AREA', 'C-SWM-DRAN-N', None),
+                ('LIMITS OF DISTURBANCE', 'C-ESC-LOD', None), ('SILT FENCE', 'C-ESC-SILT', None),
+                ('SOIL BOUNDARY', None, 'C-ENVR-SOIL-E'),
+                ('STREET TREE', 'TREE', None), ('STREET LIGHT', 'LIGHT', None), ('SPOT ELEVATION', 'SPOT', None)]
+        c0, c1, c2 = 2.6, 1.4, 1.4
+        rh = 0.24
+        _txt(ps, 'LEGEND', x + (c0 + c1 + c2) / 2, y, 0.13, bold=True, align=TextEntityAlignment.TOP_CENTER)
+        y -= 0.3
+        top = y
+        for k, lab in enumerate(('ITEM', 'NEW', 'EXISTING')):
+            _txt(ps, lab, x + [c0 / 2, c0 + c1 / 2, c0 + c1 + c2 / 2][k], y - rh / 2, 0.08, bold=True, align=TextEntityAlignment.MIDDLE_CENTER)
+        y -= rh
+        _line(ps, (x, y), (x + c0 + c1 + c2, y))
+        for item, new, ex in rows:
+            ym = y - rh / 2
+            _txt(ps, item, x + 0.08, ym, 0.07, align=TextEntityAlignment.MIDDLE_LEFT)
+            for lay, cxx in ((new, x + c0), (ex, x + c0 + c1)):
+                if not lay: continue
+                if lay in ('TREE', 'LIGHT', 'SPOT'):
+                    blk = ps.add_blockref(lay, (cxx + c1 / 2, ym), dxfattribs={'layer': 'G-ANNO-TEXT'})
+                    blk.dxf.xscale = blk.dxf.yscale = (1.0 / 90.0 if lay == 'TREE' else 1.0 / 30.0)
+                    continue
+                aci, lt, lw = LAYERS[lay]
+                ps.add_line((cxx + 0.15, ym), (cxx + c1 - 0.15, ym),
+                            dxfattribs={'layer': lay, 'lineweight': lw, 'linetype': lt, 'ltscale': 1.0 / 12.0 * 0.4})
+            y -= rh
+            _line(ps, (x, y), (x + c0 + c1 + c2, y))
+        for xx in (x, x + c0, x + c0 + c1, x + c0 + c1 + c2):
+            _line(ps, (xx, top), (xx, y))
+        _box(ps, x, y, x + c0 + c1 + c2, top, layer='G-ANNO-TABL', lw=35)
+        return y
+
+    # ── C-001: general notes, site data, approvals and the DPIE checklist ──
+    def sheet_notes(self, ps, sh):
+        s = self.s
+        self.plan_title(ps, sh)
+        ytop = H - M - 0.75
         colw = (DRAW_X1 - DRAW_X0 - 0.6) / 3
         c1, c2 = DRAW_X0, DRAW_X0 + colw + 0.3
         c3 = DRAW_X0 + 2 * (colw + 0.3)
-        # col 1: site data, approvals, general notes
         y1, _ = table(ps, c1, ytop, 'SITE DATA', ['ITEM', 'DATA'], s['tables']['siteData']['rows'], h=0.085, wrap_cols={1: colw - 1.4}, max_width=colw)
         y1, _ = table(ps, c1, y1 - 0.25, 'APPROVALS OF RECORD', ['CASE', 'STATUS'], s['tables']['approvals']['rows'], h=0.085, max_width=colw)
         paragraphs(ps, c1, y1 - 0.25, colw, 'GENERAL NOTES', s['notes'].get('general') or [], h=0.085)
-        # cols 2-3: the DPIE checklist, answered line by line
         rows = [[r['id'], r['text'], r['reference'], r['status'], r['comment'], r['sheet']] for r in s['checklist']['rows']]
         half = (len(rows) + 1) // 2
         split = next((i for i in range(half, len(rows)) if rows[i][0][0] != rows[i - 1][0][0]), half)
-        yl, _ = table(ps, c2, ytop, 'DPIE CONCEPT PLAN DESIGN REVIEW CHECKLIST (08/25/2021) — C = SHOWN · X = N/A · O = OUTSTANDING',
-                      ['ITEM', 'REQUIREMENT', 'REF.', 'C/X/O', 'RESPONSE / WHERE SHOWN', 'SHEET'], rows[:split], h=0.075,
-                      wrap_cols={1: colw * 0.38, 4: colw * 0.36}, max_width=colw)
+        table(ps, c2, ytop, 'DPIE CONCEPT PLAN DESIGN REVIEW CHECKLIST (08/25/2021) — C = SHOWN · X = N/A · O = OUTSTANDING',
+              ['ITEM', 'REQUIREMENT', 'REF.', 'C/X/O', 'RESPONSE / WHERE SHOWN', 'SHEET'], rows[:split], h=0.075,
+              wrap_cols={1: colw * 0.38, 4: colw * 0.36}, max_width=colw)
         table(ps, c3, ytop, 'CHECKLIST (CONT.)', ['ITEM', 'REQUIREMENT', 'REF.', 'C/X/O', 'RESPONSE / WHERE SHOWN', 'SHEET'], rows[split:], h=0.075,
               wrap_cols={1: colw * 0.38, 4: colw * 0.36}, max_width=colw)

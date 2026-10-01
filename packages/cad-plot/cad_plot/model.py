@@ -226,7 +226,15 @@ class Model:
                 if str(f.get('id', '')).startswith(lp.get('featurePrefix', '~')):
                     lotno = lp['label']; addr = lp.get('address', '')
             if lotno:
-                self.mtext(f"{lotno}\\P{_area(r):,.0f} SF\\P{addr}", c, 0.12, 'V-PROP-ANNO', bold=True)
+                # boxed lot number and area, address beneath (the approved-plan convention)
+                l1, l2 = str(lotno).upper(), f"{_area(r):,.0f} SF"
+                h1, h2 = th(0.14), th(0.1)
+                w = max(len(l1) * h1, len(l2) * h2) * 0.72 + th(0.12)
+                top, bot = c[1] + h1 * 1.25, c[1] - h2 * 1.6
+                self.text(l1, (c[0], c[1] + h1 * 0.5), 0.14, 'V-PROP-ANNO', bold=True)
+                self.text(l2, (c[0], c[1] - h2 * 0.6), 0.1, 'V-PROP-ANNO')
+                self.pl([(c[0] - w / 2, bot), (c[0] + w / 2, bot), (c[0] + w / 2, top), (c[0] - w / 2, top)], 'V-PROP-ANNO', close=True)
+                if addr: self.text(str(addr).upper(), (c[0], bot - th(0.11)), 0.075, 'V-PROP-ANNO')
 
     def _pole(self, r):
         # a point well inside the ring (grid search for the point farthest from the edges)
@@ -320,7 +328,7 @@ class Model:
         if ent:
             n, s_ = ent['northReturnCentre'], ent['southReturnCentre']
             mid = ((n[0] + s_[0]) / 2, (n[1] + s_[1]) / 2)
-            self.mtext(f"ENTRANCE — R={ent['returnRadiusFt']:.0f}' RETURNS (2009 PLAN)\\PSHA ACCESS PERMIT REQUIRED", (mid[0] - 30, mid[1] + 55), 0.075, 'C-ROAD-ANNO-N', width_in=2.2)
+            self.mtext(f"ENTRANCE — R={ent['returnRadiusFt']:.0f}' RETURNS\\PSHA ACCESS PERMIT REQUIRED", (mid[0] - 30, mid[1] + 55), 0.075, 'C-ROAD-ANNO-N', width_in=2.2)
         for f in self.of('ProposedFeature', type='roadside swale'):
             self.pl(_line(f), 'C-ROAD-SWAL-N')
         sw = self.of('ProposedFeature', type='roadside swale')
@@ -401,13 +409,38 @@ class Model:
             a = f.get('attributes') or {}
             ln = _line(f)
             ty = str(a.get('type', ''))
+            tyl = ty.lower()
             if ty == 'Water main': lay = 'C-WATR-MAIN-N'
             elif ty == 'Sanitary sewer main': lay = 'C-SSWR-MAIN-N'
+            elif 'water service' in tyl: lay = 'C-WATR-SVCS-N'
+            elif 'sanitary lateral' in tyl or 'sewer' in tyl: lay = 'C-SSWR-SVCS-N'
             else: lay = 'C-UTIL-SVCS-N'
+            if len(ln) < 2: continue
             self.pl(ln, lay)
-            if lay != 'C-UTIL-SVCS-N' and len(ln) > 3:
+            if lay in ('C-WATR-MAIN-N', 'C-SSWR-MAIN-N') and len(ln) > 3:
                 i = len(ln) // 3
                 self.text(f"{a.get('label', ty)} — {a.get('sizeAtMain', '')}", ln[i], 0.065, 'C-UTIL-ANNO-N', angle=_text_angle(ln[i - 1], ln[i + 1]))
+                # the end of the main: capped and called out — no main past the last service
+                e0, e1 = ln[-2], ln[-1]
+                self.msp.add_circle(e1, 1.2, dxfattribs={'layer': lay})
+                water = lay == 'C-WATR-MAIN-N'
+                L = math.dist(e0, e1) or 1
+                ux, uy = (e1[0] - e0[0]) / L, (e1[1] - e0[1]) / L
+                # captioned off the R/W on a leader, water to one side and sewer to the
+                # other, so neither sits on the street name or the pavement
+                side = 1 if water else -1
+                off = 44 if water else 30
+                at = (e1[0] + ux * 8 - uy * off * side, e1[1] + uy * 8 + ux * off * side)
+                self.pl([e1, at], 'C-UTIL-ANNO-N')
+                self.text(f"END {str(a.get('label', ty)).replace('PROP. ', '')} — {'CAP & BLOW-OFF' if water else 'TERMINAL MANHOLE'}",
+                          at, 0.06, 'C-UTIL-ANNO-N', align=TextEntityAlignment.BOTTOM_LEFT if water else TextEntityAlignment.TOP_LEFT)
+            elif lay in ('C-WATR-SVCS-N', 'C-SSWR-SVCS-N'):
+                # every lot's connection, tapped at the main and labelled
+                lot = str(a.get('lotLabel') or '')
+                lab = (lot.upper() + ' — ' if lot else '') + ('1" W.H.C.' if lay == 'C-WATR-SVCS-N' else '4" S.H.C.')
+                k = max(1, len(ln) // 2)
+                self.text(lab, ln[k], 0.055, 'C-UTIL-ANNO-N', angle=_text_angle(ln[k - 1], ln[min(k + 1, len(ln) - 1)]))
+                self.msp.add_circle(ln[0], 0.8, dxfattribs={'layer': lay})
         for f in self.of('Easement'):
             r = _ring(f)
             if len(r) < 3: continue

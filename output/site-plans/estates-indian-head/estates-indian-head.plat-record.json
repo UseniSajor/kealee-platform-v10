@@ -19,7 +19,7 @@
   "Tract 165,019 sf (3.788 ac) = plat 171,505 sf less Outlot A (6,486 sf), which was conveyed to M. & K. Doyal (L.51565 F.455) and is no longer part of this site.",
   "Estates Court: 60-ft public right-of-way dedicated on the plat (35,173 sf) with a cul-de-sac; to be constructed with this development.",
   "Water and sewer: WSSC. The mains in Estates Court connect to the existing mains in Henrietta Drive through the 30-ft WSSC easement recorded at L.51799 F.399 (Outlot A 906 sf, Lot 20 3,154 sf) and a 30-ft WSSC easement to be granted across Lot 4.",
-  "Approvals of record: NRI-015-06, TCP1-018-06, TCP2-016-09 (current); Street Tree and Lighting Plan, DPW&T permit 9399-2009-00 (approved 05/06/2009). This submission follows the 2009 layout and is prepared to the current DPIE Site Development Concept checklist (rev. 08/25/2021)."
+  "New submittal. Prior approvals NRI-015-06, TCP1-018-06 and TCP2-016-09 are base work only and do not carry this submittal; an updated NRI, a TCP2 revision or new TCP as M-NCPPC determines, and review of street trees and lighting to current DPW&T/DPIE standards are required. Prepared to the current DPIE Site Development Concept checklist (rev. 08/25/2021)."
  ],
  "adjoiners": [
   {
@@ -1430,28 +1430,8 @@
       367352.8442781071
      ],
      [
-      1311103.9847936882,
-      367360.16080497234
-     ],
-     [
-      1311080.242518211,
-      367369.4984373485
-     ],
-     [
-      1311057.3758190873,
-      367380.8121942114
-     ],
-     [
-      1311035.5487384326,
-      367394.02092151856
-     ],
-     [
-      1311014.4242381945,
-      367409.38879520673
-     ],
-     [
-      1310998.7833673926,
-      367421.8532711508
+      1311114.1322913936,
+      367357.13305291237
      ]
     ],
     "note": "Mains enter from Henrietta Drive through the recorded 30-ft WSSC easement (L.51799 F.399), cross Lot 4 in a proposed 30-ft WSSC easement and run west in Estates Court to Lots 1 and 6."
@@ -1568,7 +1548,7 @@
  "openSection": {
   "shoulderFt": 4,
   "swaleFt": 10,
-  "note": "Rural open section as approved in 2009 (DPW&T Std. 500.10 / 600.02 / 600.04): 24-ft pavement, 4-ft shoulders, roadside grass swales; driveways cross the swale on culverts."
+  "note": "Rural open section to current standards (DPW&T Std. 500.10 / 600.02 / 600.04): 24-ft pavement, 4-ft shoulders, roadside grass swales; driveways cross the swale on culverts."
  },
  "roadImprovements": [
   {
@@ -1618,7 +1598,7 @@
    "lengthFt": 176.0
   }
  ],
- "roadImprovementsNote": "MD 210 frontage improvements are shown for SHA review. At the entrance the MD 210 R/W line lies about 6 ft off the edge of road (2009 sheet), so a 12-ft lane needs R/W dedication along Lots 1 and 6 or SHA agreement. Lane lengths and tapers are set by SHA's access-permit review and traffic study.",
+ "roadImprovementsNote": "MD 210 frontage improvements are shown for SHA review. At the entrance the MD 210 R/W line lies about 6 ft off the edge of road, so a 12-ft lane needs R/W dedication along Lots 1 and 6 or SHA agreement. Lane lengths and tapers are set by SHA's access-permit review and traffic study.",
  "environmental": {
   "woodsSqFt": 0,
   "receiving": "the MD 210 roadside ditch (SHA)",
@@ -1668,7 +1648,8 @@
   "tmdl": "Chesapeake Bay TMDL (nitrogen, phosphorus, sediment) applies; MD 12-digit watershed 021402030798, Piscataway Creek (02140203).",
   "highlyErodible": "",
   "wells": "No wells or septic proposed (public water and sewer). Existing well on Parcel 199 (15608 Indian Head Hwy), off site, shown.",
-  "approvals": "NRI-015-06 approved (current); TCP1-018-06 and TCP2-016-09 (current)."
+  "approvals": "New submittal: prior NRI-015-06 (with TCP1-018-06, TCP2-016-09) is base work only. Updated/revised NRI to be provided in draft with this submission; approved copy required before concept approval (Sec. 32-182(a)).",
+  "nriCurrentForSubmittal": false
  },
  "titleBlock": {
   "planType": "SITE DEVELOPMENT CONCEPT PLAN",
@@ -1681,7 +1662,8 @@
   "preparedWith": "KEALEE SPATIAL ENGINE / CAD-PLOT",
   "status": "CONCEPT SUBMISSION 1 \u2014 NOT SEALED",
   "date": "2026-09-30",
-  "jobNo": "KEA-EIH-2026"
+  "jobNo": "KEA-EIH-2026",
+  "basisNote": "New submittal to the DPIE Site Development Concept checklist (rev. 08/25/2021)."
  },
  "siteData": [
   [
@@ -1730,7 +1712,7 @@
   ],
   [
    "Datum",
-   "NAD 83 MD State Plane (US ft); NAVD 88 (M-NCPPC 2-ft); 2009 spot grades on WSSC datum"
+   "NAD 83 MD State Plane (US ft); NAVD 88 (M-NCPPC 2-ft); spot grades on WSSC datum"
   ]
  ],
  "rainfall24hr": {
@@ -1748,23 +1730,19 @@
  "approvalsOfRecordTable": [
   [
    "NRI-015-06",
-   "Approved \u2014 current"
+   "Prior approval \u2014 base work; updated NRI required"
   ],
   [
    "TCP1-018-06",
-   "Current"
+   "Prior approval \u2014 base work"
   ],
   [
    "TCP2-016-09",
-   "Approved \u2014 current"
+   "Prior approval \u2014 base work; revision or new TCP per M-NCPPC"
   ],
   [
    "5-08238",
    "Final plat, PM 228 @ 83 \u2014 recorded"
-  ],
-  [
-   "DPW&T 9399-2009-00",
-   "Street tree & lighting plan (2009) \u2014 layout followed"
   ],
   [
    "L.51799 F.399",
@@ -1772,13 +1750,14 @@
   ]
  ],
  "generalNotes": [
-  "Boundary per recorded plat PM 228 @ 83; lot lines reproduce the plat to the second. A Maryland licensed surveyor shall confirm the boundary and the MD 210 R/W before technical plans.",
-  "Horizontal datum: Maryland State Plane NAD 83 (US ft). Vertical datum: NAVD 88 (M-NCPPC 2-ft contours). 2009 spot grades are on WSSC datum (\u2248 NAVD 88 + 1.6 ft, to be confirmed by the field-run survey). DPIE prefers NGVD 29 \u2014 the survey shall state the conversion.",
-  "The layout follows the approved 2009 Street Tree & Lighting Plan (DPW&T 9399-2009-00): dwellings, side-load garages and courts, street trees and street lights. Lot 4 is front-load (garage to the cul-de-sac) to clear the WSSC easement.",
+  "Boundary per recorded plat PM 228 @ 83; lot lines reproduce the plat to the second.",
+  "Horizontal datum: Maryland State Plane NAD 83 (US ft). Vertical datum: NAVD 88 (M-NCPPC 2-ft contours). Spot grades are on WSSC datum (\u2248 NAVD 88 + 1.6 ft). DPIE prefers NGVD 29.",
+  "Six single-family dwellings with side-load garages and courts, street trees and street lights, laid out to current requirements. Lot 4 is front-load (garage to the cul-de-sac) to clear the WSSC easement.",
   "Estates Court is a rural open section (DPW&T Std. 500.10 / 600.02 / 600.04): 24' pavement, shoulders, roadside swales; driveways cross the swale on 15\" RCP culverts with flared end sections.",
-  "Entrance to MD 210 (SHA) with 50' returns as the 2009 plan; SHA access permit and sight-distance analysis required. MD 210 auxiliary lanes shown for SHA review; R/W dedication may be required.",
+  "Entrance to MD 210 (SHA) with 50' returns; SHA access permit and sight-distance analysis required. MD 210 auxiliary lanes shown for SHA review; R/W dedication may be required.",
   "Water and sewer: WSSC mains from Henrietta Dr through the recorded 30' WSSC easement (L.51799 F.399) and a 30' WSSC easement to be granted across Lot 4. Record discrepancies in the easement description to be resolved with WSSC.",
-  "Approvals of record NRI-015-06, TCP1-018-06 and TCP2-016-09 are current. No environmental features on the property: no streams, stream buffers, wetlands, floodplain, PMA, steep slopes, woodland, highly erodible soils or Chesapeake Bay Critical Area.",
+  "NEW SUBMITTAL (2026). Prior approvals NRI-015-06, TCP1-018-06 and TCP2-016-09 are used as base work only and do not carry this submittal. Additional work: an updated/revised NRI (draft with this submission, approved copy before concept approval, Sec. 32-182(a)); a TCP2-016-09 revision or new TCP / letter of exemption as M-NCPPC Environmental Planning determines; street trees and lighting reviewed to current DPW&T/DPIE standards; SWM by ESD to the MEP under current Subtitle 32.",
+  "No environmental features on the property: no streams, stream buffers, wetlands, floodplain, PMA, steep slopes, woodland, highly erodible soils or Chesapeake Bay Critical Area.",
   "Contact Miss Utility (811) at least 48 hours before any excavation."
  ],
  "swmNotes": [
@@ -5949,7 +5928,7 @@
   }
  ],
  "spotElevationsFromPlan": {
-  "datum": "WSSC datum (2009 plan); reads about 1.6 ft above NAVD 88 county contours (scatter 1.2 ft) \u2014 reset by field survey",
+  "datum": "WSSC datum; reads about 1.6 ft above NAVD 88 county contours (scatter 1.2 ft)",
   "replaceGenerated": true,
   "points": [
    {
@@ -6686,7 +6665,7 @@
    ]
   ],
   "areaSqFt": 2324,
-  "label": "STREET ENTRANCE APRON \u2014 50' RETURNS TO MD 210 EDGE OF ROAD (2009 PLAN) \u2014 SHA ACCESS PERMIT",
+  "label": "STREET ENTRANCE APRON \u2014 50' RETURNS TO MD 210 EDGE OF ROAD \u2014 SHA ACCESS PERMIT",
   "returnRadiusFt": 50.0
  }
 }

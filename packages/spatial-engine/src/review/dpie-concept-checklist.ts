@@ -82,6 +82,8 @@ export interface ChecklistFacts {
   sheetSizeIn: [number, number]
   sheets: { id: string; title: string }[]
   coverSheet: string
+  /** Sheet carrying the general notes, when they are not on the cover. */
+  notesSheet?: string
   planSheet: string
   swmSheet: string
   utilitySheet: string
@@ -129,7 +131,7 @@ export function evaluateChecklist(f: ChecklistFacts, overrides: Record<string, {
     'A-7': r('C', 'Graphic bar scale in every plan viewport.', 'ALL'),
     'A-8': r('C', 'Three State Plane grid ticks with N/E values on each plan.', f.planSheet),
     'A-9': r('C', `Horizontal ${f.datum.horizontal}; vertical ${f.datum.vertical}.`, 'ALL'),
-    'A-10': r('C', 'General notes on the cover sheet.', f.coverSheet),
+    'A-10': r('C', f.notesSheet ? `General notes on ${f.notesSheet}.` : 'General notes on the cover sheet.', f.notesSheet ?? f.coverSheet),
     'A-11': r(f.planScaleFtPerIn <= 50 ? 'C' : 'O', `Entire property at 1" = ${f.planScaleFtPerIn}'.`, f.planSheet),
     'A-12': r('C', 'Existing structures, adjoining houses, fences, sheds, well, easements of record shown; no historic sites or ruins.', f.existingSheet),
     'A-13': r(f.contoursBeyondFt >= 100 ? 'C' : 'O', `M-NCPPC 2-ft contours, ${f.contoursBeyondFt} ft beyond the property.`, f.existingSheet),
@@ -147,10 +149,10 @@ export function evaluateChecklist(f: ChecklistFacts, overrides: Record<string, {
     'B-8': anyFeature ? r('C', 'Environmental layers drawn 100 ft beyond the property.', f.existingSheet)
       : r('X', 'No environmental features on or within 100 ft of the property.'),
     'B-9': r('C', e.soils, f.existingSheet),
-    'B-10': r('C', `${e.tmdl} Tier II: ${e.tierII ? 'yes' : 'no'}.`, f.coverSheet),
+    'B-10': r('C', `${e.tmdl} Tier II: ${e.tierII ? 'yes' : 'no'}.`, f.notesSheet ?? f.coverSheet),
     'B-11': e.highlyErodible ? r('C', e.highlyErodible, f.coverSheet) : r('X', 'No highly erodible soils on the property.'),
     'B-12': r(e.springs ? 'C' : 'X', e.springs ? 'Springs/seeps noted.' : 'None observed or mapped.'),
-    'B-13': r(e.marlboroClay ? 'C' : 'X', e.marlboroClay ? 'Marlboro clay noted.' : 'No bedrock or Marlboro clay mapped (PGAtlas); geotechnical report to confirm (E-2).'),
+    'B-13': r(e.marlboroClay ? 'C' : 'X', e.marlboroClay ? 'Marlboro clay noted.' : 'No bedrock or Marlboro clay mapped (PGAtlas); geotechnical report per E-2.'),
     'B-14': r(e.cbca ? 'C' : 'X', e.cbca ? 'CBCA delineated.' : 'Not in the Chesapeake Bay Critical Area.'),
     'C-1': r('C', 'Estates Court, 6 dwellings, driveways and courts, entrance at MD 210, grading.', f.planSheet),
     'C-2': r(f.esdPractices > 0 ? 'C' : 'O', `${f.esdPractices} ESD practices (micro-bioretention M-6 per lot; roadside dry swales M-8).`, f.swmSheet),
@@ -178,7 +180,7 @@ export function evaluateChecklist(f: ChecklistFacts, overrides: Record<string, {
     'D-9': r('X', 'No waiver requested.'),
     // D-10 stays open until the downstream analysis exists: the 100-yr
     // comparison alone does not show the receiving system is adequate.
-    'D-10': sw ? r(sw.outstanding.length ? 'O' : 'C', `ESDv per POI on the cover; 100-yr existing vs. proposed runoff at each POI on ${sw.sheet}.${sw.outstanding.length ? ' Outstanding: downstream adequacy analysis (field-run survey).' : ''}`, sw.sheet)
+    'D-10': sw ? r(sw.outstanding.length ? 'O' : 'C', `ESDv per POI on the cover; 100-yr existing vs. proposed runoff at each POI on ${sw.sheet}.${sw.outstanding.length ? ' Outstanding: downstream adequacy analysis at technical design.' : ''}`, sw.sheet)
       : r('O', 'ESDv computations are on the cover; 100-yr existing/proposed runoff at each POI and downstream analysis to follow in the report.'),
     'E-1': r('O', 'Geotechnical report for SWM (borings and Sec. 32-131 infiltration tests at each practice) — to be submitted.'),
     'E-2': r('O', 'Geotechnical report to address Marlboro/Christiana clays, sulfidic and diatomaceous soils.'),

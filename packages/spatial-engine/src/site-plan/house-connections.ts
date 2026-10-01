@@ -194,7 +194,7 @@ export function routeHouseConnections(inp: HouseConnectionInput): HouseConnectio
     if (memo.has(k)) return memo.get(k)!
     let runs = straight(e, main)
     if (!runs.length) {
-      for (let d = 5; d <= 40; d += 2.5) {
+      for (let d = 5; d <= 80; d += 2.5) {
         const b: Position = [e[0] + nrm[0] * d, e[1] + nrm[1] * d]
         const c1 = clearOf(b, e)
         if (c1 < clr) break

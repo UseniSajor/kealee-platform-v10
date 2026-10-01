@@ -16,7 +16,7 @@ import { swmConceptReport, type Rainfall24hr, type SwmConceptReport } from '../s
 import { evaluateChecklist, DPIE_CONCEPT_CHECKLIST_EDITION, type ChecklistRow, type ChecklistFacts } from '../review/dpie-concept-checklist'
 import polygonClipping from 'polygon-clipping'
 
-export interface SheetSpec { id: string; title: string; kind: 'cover' | 'existing' | 'layout' | 'utility' | 'swm' | 'swmreport' | 'esc' | 'details'; scaleFtPerIn?: number }
+export interface SheetSpec { id: string; title: string; kind: 'cover' | 'notes' | 'existing' | 'layout' | 'utility' | 'swm' | 'swmreport' | 'esc' | 'details'; scaleFtPerIn?: number }
 
 export interface BmpRow {
   bmp: string; practice: string; mdeCode: string; location: string; ownership: string; poi: string
@@ -68,7 +68,8 @@ export function buildSheetSet(input: {
     ?? governingHsg(((twin as any).soils ?? []).map((s: any) => s.hydrologicGroup))
 
   const sheets: SheetSpec[] = input.sheets ?? [
-    { id: 'C-000', title: 'COVER SHEET — BMP SUMMARY, DPIE CHECKLIST AND NOTES', kind: 'cover' },
+    { id: 'C-000', title: 'COVER SHEET', kind: 'cover' },
+    { id: 'C-001', title: 'GENERAL NOTES AND DPIE CHECKLIST', kind: 'notes' },
     { id: 'C-100', title: 'EXISTING CONDITIONS AND ENVIRONMENTAL FEATURES', kind: 'existing', scaleFtPerIn: 30 },
     { id: 'C-200', title: 'SITE LAYOUT, GRADING AND PAVING PLAN', kind: 'layout', scaleFtPerIn: 30 },
     { id: 'C-300', title: 'UTILITY, STREET LIGHT AND STREET TREE PLAN', kind: 'utility', scaleFtPerIn: 30 },
@@ -158,9 +159,9 @@ export function buildSheetSet(input: {
   const culverts = feats.filter(f => f.kind === 'ProposedFeature' && f.attributes?.type === 'culvert').length
   const facts: ChecklistFacts = {
     sheetSizeIn: [36, 24], sheets: sheets.map(s => ({ id: s.id, title: s.title })),
-    coverSheet: 'C-000', existingSheet: 'C-100', planSheet: 'C-200', utilitySheet: 'C-300', swmSheet: 'C-400', escSheet: 'C-500',
+    coverSheet: 'C-000', notesSheet: sheets.some(s => s.kind === 'notes') ? sheets.find(s => s.kind === 'notes')!.id : undefined, existingSheet: 'C-100', planSheet: 'C-200', utilitySheet: 'C-300', swmSheet: 'C-400', escSheet: 'C-500',
     planScaleFtPerIn: 30, approvalStripIn: 5,
-    datum: { horizontal: 'Maryland State Plane, NAD 83 (EPSG 2248), US ft', vertical: 'NAVD 88 (M-NCPPC 2-ft); 2009 spot grades WSSC datum as noted' },
+    datum: { horizontal: 'Maryland State Plane, NAD 83 (EPSG 2248), US ft', vertical: 'NAVD 88 (M-NCPPC 2-ft); spot grades WSSC datum as noted' },
     contoursBeyondFt: 100, bmpRows: rows.length, pois: poi.pois.length, overflowPaths: poi.overflow.length,
     offsiteAreaSqFt: poi.offsiteAreaSqFt, esdPractices: rows.length, culverts, lodSqFt: lod,
     dedicationSqFt: Number(pr.proposedStreets?.[0]?.rowSqFt ?? 0),
@@ -187,6 +188,21 @@ export function buildSheetSet(input: {
         Math.round(Number(b.attributes?.areaSqFt ?? 0)), String(b.attributes?.garageEntry ?? ''),
         b.attributes?.finishedFloorElevFt != null ? Number(b.attributes.finishedFloorElevFt).toFixed(2) : '—',
         b.attributes?.basementElevFt != null ? Number(b.attributes.basementElevFt).toFixed(2) : '—']),
+    },
+    // Yocum-style cover tables: one row per lot, read off the twin.
+    addresses: {
+      title: 'ADDRESS LIST', columns: ['LOT', 'STREET ADDRESS'],
+      rows: lotsOf(twin).map(l => [l.lot, l.address]),
+    },
+    lotCoverage: {
+      title: 'LOT COVERAGE ANALYSIS', columns: ['LOT #', 'DRIVEWAY AREA (SF)', 'COVERED AREA (SF)', 'TOTAL AREA (SF)', 'LOT AREA (SF)', 'LOT COVERAGE (%)'],
+      rows: lotsOf(twin).map(l => {
+        const drive = feats.filter(f => f.kind === 'Pavement' && String(f.id).startsWith(l.prefix) && ['Driveway', 'Walk', 'Stoop'].includes(String(f.attributes?.improvement ?? '')) && f.ring?.coordinates?.length)
+          .reduce((s, f) => s + ringArea(f.ring.coordinates), 0)
+        const cov = buildings.filter(b => String(b.id).startsWith(l.prefix)).reduce((s, b) => s + Number(b.attributes?.areaSqFt ?? ringArea(b.ring?.coordinates ?? [])), 0)
+        const tot = drive + cov
+        return [l.lot.toUpperCase(), Math.round(drive), Math.round(cov), Math.round(tot), Math.round(l.areaSqFt), l.areaSqFt ? (100 * tot / l.areaSqFt).toFixed(2) : '—']
+      }),
     },
     soils: {
       title: 'SOILS (USDA NRCS)', columns: ['SYMBOL', 'NAME', 'HSG', 'K', 'HIGHLY ERODIBLE'],
@@ -224,4 +240,15 @@ export function buildSheetSet(input: {
     poi, swm, checklist: { edition: DPIE_CONCEPT_CHECKLIST_EDITION, rows: checklist },
     tables, notes, details,
   }
+}
+
+/** The lots of a composed twin, in lot order: label, address, record area and feature-id prefix. */
+function lotsOf(twin: SiteTwin): { lot: string; address: string; areaSqFt: number; prefix: string }[] {
+  const pl = ((twin as any).projectLots ?? []) as { featurePrefix: string; label?: string; address?: string; areaSqFt?: number | null }[]
+  return pl.map((l, i) => ({
+    lot: String(l.label ?? `Lot ${i + 1}`).replace(/^lot\s*/i, 'Lot '),
+    address: String(l.address ?? ''),
+    areaSqFt: Number(l.areaSqFt ?? 0),
+    prefix: l.featurePrefix,
+  }))
 }

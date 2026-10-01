@@ -171,16 +171,16 @@ export function swmConceptReport(input: {
     return `${h.poi}: ${ac(h.areaSqFt)} ac, CN ${h.existing.cn} → ${h.proposed.cn}, Tc ${h.tc.existingHr} → ${h.tc.proposedHr} hr; 100-yr ${r.preCfs.toFixed(1)} → ${r.postCfs.toFixed(1)} cfs (${r.postCfs >= r.preCfs ? '+' : ''}${(r.postCfs - r.preCfs).toFixed(1)} cfs), runoff ${fmt(r.preRunoffCf)} → ${fmt(r.postRunoffCf)} cf.`
   })
   const outstanding = [
-    `Downstream adequacy of ${input.receiving} for the 10- and 100-yr flows at each POI — needs the receiving system's section and capacity from a field-run survey (and SHA as-builts). If inadequate, 10-yr quantity control is added (checklist D-10).`,
-    'Field-run topography to confirm the POIs, flow paths and the time of concentration; this analysis is on M-NCPPC 2-ft mapping.',
+    `Downstream adequacy of ${input.receiving} for the 10- and 100-yr flows at each POI, from the receiving system's section and capacity (SHA as-builts), at technical design. If inadequate, 10-yr quantity control is added (checklist D-10).`,
+    'POIs, flow paths and the time of concentration are computed on M-NCPPC 2-ft topography.',
   ]
   const narrative: SwmConceptReport['narrative'] = {
     'D-1': [
       woodsPre > 0
-        ? `Natural resources: there are no streams, wetlands, 100-yr floodplain or PMA on the property (NRI-015-06, current). Woodland (${fmt(woodsPre)} sf) is conserved outside the limit of disturbance shown on the sediment control plan; the layout follows the approved 2009 plan.`
-        : 'Natural resources: there are no environmental features on the property — no streams, wetlands, 100-yr floodplain, PMA or woodland (NRI-015-06, current). The layout follows the approved 2009 plan and disturbance is held to the limit shown on the sediment control plan.',
+        ? `Natural resources: there are no streams, wetlands, 100-yr floodplain or PMA on the property. Woodland (${fmt(woodsPre)} sf) is conserved outside the limit of disturbance shown on the sediment control plan.`
+        : 'Natural resources: there are no environmental features on the property — no streams, wetlands, 100-yr floodplain, PMA or woodland. Disturbance is held to the limit shown on the sediment control plan.',
       `Natural flow patterns: the tract falls toward MD 210 and leaves at ${pois.length === 1 ? 'one point of investigation' : `${pois.length} points of investigation`}, which the proposed grading keeps; no drainage is diverted between POIs.`,
-      `Impervious reduction: rural open section (24-ft pavement, no curb and gutter), as approved in 2009; side-load courts sized to the 2009 aprons. Proposed impervious ${fmt(impPost)} sf (${(100 * impPost / A).toFixed(1)}%).`,
+      `Impervious reduction: rural open section (24-ft pavement, no curb and gutter); side-load courts kept to the turning area at each garage. Proposed impervious ${fmt(impPost)} sf (${(100 * impPost / A).toFixed(1)}%).`,
       `ESD to the MEP: ${input.practices} practices — micro-bioretention (M-6) on each lot and roadside dry swales with check dams (M-8) in the R/W. ESDv required ${fmt(input.esdvReqCf)} cf, provided ${fmt(input.esdvProvCf)} cf (MDE Manual Ch. 5, Table 5.3, HSG ${hsg}).`,
       'ESC integration: practice footprints are kept out of the sediment-trapping sequence and are built last, after the contributing area is stabilized; sediment control is shown on C-500.',
     ],
@@ -194,7 +194,7 @@ export function swmConceptReport(input: {
     ],
   }
   return {
-    method: `NRCS TR-55 graphical peak discharge, Type II 24-hr; CN from TR-55 Table 2-2 (HSG ${hsg}: woods ${CN.woods[hsg]}, open space ${CN.openSpace[hsg]}, impervious 98); Tc by TR-55 segments along the routed longest path; no ESD credit on the 100-yr. Concept-level — reset from the field-run survey.`,
+    method: `NRCS TR-55 graphical peak discharge, Type II 24-hr; CN from TR-55 Table 2-2 (HSG ${hsg}: woods ${CN.woods[hsg]}, open space ${CN.openSpace[hsg]}, impervious 98); Tc by TR-55 segments along the routed longest path; no ESD credit on the 100-yr.`,
     rainfall, hsg, pois, narrative, outstanding,
   }
 }

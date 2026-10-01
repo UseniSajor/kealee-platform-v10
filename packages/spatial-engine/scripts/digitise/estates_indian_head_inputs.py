@@ -183,9 +183,21 @@ lot4_esmt = list(lot4_poly.exterior.coords)[:-1]
 print(f'proposed Lot 4 WSSC easement {lot4_poly.area:,.0f} sf along the Lot 3/4 line')
 Hm = add(add(Wm, e, 30.23), e, 104.95)                                        # Henrietta Dr R/W
 route = [add(Hm, e, 10), add(Wm, e, 30.23), Wm, A_, B_, C] + cl[::-1][1:]
-# stop the main 20 ft past the Lot 1 / Lot 6 frontage (no service beyond it)
+# Stop the mains 15 ft past the Lot 1 east property line (user, 2026-10-01:
+# "do not extend water and sewer too far past the Lot 1 east property line").
+# Lots 1 and 6 take their services from the end of the main.
 r_line = LineString(route)
-end_s = r_line.project(Point(lot6_tip)) + 20
+L2r = ring_of(lots[2])
+l12 = [q for q in L1 if min(math.dist(q, w) for w in L2r) < 0.5]          # the Lot 1 / Lot 2 line
+l12_front = min(l12, key=lambda q: r_line.distance(Point(q)))               # its street end
+# Lot 6 cannot reach a main that stops short of its frontage without running
+# under its own driveway or across Lot 5, so the mains run on only as far as
+# Lot 6's first clear tap: 15 ft past the Lot 5 / Lot 6 front corner.
+L5r = ring_of(lots[5])
+l56 = [q for q in L6 if min(math.dist(q, w) for w in L5r) < 0.5]
+l56_front = min(l56, key=lambda q: r_line.distance(Point(q)))
+end_s = max(r_line.project(Point(l12_front)), r_line.project(Point(l56_front))) + 15
+print(f'mains end {end_s - r_line.project(Point(l12_front)):.0f} ft past the Lot 1 east line, {end_s:.0f} ft from Henrietta Dr')
 cut = []
 acc = 0
 for i, p in enumerate(route):
@@ -215,8 +227,7 @@ print(f'{len(adjoiners)} adjoiners')
 
 SRC = ("Boundary of record: plat 'LOTS 1-6 AND OUTLOT A, ESTATES AT INDIAN HEAD', Plat Book PM 228 "
        "Plat 83. Lot geometry from the county parcel layer (PGAtlas Address/MapServer/15), which "
-       "reproduces the plat's bearings to the second and its distances to 0.02 ft (checked against "
-       "the 2009 approved sheet, DPW&T permit 9399-2009). Estates Court dedication = the tract less "
+       "reproduces the plat's bearings to the second and its distances to 0.02 ft. Estates Court dedication = the tract less "
        "the lots, closed at the Indian Head Hwy R/W on the plat's N 51-26-53 W 147.04' call.")
 common = {
     '_source': SRC, 'basisOfBearings': 'Maryland State Plane Coordinate System (NAD 83), per plat PM 228/83',
@@ -256,7 +267,7 @@ rec = {
         'Tract 165,019 sf (3.788 ac) = plat 171,505 sf less Outlot A (6,486 sf), which was conveyed to M. & K. Doyal (L.51565 F.455) and is no longer part of this site.',
         'Estates Court: 60-ft public right-of-way dedicated on the plat (35,173 sf) with a cul-de-sac; to be constructed with this development.',
         'Water and sewer: WSSC. The mains in Estates Court connect to the existing mains in Henrietta Drive through the 30-ft WSSC easement recorded at L.51799 F.399 (Outlot A 906 sf, Lot 20 3,154 sf) and a 30-ft WSSC easement to be granted across Lot 4.',
-        'New submittal. Prior approvals NRI-015-06, TCP1-018-06, TCP2-016-09 and the Street Tree and Lighting Plan, DPW&T permit 9399-2009-00 (approved 05/06/2009), are base work only and do not carry this submittal; an updated NRI, a TCP2 revision or new TCP as M-NCPPC determines, and re-review of the street tree and lighting plan are required. The 2009 layout is the base, prepared to the current DPIE Site Development Concept checklist (rev. 08/25/2021).',
+        'New submittal. Prior approvals NRI-015-06, TCP1-018-06 and TCP2-016-09 are base work only and do not carry this submittal; an updated NRI, a TCP2 revision or new TCP as M-NCPPC determines, and review of street trees and lighting to current DPW&T/DPIE standards are required. Prepared to the current DPIE Site Development Concept checklist (rev. 08/25/2021).',
     ],
     'adjoiners': adjoiners,
     'dedicationWidthFt': 0,

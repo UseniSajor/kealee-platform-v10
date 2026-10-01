@@ -57,6 +57,8 @@ LAYERS = {
     'C-WATR-MAIN-N': (5, 'CONTINUOUS', 40),
     'C-SSWR-MAIN-N': (94, 'DASHED', 40),
     'C-UTIL-SVCS-N': (8, 'DASHED', 18),
+    'C-WATR-SVCS-N': (5, 'CONTINUOUS', 30),   # 1" water service, main to dwelling
+    'C-SSWR-SVCS-N': (94, 'DASHED', 30),      # 4" sewer lateral, main to dwelling
     'C-UTIL-ANNO-N': (7, 'CONTINUOUS', 18),
     'E-LITE-N': (7, 'CONTINUOUS', 25),
     'L-PLNT-TREE-N': (7, 'CONTINUOUS', 25),
@@ -89,7 +91,7 @@ SHEET_LAYERS = {
     'layout': BASE + ['C-ROAD-CNTR-N', 'C-ROAD-IMPR-N', 'C-ROAD-SWAL-N', 'C-STRM-CULV-N', 'V-PROP-BRL', 'C-BLDG-ANNO-N',
                       'C-PVMT-ANNO-N', 'C-TOPO-MAJR-E', 'C-TOPO-MINR-E', 'C-TOPO-MAJR-N', 'C-TOPO-MINR-N', 'C-TOPO-ANNO',
                       'C-TOPO-SPOT-N', 'C-ESC-LOD'],
-    'utility': BASE + ['C-ROAD-CNTR-N', 'C-WATR-MAIN-N', 'C-SSWR-MAIN-N', 'C-UTIL-SVCS-N', 'C-UTIL-ANNO-N', 'V-ESMT-ANNO',
+    'utility': BASE + ['C-ROAD-CNTR-N', 'C-WATR-MAIN-N', 'C-SSWR-MAIN-N', 'C-UTIL-SVCS-N', 'C-WATR-SVCS-N', 'C-SSWR-SVCS-N', 'C-UTIL-ANNO-N', 'V-ESMT-ANNO',
                        'E-LITE-N', 'L-PLNT-TREE-N', 'C-BLDG-ANNO-N'],
     'swm': BASE + ['C-ROAD-SWAL-N', 'C-STRM-CULV-N', 'C-SWM-ESD-N', 'C-SWM-DRAN-N', 'C-SWM-POI', 'C-SWM-FLOW', 'C-SWM-OFFS',
                    'C-SWM-ANNO', 'C-TOPO-MAJR-E', 'C-TOPO-MINR-E', 'C-TOPO-ANNO'],

@@ -256,7 +256,7 @@ for n, d in L2009.items():
     geomlist = lambda gg: [list(p) for p in list((max(gg.geoms, key=lambda x: x.area) if hasattr(gg, 'geoms') else gg).exterior.coords)[:-1]]
     spec['fixedFootprint'] = [list(p) for p in list(house.exterior.coords)[:-1]]
     spec['fixedPaving'] = [
-        {'kind': 'Driveway', 'label': "PROP. DRIVEWAY — FRONT-LOAD GARAGE" if d.get('frontLoad') else "PROP. DRIVEWAY & SIDE-LOAD COURT (2009 LAYOUT)", 'ring': geomlist(on_lot),
+        {'kind': 'Driveway', 'label': "PROP. DRIVEWAY — FRONT-LOAD GARAGE" if d.get('frontLoad') else "PROP. DRIVEWAY & SIDE-LOAD COURT", 'ring': geomlist(on_lot),
          'note': ('Front-load garage; drive the width of the door straight to the street.' if d.get('frontLoad') else f'Side-load garage; {COURT_D:.0f}-ft turning court at the door, {DRIVE_W:.0f}-ft drive. Layout per DPW&T 9399-2009.')},
         {'kind': 'Apron', 'label': "DRIVEWAY APRON — DPW&T RURAL SWALE/CULVERT DRIVEWAY", 'ring': geomlist(apron),
          'note': f"Open section: {dw:.0f} ft at the R/W line, {FLARE:.0f}-ft radius returns to the edge of pavement (following the cul-de-sac arc where it fronts the bulb); 15-in culvert or swale driveway per DPW&T Std. 600.02 / 100-series."},
@@ -287,6 +287,6 @@ for n, d in L2009.items():
                  'onLot': inside, 'shiftFt': [round(shift[0], 1), round(shift[1], 1)], 'rotationDeg': d.get('rotationDeg', 0), 'clearOfEasementFt': round(house.distance(esm), 1), 'drivewaySqFt': round(on_lot.area), 'apronSqFt': round(apron.area)}
 # the street is the 2009 rural open section
 rec['openSection'] = {'shoulderFt': 4, 'swaleFt': 10,
-                      'note': "Rural open section per the 2009 base plan, to be confirmed to current standards (DPW&T Std. 500.10 / 600.02 / 600.04): 24-ft pavement, 4-ft shoulders, roadside grass swales; driveways cross the swale on culverts."}
+                      'note': "Rural open section to current standards (DPW&T Std. 500.10 / 600.02 / 600.04): 24-ft pavement, 4-ft shoulders, roadside grass swales; driveways cross the swale on culverts."}
 json.dump(rec, open(os.path.join(proj, 'estates-indian-head.plat-record.json'), 'w'), indent=1)
 print(json.dumps(report, indent=1))
