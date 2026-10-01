@@ -1,0 +1,80 @@
+{
+ "_source": "Boundary of record: plat 'LOTS 1-6 AND OUTLOT A, ESTATES AT INDIAN HEAD', Plat Book PM 228 Plat 83. Lot geometry from the county parcel layer (PGAtlas Address/MapServer/15), which reproduces the plat's bearings to the second and its distances to 0.02 ft (checked against the 2009 approved sheet, DPW&T permit 9399-2009). Estates Court dedication = the tract less the lots, closed at the Indian Head Hwy R/W on the plat's N 51-26-53 W 147.04' call. A Maryland licensed surveyor must confirm before technical plans are sealed.",
+ "basisOfBearings": "Maryland State Plane Coordinate System (NAD 83), per plat PM 228/83",
+ "programme": {
+  "totalFloorAreaSqFt": 2800,
+  "storeys": 2,
+  "hasBasement": true,
+  "garage": "attached_2_car",
+  "coveredPorch": true
+ },
+ "foundation": "basement",
+ "frontSetbackFt": 25,
+ "sideSetbackFt": 8,
+ "frontsOn": "ESTATES COURT",
+ "utilityMainLabel": "PROP. 8\" WATER & 8\" SEWER IN ESTATES COURT",
+ "frontDoorAboveStreetFt": 2.0,
+ "address": "200 ESTATES COURT",
+ "reference": {
+  "subdivisionName": "ESTATES AT INDIAN HEAD",
+  "liber": "PM 228",
+  "folio": "83",
+  "recordedIn": "Plat Book PM 228 Plat 83",
+  "lot": "LOTS 1-6 AND ESTATES COURT DEDICATION"
+ },
+ "pointOfBeginning": [
+  1310881.2509039994,
+  367477.1559291625
+ ],
+ "recordedAreaSqFt": 165019,
+ "calls": [
+  {
+   "kind": "line",
+   "bearing": "N 57-15-10 E",
+   "distanceFt": 83.36,
+   "label": "tract line 1"
+  },
+  {
+   "kind": "line",
+   "bearing": "S 88-01-35 E",
+   "distanceFt": 528.47,
+   "label": "tract line 2"
+  },
+  {
+   "kind": "line",
+   "bearing": "S 03-27-29 E",
+   "distanceFt": 222.54,
+   "label": "tract line 3"
+  },
+  {
+   "kind": "line",
+   "bearing": "S 68-24-27 W",
+   "distanceFt": 592.74,
+   "label": "tract line 4"
+  },
+  {
+   "kind": "line",
+   "bearing": "N 14-55-03 W",
+   "distanceFt": 76.6,
+   "label": "tract line 5"
+  },
+  {
+   "kind": "line",
+   "bearing": "N 75-05-56 E",
+   "distanceFt": 150.01,
+   "label": "tract line 6"
+  },
+  {
+   "kind": "line",
+   "bearing": "N 14-55-31 W",
+   "distanceFt": 200.67,
+   "label": "tract line 7"
+  },
+  {
+   "kind": "line",
+   "bearing": "N 51-26-50 W",
+   "distanceFt": 171.49,
+   "label": "tract line 8"
+  }
+ ]
+}

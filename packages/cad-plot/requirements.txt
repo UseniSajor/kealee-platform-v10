@@ -1,0 +1,5 @@
+ezdxf==1.4.4
+pymupdf==1.28.2
+numpy>=1.26
+shapely>=2.0
+pillow>=10

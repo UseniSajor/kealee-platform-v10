@@ -151,6 +151,17 @@ export interface LotInput {
   utilityRoute?: Position[] | null
   /** Subdivision-level easement rings the stormwater practice keeps clear of. */
   keepOutRings?: Position[][] | null
+  /**
+   * The dwelling as DRAWN on an approved plan — garage included — rather than
+   * a box the envelope search places. A builder who has a layout wants that
+   * layout; the envelope is still derived and still checked against it.
+   */
+  fixedFootprint?: Position[] | null
+  /**
+   * Driveway, apron, walk and stoop as drawn (a side-load court, say), in
+   * place of the ones derived from the garage face and the front edge.
+   */
+  fixedPaving?: { kind: 'Driveway' | 'Apron' | 'Walk' | 'Stoop'; label: string; ring: Position[]; note?: string }[] | null
   /** A real storm-drain outfall, when one has been identified. See design.ts. */
   stormOutfall?: { to: Position; via?: Position[] | null; label?: string; sizeIn?: number } | null
   /** Site position [lat, lon], so rainfall is looked up for THIS site. */
@@ -694,6 +705,19 @@ export function buildLotPackage(lot: LotInput, resolved?: ResolvedBoundary | nul
       // already steered the stormwater practice; they steer the house too.
       keepOutRings: lot.keepOutRings ?? null,
     })
+    if (lot.fixedFootprint && lot.fixedFootprint.length > 2) {
+      const fp = lot.fixedFootprint
+      let a2 = 0
+      for (let i = 0; i < fp.length; i++) {
+        const q = fp[(i + 1) % fp.length]
+        a2 += fp[i][0] * q[1] - q[0] * fp[i][1]
+      }
+      buildable = {
+        ...buildable,
+        footprint: { ...(buildable.footprint ?? {}), coordinates: [...fp, fp[0]] } as Ring,
+        footprintAreaSqFt: Math.abs(a2) / 2,
+      }
+    }
     const feats: unknown[] = []
     if (buildable.ring) {
       feats.push({ kind: 'ProposedFeature', id: 'buildable-envelope', ring: buildable.ring,
@@ -737,6 +761,28 @@ export function buildLotPackage(lot: LotInput, resolved?: ResolvedBoundary | nul
         frontageExisting: lot.frontageExisting ?? null,
         frontageOutFt: lot.frontageOutFt ?? null,
       })
+      if (lot.fixedPaving?.length) {
+        const kinds = new Set(lot.fixedPaving.map(f => f.kind))
+        const areaOf = (r: Position[]) => {
+          let a2 = 0
+          for (let i = 0; i < r.length; i++) {
+            const q = r[(i + 1) % r.length]
+            a2 += r[i][0] * q[1] - q[0] * r[i][1]
+          }
+          return Math.abs(a2) / 2
+        }
+        siteImprovements = {
+          ...siteImprovements,
+          improvements: [
+            ...siteImprovements.improvements.filter(i => !kinds.has(i.kind as never)),
+            ...lot.fixedPaving.map((f, k) => ({
+              id: `fixed-${f.kind.toLowerCase()}-${k}`, kind: f.kind, label: f.label,
+              ring: { ...(siteImprovements!.improvements[0]?.ring ?? {}), coordinates: [...f.ring, f.ring[0]] } as Ring,
+              areaSqFt: areaOf(f.ring), impervious: true, note: f.note ?? 'As drawn on the approved layout.',
+            })),
+          ],
+        }
+      }
       for (const imp of siteImprovements.improvements) {
         // THE VERGE IS NOT PAVEMENT. It is the planting strip the street trees
         // stand in, and filing it under Pavement drew a 15 ft band of paving

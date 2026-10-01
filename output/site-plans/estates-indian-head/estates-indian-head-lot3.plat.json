@@ -1,0 +1,302 @@
+{
+ "_source": "Boundary of record: plat 'LOTS 1-6 AND OUTLOT A, ESTATES AT INDIAN HEAD', Plat Book PM 228 Plat 83. Lot geometry from the county parcel layer (PGAtlas Address/MapServer/15), which reproduces the plat's bearings to the second and its distances to 0.02 ft (checked against the 2009 approved sheet, DPW&T permit 9399-2009). Estates Court dedication = the tract less the lots, closed at the Indian Head Hwy R/W on the plat's N 51-26-53 W 147.04' call. A Maryland licensed surveyor must confirm before technical plans are sealed.",
+ "basisOfBearings": "Maryland State Plane Coordinate System (NAD 83), per plat PM 228/83",
+ "programme": {
+  "totalFloorAreaSqFt": 2800,
+  "storeys": 2,
+  "hasBasement": true,
+  "garage": "attached_2_car",
+  "coveredPorch": true,
+  "garageEntry": "side",
+  "footprintSource": "DPW&T 9399-2009 approved sheet, transcribed"
+ },
+ "foundation": "basement",
+ "frontSetbackFt": 25,
+ "sideSetbackFt": 8,
+ "frontsOn": "ESTATES COURT",
+ "utilityMainLabel": "PROP. 8\" WATER & 8\" SEWER IN ESTATES COURT",
+ "frontDoorAboveStreetFt": 2.0,
+ "address": "204 ESTATES COURT",
+ "reference": {
+  "subdivisionName": "ESTATES AT INDIAN HEAD",
+  "liber": "PM 228",
+  "folio": "83",
+  "recordedIn": "Plat Book PM 228 Plat 83",
+  "lot": "3",
+  "account": "3987682",
+  "deed": "L.32062 F.043"
+ },
+ "pointOfBeginning": [
+  1311487.4836181365,
+  367372.2743371248
+ ],
+ "recordedAreaSqFt": 20060.0,
+ "calls": [
+  {
+   "kind": "line",
+   "bearing": "S 86-02-45 W",
+   "distanceFt": 107.92,
+   "label": "lot 3 line 1"
+  },
+  {
+   "kind": "line",
+   "bearing": "N 08-39-11 W",
+   "distanceFt": 9.84,
+   "label": "lot 3 line 2"
+  },
+  {
+   "kind": "line",
+   "bearing": "N 18-03-53 W",
+   "distanceFt": 9.84,
+   "label": "lot 3 line 3"
+  },
+  {
+   "kind": "line",
+   "bearing": "N 27-28-34 W",
+   "distanceFt": 9.84,
+   "label": "lot 3 line 4"
+  },
+  {
+   "kind": "line",
+   "bearing": "N 36-53-15 W",
+   "distanceFt": 9.84,
+   "label": "lot 3 line 5"
+  },
+  {
+   "kind": "line",
+   "bearing": "N 46-17-57 W",
+   "distanceFt": 9.84,
+   "label": "lot 3 line 6"
+  },
+  {
+   "kind": "line",
+   "bearing": "N 55-42-38 W",
+   "distanceFt": 9.84,
+   "label": "lot 3 line 7"
+  },
+  {
+   "kind": "line",
+   "bearing": "N 65-07-19 W",
+   "distanceFt": 9.84,
+   "label": "lot 3 line 8"
+  },
+  {
+   "kind": "line",
+   "bearing": "N 74-32-01 W",
+   "distanceFt": 9.84,
+   "label": "lot 3 line 9"
+  },
+  {
+   "kind": "line",
+   "bearing": "N 83-56-42 W",
+   "distanceFt": 9.84,
+   "label": "lot 3 line 10"
+  },
+  {
+   "kind": "line",
+   "bearing": "N 01-14-14 E",
+   "distanceFt": 88.76,
+   "label": "lot 3 line 11"
+  },
+  {
+   "kind": "line",
+   "bearing": "S 88-01-37 E",
+   "distanceFt": 51.08,
+   "label": "lot 3 line 12"
+  },
+  {
+   "kind": "line",
+   "bearing": "S 88-01-36 E",
+   "distanceFt": 105.24,
+   "label": "lot 3 line 13"
+  },
+  {
+   "kind": "line",
+   "bearing": "S 03-27-29 E",
+   "distanceFt": 132.01,
+   "label": "lot 3 line 14"
+  }
+ ],
+ "fixedFootprint": [
+  [
+   1311375.7116662513,
+   367434.1407686989
+  ],
+  [
+   1311394.1420965933,
+   367445.3858767399
+  ],
+  [
+   1311401.3335678966,
+   367434.98486637115
+  ],
+  [
+   1311422.4387414854,
+   367448.0281305844
+  ],
+  [
+   1311426.9110642115,
+   367447.3005248187
+  ],
+  [
+   1311443.4039662308,
+   367420.24936280923
+  ],
+  [
+   1311430.9177942318,
+   367412.9008365005
+  ],
+  [
+   1311436.015453516,
+   367404.577490758
+  ],
+  [
+   1311407.1822827272,
+   367386.58785533975
+  ],
+  [
+   1311386.952737444,
+   367416.7532075182
+  ]
+ ],
+ "fixedPaving": [
+  {
+   "kind": "Driveway",
+   "label": "PROP. DRIVEWAY & SIDE-LOAD COURT (2009 LAYOUT)",
+   "ring": [
+    [
+     1311371.5185583527,
+     367439.09320351103
+    ],
+    [
+     1311362.35773199,
+     367454.10755210905
+    ],
+    [
+     1311382.49546471,
+     367466.3943504061
+    ],
+    [
+     1311394.9957477823,
+     367445.9067218679
+    ],
+    [
+     1311381.2435083257,
+     367437.5159563987
+    ],
+    [
+     1311383.894728107,
+     367435.44689301465
+    ],
+    [
+     1311360.1404110047,
+     367405.0090070238
+    ],
+    [
+     1311357.7285022417,
+     367407.31394421717
+    ],
+    [
+     1311350.5418324452,
+     367412.21441811434
+    ]
+   ],
+   "note": "Side-load garage; 24-ft turning court at the door, 12-ft drive. Layout per DPW&T 9399-2009."
+  },
+  {
+   "kind": "Apron",
+   "label": "DRIVEWAY APRON \u2014 DPW&T RURAL SWALE/CULVERT DRIVEWAY",
+   "ring": [
+    [
+     1311345.426719316,
+     367392.02949299035
+    ],
+    [
+     1311345.423489242,
+     367392.0325683215
+    ],
+    [
+     1311343.54595596,
+     367393.49783174257
+    ],
+    [
+     1311334.8754345844,
+     367400.26703133085
+    ],
+    [
+     1311350.4839367918,
+     367412.2668890922
+    ],
+    [
+     1311354.5347440594,
+     367409.5047068137
+    ],
+    [
+     1311359.5179733052,
+     367405.61422873306
+    ],
+    [
+     1311360.1643304864,
+     367404.9965359676
+    ],
+    [
+     1311352.2164770495,
+     367386.72863237734
+    ]
+   ],
+   "note": "Open section: 12 ft at the R/W line, 5-ft flares at the edge of pavement; 15-in culvert or swale driveway per DPW&T Std. 600.02 / 100-series."
+  },
+  {
+   "kind": "Stoop",
+   "label": "STOOP",
+   "ring": [
+    [
+     1311394.435601993,
+     367396.92956993944
+    ],
+    [
+     1311401.2648115056,
+     367401.0963309635
+    ],
+    [
+     1311398.6605858654,
+     367405.3645869089
+    ],
+    [
+     1311391.8313763528,
+     367401.19782588485
+    ]
+   ]
+  },
+  {
+   "kind": "Walk",
+   "label": "4' LEAD WALK",
+   "ring": [
+    [
+     1311370.8177604831,
+     367418.6905599269
+    ],
+    [
+     1311373.2787098784,
+     367421.8439276621
+    ],
+    [
+     1311394.8048420253,
+     367405.0445162591
+    ],
+    [
+     1311397.01625437,
+     367401.7469615556
+    ],
+    [
+     1311395.3176192315,
+     367399.57039455656
+    ]
+   ]
+  }
+ ],
+ "approvedLayout2009": {
+  "finishedFloorElevFtWsscDatum": 212.67,
+  "footprintSqFt": 2313
+ }
+}
