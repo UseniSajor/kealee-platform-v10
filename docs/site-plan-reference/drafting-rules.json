@@ -1,0 +1,29 @@
+{
+  "schema": "kealee.drafting-rule/1",
+  "source": "Owner directions, Estates at Indian Head concept set, 2026-09-30 / 2026-10-01",
+  "guide": "docs/system/site-plan-drafting-rules.md",
+  "rules": [
+    { "id": "production.cad-tools", "rule": "Draw and write plans with the DXF CAD tools (packages/cad-plot); the DXF is the master.", "enforcedBy": "generate-subdivision.ts CAD_PLOT=1" },
+    { "id": "production.complete", "rule": "Plans must be complete, exact and within accepted tolerance; no on-sheet or reported excuses for incompleteness." },
+    { "id": "production.checklists", "rule": "Satisfy the DPIE Design Review Checklist (08/25/2021) and Submittal Checklist (05/2017) line by line, including sight distance (item 10) and DA map + computations (items 6-7).", "enforcedBy": "src/review/dpie-concept-checklist.ts" },
+    { "id": "base.prior-plan-geometry", "rule": "Use the prior approved plan's geometry exactly (street, cul-de-sac shape, houses, courts, drives, walks) except the utility layout." },
+    { "id": "base.no-prior-plan-references", "rule": "No labels, notes or schedule titles citing the prior plan; geometry stays." },
+    { "id": "base.walks", "rule": "Lead walks complete (front door to drive, joined) and drawn heavier than drives, labelled.", "enforcedBy": "estates_indian_head_2009_layout.py; cad-plot C-PVMT-WALK-N" },
+    { "id": "utility.mains-end", "rule": "Mains stop at the last service tap; capped (blow-off / terminal manhole) and labelled.", "enforcedBy": "estates_indian_head_inputs.py; cad-plot model.utilities" },
+    { "id": "utility.connections", "rule": "Every lot's W.H.C. and S.H.C. drawn from a tap on the main to the house, labelled; never under drive, apron, walk, stoop, culvert or ESD cell (verified geometrically).", "enforcedBy": "src/site-plan/house-connections.ts" },
+    { "id": "utility.storm-distinct", "rule": "Storm drainage cyan, ESD magenta, water blue, sewer green; no water/sewer on the SWM sheet; no criss-crossing.", "enforcedBy": "cad-plot style.py" },
+    { "id": "street.plan-profile", "rule": "Street sheet carries stationing, bearings, curve table, existing ground, PGL with vertical curves, EP elevations and the DPW&T pavement section.", "enforcedBy": "src/site-plan/street-profile.ts; C-210" },
+    { "id": "street.road-labels", "rule": "Label every road inside the plan view." },
+    { "id": "esc.lod-site", "rule": "One L.O.D. around the full site on every plan sheet, heavy black long dash with 'LOD' inline (Yocum convention).", "enforcedBy": "sheetset.ts siteDisturbance; cad-plot C-ESC-LOD" },
+    { "id": "esc.tree-save", "rule": "Hold the L.O.D. 8-15 ft (10 ft) inside rear property lines and highway frontage; only R/W, entrance, highway lanes and WSSC easement cross.", "enforcedBy": "sheetset.ts LOD_TREE_SAVE_FT" },
+    { "id": "esc.controls", "rule": "Show super silt fence on the down-gradient L.O.D. and the stabilized construction entrance.", "enforcedBy": "sheetset.ts downGradientEdges, constructionEntrance" },
+    { "id": "sheets.contours-all", "rule": "Existing and proposed contours on all plan sheets.", "enforcedBy": "cad-plot style.py CONSTRUCTION" },
+    { "id": "sheets.existing-structures", "rule": "Adjoining existing structures shown and labelled EXISTING from the county building layer." },
+    { "id": "sheets.rear-setback", "rule": "Rear yard applies to every lot line opposite the frontage.", "enforcedBy": "buildable-envelope.ts classifyEdgesFromStreet" },
+    { "id": "sheets.m6-detail", "rule": "Micro-bioretention (M-6) section on the SWM and detail sheets." },
+    { "id": "sheets.da-extent", "rule": "Drainage area map covers the whole contributing area to the divide and outfall." },
+    { "id": "sheets.cover-record-view", "rule": "Cover carries the subdivision as of record (no buildings) at the bottom." },
+    { "id": "text.placement", "rule": "Every label clearly on its property or on a leader to what it describes; no overprint, duplicate or redundant labels.", "enforcedBy": "cad-plot Model._place" },
+    { "id": "text.no-survey-confirm", "rule": "No 'survey to confirm' language on finished plans." }
+  ]
+}

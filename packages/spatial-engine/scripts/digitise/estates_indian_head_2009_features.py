@@ -20,7 +20,7 @@ estates-indian-head.plat-record.json for generate-subdivision.ts:
   culverts           one under every driveway apron where it crosses the swale
                      (DPW&T Std. 600.02 "culvert driveway"), with end sections.
   spotElevations     2009 proposed spot grades, WSSC datum, at the 2009 points.
-  entranceApron      the street entrance at MD 210 as its own feature.
+  entranceApron      the street entrance at Jennifer Drive as its own feature.
 """
 import json, math, os, sys
 from shapely.geometry import Polygon, LineString, Point, MultiLineString
@@ -40,7 +40,7 @@ row = Polygon(st['rowRings'][0])
 C = st['bulbCentre']
 cl = LineString(st['centreline'])
 
-# ── MD 210 (2009 sheet) ──────────────────────────────────────────────────────
+# ── Jennifer Drive frontage road and separated MD 210 ──────────────────────────
 md = J('source/md210-2009-lines.json')
 A = md['A']; u = md['u']; n = md['n']            # n points from the site toward the highway
 def along(off, a0=-420, a1=520):
@@ -49,12 +49,20 @@ def along(off, a0=-420, a1=520):
 md210 = {'name': 'INDIAN HEAD HIGHWAY (MD 210)',
          'label': 'INDIAN HEAD HIGHWAY — MARYLAND ROUTE 210 — VARIABLE R/W WIDTH (S.R.C. PLAT NO. 47040) — SHA',
          'source': '2009 approved sheet DPW&T 9399-2009, lines measured parallel to the edge of road',
-         'lines': [{'type': 'edge-of-road', 'line': along(0.0), 'label': 'EX. EDGE OF ROAD'},
-                   {'type': 'lane-line', 'line': along(12.2)},
-                   {'type': 'edge-of-road', 'line': along(24.8), 'label': 'EX. EDGE OF ROAD'},
-                   {'type': 'edge-of-road', 'line': along(74.2), 'label': 'EX. EDGE OF ROAD'},
+         'lines': [{'type': 'edge-of-road', 'line': along(74.2), 'label': 'EX. EDGE OF MD 210'},
                    {'type': 'lane-line', 'line': along(102.2)},
-                   {'type': 'edge-of-road', 'line': along(122.8), 'label': 'EX. EDGE OF ROAD'}]}
+                   {'type': 'edge-of-road', 'line': along(122.8), 'label': 'EX. EDGE OF MD 210'}]}
+jennifer_frontage = {
+    'name': 'JENNIFER DRIVE',
+    'label': 'JENNIFER DRIVE — FRONTAGE ROAD — ESTATES COURT INTERSECTION',
+    'source': '2009 approved geometry cross-checked to PGAtlas Transportation centerlines',
+    'lines': [
+        {'type': 'edge-of-road', 'line': along(0.0), 'label': 'EX. EDGE OF JENNIFER DRIVE'},
+        {'type': 'centerline', 'line': along(12.2), 'label': 'JENNIFER DRIVE C/L'},
+        {'type': 'edge-of-road', 'line': along(24.8), 'label': 'EX. EDGE OF JENNIFER DRIVE'},
+        {'type': 'barrier', 'line': along(49.5), 'label': 'EX. PHYSICAL SEPARATION / BARRIER — NO DIRECT ESTATES CT ACCESS TO MD 210'},
+    ],
+}
 
 # ── Jennifer Drive / Henrietta Drive (PGAtlas centreline, 50 ft R/W) ─────────
 streets = J('source/pgatlas-streets.json')['features']
@@ -73,7 +81,7 @@ def road(name, fullname):
             except Exception:
                 pass
     return {'name': fullname, 'label': f"{fullname} (50' R/W)", 'source': 'PGAtlas Transportation/2 centreline; 50-ft R/W per Treeview Estates plats (2009 sheet letters Henrietta Dr 50\' R/W)', 'lines': lines}
-roads = [md210, road('JENNIFER', 'JENNIFER DRIVE'), road('HENRIETTA', 'HENRIETTA DRIVE')]
+roads = [jennifer_frontage, md210, road('HENRIETTA', 'HENRIETTA DRIVE')]
 
 # ── Street trees and lights (2009 street tree & lighting plan) ───────────────
 TREES_PX = [(1866, 530), (1960, 1126), (2236, 1330), (2510, 1540), (2820, 1670), (1710, 1426), (2240, 1816),
@@ -91,16 +99,13 @@ for k in range(1, 7):
         if f['kind'] == 'Apron':
             aprons.append((k, Polygon(f['ring']).buffer(0)))
 mouth_cut = Polygon(st['entrance']['edgeOfRoad'] + [cl.coords[2], cl.coords[1]]).buffer(40) if 'entrance' in st else None
-ditch_run = []
-for side in (20, -20):
-    o = cl.offset_curve(side)
-    ditch_run.append(o)
-bulb_ring = Point(C).buffer(52, 128).exterior
-ditch = unary_union(ditch_run + [bulb_ring])
-ditch = ditch.intersection(row.buffer(-0.5))
-# keep only the pieces outside the pavement (the stem offsets run into the bulb pavement)
+# The swale flowline runs 8 ft off the actual edge of pavement (4-ft shoulder +
+# 4 ft to the flowline; 20 ft off the centreline on the tangents), so it follows
+# the approved cul-de-sac shape, not a circle.
 pave = unary_union([Polygon(r) for r in st['pavementRings']])
-ditch = ditch.difference(pave.buffer(6))
+ditch = pave.buffer(8.0, 32).exterior.intersection(row.buffer(-0.5))
+if mouth_cut is not None:
+    ditch = ditch.difference(mouth_cut.buffer(-30))
 parts = [gg for gg in (ditch.geoms if hasattr(ditch, 'geoms') else [ditch]) if gg.length > 8]
 swales = [{'line': [list(q) for q in gg.coords], 'label': "ROADSIDE SWALE (M-8 DRY SWALE W/ CHECK DAMS) — FLOWS TO ENTRANCE",
            'sectionFt': 8} for gg in parts]
@@ -147,14 +152,14 @@ ent = st.get('entrance')
 entrance = None
 if ent:
     rw_mouth = row
-    # the entrance = the pavement between MD 210's edge of road and the end of
+    # the entrance = the pavement between Jennifer Drive's edge and the end of
     # the two 50-ft returns (the flare), i.e. within ~(R + 10) ft of the edge of road
     eor = LineString(ent['edgeOfRoad'])
     ent_poly = unary_union([Polygon(r) for r in st['pavementRings']]).intersection(eor.buffer(ent['returnRadiusFt'] + 2, cap_style=2)).buffer(0)
     geoms = list(ent_poly.geoms) if hasattr(ent_poly, 'geoms') else [ent_poly]
     big = max(geoms, key=lambda x: x.area)
     entrance = {'ring': [list(q) for q in list(big.exterior.coords)[:-1]], 'areaSqFt': round(big.area),
-                'label': "STREET ENTRANCE APRON — 50' RETURNS TO MD 210 EDGE OF ROAD — SHA ACCESS PERMIT",
+                'label': "STREET ENTRANCE APRON — 50' RETURNS TO JENNIFER DRIVE EDGE OF ROAD — COUNTY REVIEW",
                 'returnRadiusFt': ent['returnRadiusFt']}
 
 # ── MD 210 frontage improvements, both sides of the entrance ──────────────
@@ -165,19 +170,41 @@ if ent:
 # south past the 15608 Indian Head Hwy drive, each with a 100-ft taper.
 def md_pt(al, off):
     return [A[0] + u[0] * al + n[0] * off, A[1] + u[1] * al + n[1] * off]
-AUX = -12.0            # toward the site (n points toward the highway)
-JENNIFER_AL, N_RETURN_AL, S_RETURN_AL, SOUTH_END_AL, TAPER = -177.0, 0.0, 124.0, 300.0, 100.0
-decel = [md_pt(JENNIFER_AL, 0), md_pt(JENNIFER_AL + TAPER, AUX), md_pt(N_RETURN_AL, AUX), md_pt(N_RETURN_AL, 0)]
-accel = [md_pt(S_RETURN_AL, 0), md_pt(S_RETURN_AL, AUX), md_pt(SOUTH_END_AL - TAPER, AUX), md_pt(SOUTH_END_AL, 0)]
-rec['roadImprovements'] = [
-    {'id': 'md210-decel', 'ring': decel, 'label': "PROP. 12' RIGHT-TURN DECELERATION LANE, SB MD 210 — JENNIFER DR TO ESTATES CT (100' TAPER) — SHA DESIGN / ACCESS PERMIT",
-     'lengthFt': N_RETURN_AL - JENNIFER_AL},
-    {'id': 'md210-accel', 'ring': accel, 'label': "PROP. 12' ACCELERATION LANE, SB MD 210 — ESTATES CT TO 15608 INDIAN HEAD HWY DRIVE (100' TAPER) — SHA",
-     'lengthFt': SOUTH_END_AL - S_RETURN_AL},
-]
-rec['roadImprovementsNote'] = ("MD 210 frontage improvements are shown for SHA review. At the entrance the MD 210 R/W line lies about 6 ft "
-                               "off the edge of road, so a 12-ft lane needs R/W dedication along Lots 1 and 6 or SHA agreement. "
-                               "Lane lengths and tapers are set by SHA's access-permit review and traffic study.")
+rec['roadImprovements'] = []
+rec['roadImprovementsNote'] = ("Estates Court forms a T-intersection with Jennifer Drive. Jennifer Drive lies between the entrance and MD 210; "
+                               "the existing separation/barrier is to remain. No direct Estates Court connection or auxiliary lane on MD 210 is proposed.")
+# ── Intersection sight distance at MD 210 (submittal checklist item 10) ─────
+# AASHTO Green Book (2018) Sec. 9.5.3, Case B (stop control on the minor road),
+# ISD = 1.47 V t_g, passenger car, decision point 14.5 ft back from the edge of
+# the through lane, eye 3.5 ft / object 3.5 ft. Design speed 55 mph on MD 210
+# (the conservative case for this divided highway). MD 210 here is divided:
+# SB 0-24.8 ft from the site's edge of road, 49-ft median, NB 74.2-122.8 ft, so
+# a left turn out is two-stage (median storage); each stage is checked as B1.
+V_MPH = 25
+ISD = {'B2 RIGHT TURN — LOOKING LEFT ON JENNIFER DR': (6.5, 'north'),
+       'B1 LEFT TURN — LOOKING LEFT ON JENNIFER DR': (7.5, 'north'),
+       'B1 LEFT TURN — LOOKING RIGHT ON JENNIFER DR': (7.5, 'south')}
+SSD_55 = 155.0          # AASHTO stopping sight distance, 25 mph, level grade
+_cl0, _cl1 = cl.coords[0], cl.coords[1]
+_ex = ((_cl0[0] - _cl1[0]) / math.dist(_cl0, _cl1), (_cl0[1] - _cl1[1]) / math.dist(_cl0, _cl1))   # exiting direction
+_rt = (_ex[1], -_ex[0])                                                                     # right of an exiting driver
+_eor = LineString(st['entrance']['edgeOfRoad'])
+_hit = LineString([_cl1, (_cl0[0] + _ex[0] * 80, _cl0[1] + _ex[1] * 80)]).intersection(_eor)
+_x0 = (_hit.x, _hit.y) if _hit.geom_type == 'Point' else _cl0
+DP = (_x0[0] - _ex[0] * 14.5 + _rt[0] * 6, _x0[1] - _ex[1] * 14.5 + _rt[1] * 6)          # driver's eye, exit lane
+_al0 = (_x0[0] - A[0]) * u[0] + (_x0[1] - A[1]) * u[1]                                   # station of the entrance along MD 210
+sight = []
+for name, (tg, look) in ISD.items():
+    d = math.ceil(1.47 * V_MPH * tg / 10) * 10
+    sgn = -1 if look == 'north' else 1                                                    # u runs south along MD 210
+    lane_off = 6.1 if look == 'north' else 18.7                                             # Jennifer Drive lane centres
+    tgt = md_pt(_al0 + sgn * d, lane_off)
+    eye = DP
+    sight.append({'case': name, 'tgS': tg, 'isdFt': d, 'from': list(eye), 'to': list(tgt)})
+rec['sightDistance'] = {'road': 'JENNIFER DRIVE', 'designSpeedMph': V_MPH, 'ssdFt': SSD_55, 'decisionPoint': list(DP), 'lines': sight,
+                        'citation': 'AASHTO A Policy on Geometric Design of Highways and Streets (2018), Sec. 9.5.3 Case B; Table 3-1',
+                        'note': 'Desktop concept check only. Field survey shall verify grades, speed and obstructions; County access approval governs. Existing MD 210 separation remains.'}
+
 # ── Sheet content: title block, site data, approvals, environment, notes ──
 envdir = os.path.join(proj, 'source', 'pgatlas-environmental')
 def envpolys(layer):
@@ -189,23 +216,29 @@ def envpolys(layer):
         if rs: out.append((unary_union([Polygon(r).buffer(0) for r in rs if len(r) > 2]), f['attributes']))
     return out
 tract = Polygon(J('estates-indian-head.geometry.json')['tract'])
-# NO environmental features on this property (owner, 2026-09-30): no streams,
-# wetlands, floodplain, PMA, steep slopes, woodland or highly erodible soils.
-# The PGAtlas slope and canopy layers are not carried onto the plan.
+# Desktop environmental screening. Layer 17 maps woody vegetation across much
+# of the tract and agrees with the woods shown on the base survey. It is used
+# conservatively as existing woodland cover for concept hydrology; only an
+# updated NRI/TCP field inventory can establish regulated woodland limits.
 soil_rows = []
 for p, a in envpolys(14):
     ar = p.intersection(tract).area
     if ar < 1: continue
     k = a.get('KFACTWS')
     soil_rows.append([a['SOIL_NAME_MUSYM'], a['MUNAME'], a.get('HYDROLGRP') or '—', k or '—', 'NO'])
-# Pre-development cover for the 100-yr comparison: no woodland on the property
-# (owner, 2026-09-30), so existing pervious is open space, not woods.
+woodland_geoms = []
+for p, a in envpolys(17):
+    hit = p.intersection(tract).buffer(0)
+    for gg in ([hit] if hit.geom_type == 'Polygon' else list(getattr(hit, 'geoms', []))):
+        if gg.geom_type == 'Polygon' and gg.area > 50:
+            woodland_geoms.append(gg)
+woods_sf = round(sum(g.area for g in woodland_geoms))
 rec['environmental'] = {
-    'woodsSqFt': 0,
-    'receiving': 'the MD 210 roadside ditch (SHA)',
+    'woodsSqFt': woods_sf,
+    'receiving': 'the existing Jennifer Drive frontage-road drainage system',
     'streams': False, 'wetlands': False, 'floodplain': False, 'pma': False, 'cbca': False, 'springs': False, 'marlboroClay': False, 'tierII': False,
     'hsg': 'C', 'steep15SqFt': 0, 'steep25SqFt': 0, 'soilRows': soil_rows,
-    'woodland': '',
+    'woodland': f'Desktop woody-vegetation screening: {woods_sf:,} sf on site (PGAtlas layer 17; agrees with base-survey woods). Updated NRI/TCP field verification governs.',
     'soils': 'Soil types and boundaries from USDA NRCS (PGAtlas Soil layer): ' + '; '.join(f'{r[0]} (HSG {r[2]})' for r in soil_rows) + '.',
     'tmdl': 'Chesapeake Bay TMDL (nitrogen, phosphorus, sediment) applies; MD 12-digit watershed 021402030798, Piscataway Creek (02140203).',
     'highlyErodible': '',
@@ -215,6 +248,7 @@ rec['environmental'] = {
 }
 lots_attrs = {f['attributes']['LOT']: f['attributes'] for f in J('source/pgatlas-parcels.json')['features']
               if f['attributes']['SUB_NAME'] == 'ESTATES AT INDIAN HEAD' and f['attributes']['LOT']}
+rec['recordedLotAreasSqFt'] = {str(k): J(f'estates-indian-head-lot{k}.plat.json')['recordedAreaSqFt'] for k in range(1, 7)}
 rec['titleBlock'] = {
     'planType': 'SITE DEVELOPMENT CONCEPT PLAN',
     'project': 'ESTATES AT INDIAN HEAD — LOTS 1–6',
@@ -231,7 +265,7 @@ rec['titleBlock'] = {
 }
 rec['siteData'] = [
     ['Project', 'Estates at Indian Head, Lots 1–6 and Estates Court'],
-    ['Location', 'S. side of MD 210, ±3,000 ft NE of MD 210 / MD 373; 200–205 Estates Ct, Accokeek 20607'],
+    ['Location', 'Estates Ct at Jennifer Dr, south/east of separated MD 210; ±3,000 ft NE of MD 210 / MD 373; Accokeek 20607'],
     ['Record', 'Plat Book PM 228 Plat 83 (final plat 5-08238); Tax Map 151 F-3; WSSC 200\' 220SE01'],
     ['Accounts', ', '.join(lots_attrs[k]['ACCOUNT'] for k in sorted(lots_attrs))],
     ['Owner', 'Gerald Waldman Revocable Trust, L.32062 F.043'],
@@ -259,10 +293,12 @@ rec['generalNotes'] = [
     'Horizontal datum: Maryland State Plane NAD 83 (US ft). Vertical datum: NAVD 88 (M-NCPPC 2-ft contours). Spot grades are on WSSC datum (≈ NAVD 88 + 1.6 ft). DPIE prefers NGVD 29.',
     'Six single-family dwellings with side-load garages and courts, street trees and street lights, laid out to current requirements. Lot 4 is front-load (garage to the cul-de-sac) to clear the WSSC easement.',
     'Estates Court is a rural open section (DPW&T Std. 500.10 / 600.02 / 600.04): 24\' pavement, shoulders, roadside swales; driveways cross the swale on 15" RCP culverts with flared end sections.',
-    'Entrance to MD 210 (SHA) with 50\' returns; SHA access permit and sight-distance analysis required. MD 210 auxiliary lanes shown for SHA review; R/W dedication may be required.',
+    'Estates Court intersects Jennifer Drive with 50\' returns. Jennifer Drive lies between the entrance and MD 210; preserve the existing physical separation/barrier. No direct MD 210 access or auxiliary lanes are proposed. Field-verify Jennifer Drive sight distance for County review.',
     'Water and sewer: WSSC mains from Henrietta Dr through the recorded 30\' WSSC easement (L.51799 F.399) and a 30\' WSSC easement to be granted across Lot 4. Record discrepancies in the easement description to be resolved with WSSC.',
     'NEW SUBMITTAL (2026). Prior approvals NRI-015-06, TCP1-018-06 and TCP2-016-09 are used as base work only and do not carry this submittal. Additional work: an updated/revised NRI (draft with this submission, approved copy before concept approval, Sec. 32-182(a)); a TCP2-016-09 revision or new TCP / letter of exemption as M-NCPPC Environmental Planning determines; street trees and lighting reviewed to current DPW&T/DPIE standards; SWM by ESD to the MEP under current Subtitle 32.',
-    'No environmental features on the property: no streams, stream buffers, wetlands, floodplain, PMA, steep slopes, woodland, highly erodible soils or Chesapeake Bay Critical Area.',
+    f'Desktop screening maps {woods_sf:,} sf of woody vegetation/possible woodland on site. No mapped streams, wetlands, floodplain, PMA or Chesapeake Bay Critical Area. Updated NRI/TCP field verification governs woodland and steep-slope limits.',
+    'GRADING HOLD POINT: proposed contours and base-plan spot grades are preliminary. Before technical approval, the civil PE shall verify positive drainage away from every dwelling (5% for the first 10 ft where practicable), driveway/garage ties, retaining or stepped grading at Lot 1, and the Lots 2–4 front-yard drainage. Do not use this concept set for construction staking.',
+    'RR ZONING CHECK: each lot exceeds 20,000 sf; proposed lot coverage is below the 25% maximum; building restriction lines depict 25-ft front, 8-ft side and 20-ft rear minimums. Licensed surveyor/PE shall certify final setbacks and the 40-ft height maximum at permit.',
     'Contact Miss Utility (811) at least 48 hours before any excavation.',
 ]
 rec['swmNotes'] = [
@@ -273,7 +309,8 @@ rec['swmNotes'] = [
 ]
 rec['escNotes'] = [
     'Sediment and erosion control per the 2011 Maryland Standards and Specifications for Soil Erosion and Sediment Control and PGSCD requirements.',
-    'Stabilized construction entrance at the Estates Court entrance; super silt fence along the down-gradient limit of disturbance; inlet and swale protection.',
+    'MDE Detail B-1 stabilized construction entrance: cover the full unpaved Jennifer Drive entrance apron and continue 30 ft into Estates Court; provide at least 50 ft total vehicle travel length and 10 ft minimum width, using 6 in minimum depth of 2–3 in aggregate over nonwoven geotextile. Install before permanent paving; do not place stone over existing Jennifer Drive pavement.',
+    'Pipe all surface flow crossing the SCE beneath it, sized for the 2-year, 24-hour storm (6 in minimum), with a mountable berm where not at a high point. Super silt fence along the down-gradient LOD; inlet and swale protection.',
     'Stabilize disturbed areas within 3 days on slopes ≥ 3:1 and within 7 days elsewhere.',
 ]
 rec['sequenceOfConstruction'] = [
@@ -288,12 +325,27 @@ rec['sequenceOfConstruction'] = [
 buf = tract.buffer(100)
 rec['environmentalGeometry'] = {
     'steepSlopes': [],
+    'woodland': [{'label': 'MAPPED WOODY VEGETATION / POSSIBLE WOODLAND — FIELD VERIFY', 'ring': [list(q) for q in list(gg.exterior.coords)[:-1]]}
+                 for gg in woodland_geoms],
     'soils': [{'label': a['SOIL_NAME_MUSYM'], 'ring': [list(q) for q in list(gg.exterior.coords)[:-1]]}
               for p, a in envpolys(14) for gg in ([p.intersection(buf)] if p.intersection(buf).geom_type == 'Polygon' else list(getattr(p.intersection(buf), 'geoms', [])))
               if not gg.is_empty and gg.geom_type == 'Polygon' and gg.area > 50],
 }
 rec['vicinityStreetsFile'] = os.path.abspath(os.path.join(proj, 'source', 'pgatlas-vicinity-streets.json'))
 rec['existingRoads'] = roads
+# Existing structures off site, from the county's 2023 building layer
+# (PGAtlas Administrative/MapServer/2), archived in source/. User 2026-10-01:
+# show the house at 15608 Indian Head Hwy and label it as existing.
+bfile = os.path.join(proj, 'source', 'pgatlas-buildings-15608.json')
+if os.path.exists(bfile):
+    B = json.load(open(bfile))
+    pa = B['parcel']
+    addr = f"{int(pa['HOUSE_NUMBER'])} {pa['STREET_NAME']} {'HWY' if pa['STREET_TYPE'] == 'HWY' else pa['STREET_TYPE']}"
+    rec['existingStructures'] = [{
+        'ring': b['ring'], 'areaSqFt': b['areaSqFt'],
+        'label': f"EXISTING DWELLING\\P{addr}",
+        'source': B['source'],
+    } for b in B['buildings']]
 rec['streetTrees'] = trees
 rec['streetLights'] = lights
 rec['roadsideSwales'] = swales

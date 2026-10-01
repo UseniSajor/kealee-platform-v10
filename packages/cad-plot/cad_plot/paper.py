@@ -330,16 +330,16 @@ class Sheets:
     def legend(self, ps, x, y, kind, h=0.095):
         entries = {
             'existing': [('V-PROP-BNDY', 'Boundary of record (plat PM 228 @ 83)'), ('V-PROP-LOTS', 'Lot line'),
-                         ('V-PROP-ADJN', 'Adjoining property'), ('C-TOPO-MAJR-E', 'Existing contour, 10-ft (NAVD 88)'),
+                         ('V-PROP-ADJN', 'Adjoining property'), ('V-BLDG-E', 'Existing building (county 2023 footprint)'), ('C-TOPO-MAJR-E', 'Existing contour, 10-ft (NAVD 88)'),
                          ('C-TOPO-MINR-E', 'Existing contour, 2-ft'), ('C-ROAD-EDGE-E', 'Existing edge of road'),
                          ('C-ROAD-ROWL-E', 'Existing right-of-way'),
-                         ('C-ENVR-SOIL-E', 'Soil boundary (USDA NRCS)'), ('V-ESMT', 'Easement')],
+                         ('C-ENVR-SOIL-E', 'Soil boundary (USDA NRCS)'), ('C-ENVR-WOOD-E', 'Mapped woody vegetation (field verify)'), ('V-ESMT', 'Easement')],
             'layout': [('V-PROP-BNDY', 'Boundary of record'), ('C-ROAD-ROWL-N', 'Estates Ct right-of-way'),
                        ('C-ROAD-PVMT-N', 'Proposed pavement'), ('C-ROAD-SWAL-N', 'Roadside swale (flowline)'),
                        ('C-STRM-CULV-N', 'Driveway culvert, 15" RCP w/ end sections'), ('C-BLDG-FTPR-N', 'Proposed dwelling'),
                        ('V-PROP-BRL', 'Building restriction line'), ('C-TOPO-MAJR-N', 'Proposed contour'),
                        ('C-TOPO-MINR-E', 'Existing contour'), ('C-TOPO-SPOT-N', 'Spot elevation (WSSC datum)'),
-                       ('C-ESC-LOD', 'Limit of disturbance'), ('C-ROAD-IMPR-N', 'MD 210 auxiliary lane (SHA)')],
+                       ('C-ESC-LOD', 'Limit of disturbance'), ('C-ROAD-SIGHT-N', 'Jennifer Dr sight-distance line')],
             'utility': [('C-WATR-MAIN-N', 'Proposed 8" water main'), ('C-SSWR-MAIN-N', 'Proposed 8" sanitary sewer'),
                         ('C-WATR-SVCS-N', '1" water house connection (W.H.C.)'), ('C-SSWR-SVCS-N', '4" sewer house connection (S.H.C.)'),
                         ('V-ESMT', 'WSSC easement (recorded / proposed)'),
@@ -384,7 +384,8 @@ class Sheets:
         self.plan_title(ps, sh)
         sc = sh.get('scaleFtPerIn', 30)
         top = H - M - 0.55
-        self.viewport(ps, sh['kind'], DRAW_X0, self.band_top(), DRAW_X1, top, sc, centre=self.plan_c)
+        ctr = (self.plan_c[0], self.plan_c[1] + 40) if sh['kind'] == 'swm' else self.plan_c   # DA map: whole contributing area to the divide
+        self.viewport(ps, sh['kind'], DRAW_X0, self.band_top(), DRAW_X1, top, sc, centre=ctr)
         _box(ps, DRAW_X0, self.band_top(), DRAW_X1, top, layer='G-ANNO-TABL')
         bar_scale(ps, DRAW_X0 + 0.15, self.band_top() + 0.25, sc, 200)
         self.legend(ps, M + 0.15, H - M - STAMP - 0.2, sh['kind'], h=0.08)
@@ -426,7 +427,21 @@ class Sheets:
         x, y0 = self.sheet_plan(ps, sh)
         t = self.s['tables']['buildings']
         yb, w = table(ps, x, y0, t['title'], t['columns'], t['rows'], h=0.095)
+        z = self.s['tables'].get('zoningCompliance')
+        if z:
+            yb, wz = table(ps, x, yb - 0.18, z['title'], z['columns'], z['rows'], h=0.066)
+            if z.get('note'):
+                _txt(ps, z['note'], x, yb - 0.05, 0.052)
+                yb -= 0.14
+            w = max(w, wz)
         note = self.s['extras'].get('roadImprovementsNote')
+        sd = (self.s.get('extras') or {}).get('sightDistance')
+        if sd:
+            yb, w2 = table(ps, x, yb - 0.2, f"INTERSECTION SIGHT DISTANCE AT {sd.get('road', 'JENNIFER DRIVE')} — DESIGN SPEED {sd['designSpeedMph']} MPH",
+                           ['CASE (AASHTO 2018, 9.5.3)', 't_g (s)', 'ISD REQ. (FT)'],
+                           [[l['case'], f"{l['tgS']}", f"{l['isdFt']:.0f}"] for l in sd['lines']] + [['STOPPING SIGHT DISTANCE (TABLE 3-1)', '—', f"{sd['ssdFt']:.0f}"]], h=0.075)
+            _txt(ps, sd['note'], x, yb - 0.06, 0.06)
+            w = max(w, w2)
         x2 = x + w + 0.3
         items = [n for n in (self.s['notes'].get('general') or [])[:5]]
         if note: items.append(note)
@@ -475,7 +490,9 @@ class Sheets:
                  f"{next((b['req'] for b in self.s['bmp']['byPoi'] if b['poi'] == p['id']), 0):,}",
                  f"{next((b['prov'] for b in self.s['bmp']['byPoi'] if b['poi'] == p['id']), 0):,}"] for p in self.s['poi']['pois']]
         yb2, w2 = table(ps, x2, y0, 'POINTS OF INVESTIGATION (C-9)', ['POI', 'LOCATION', 'SHARE', 'ESDv REQ', 'ESDv PROV'], prow, h=0.09)
-        paragraphs(ps, x2, yb2 - 0.15, self.band_x1() - x2, 'SWM NOTES', (self.s['notes'].get('swm') or []) + [self.s['poi']['method']], h=0.09)
+        mx = self.band_x1() - 9.2                          # the M-6 section, beside the notes
+        paragraphs(ps, x2, yb2 - 0.15, mx - 0.3 - x2, 'SWM NOTES', (self.s['notes'].get('swm') or []) + [self.s['poi']['method']], h=0.08)
+        self.m6_section(ps, mx, y0)
 
     def sheet_swmreport(self, ps, sh):
         """C-410: the SWM concept narrative (checklist D-1, D-3, D-4) and the 100-yr computations (D-10)."""
@@ -537,46 +554,99 @@ class Sheets:
         y = top - 11.6
         self.typical_section(ps, DRAW_X0, y)
         self.m6_section(ps, DRAW_X0 + 13.6, y)
-        self.m8_section(ps, DRAW_X0 + 20.2, y)
+        self.m8_section(ps, DRAW_X0 + 23.0, y)
 
     def typical_section(self, ps, x, y):
+        """Estates Court typical section, rural open section, with the DPW&T pavement layers."""
         s = 0.2   # in per ft (1" = 5')
-        _txt(ps, 'ESTATES COURT — TYPICAL SECTION (RURAL OPEN SECTION, 60\' R/W)', x, y, 0.1, bold=True)
-        base = y - 2.2
-        # R/W to R/W 60 ft centred
+        _txt(ps, "ESTATES COURT — TYPICAL SECTION (RURAL OPEN SECTION, 60' R/W)   NTS", x, y, 0.1, bold=True)
+        base = y - 2.0
         cx = x + 6.5
-        pts = []
         prof = [(-30, 0.9), (-26, 0.9), (-22, 0.1), (-20, -0.4), (-18, 0.1), (-16, 0.55), (-12, 0.7), (0, 0.94), (12, 0.7),
                 (16, 0.55), (18, 0.1), (20, -0.4), (22, 0.1), (26, 0.9), (30, 0.9)]
         ps.add_lwpolyline([(cx + a * s, base + b * s * 2) for a, b in prof], dxfattribs={'layer': 'G-ANNO-TTLB'})
-        ps.add_lwpolyline([(cx - 12 * s, base + 0.7 * s * 2 - 0.05), (cx, base + 0.94 * s * 2 - 0.05), (cx + 12 * s, base + 0.7 * s * 2 - 0.05)],
-                          dxfattribs={'layer': 'G-ANNO-TABL'})
-        for xf, lab in ((-30, 'R/W'), (30, 'R/W')):
+        # pavement layers under the 24-ft travelway (exaggerated thickness for legibility)
+        layers = [(0.06, 'FINAL SURFACE'), (0.06, 'INTERMEDIATE'), (0.10, 'HMA BASE'), (0.18, 'GASB')]
+        off = 0.0
+        for t, _ in layers:
+            off += t
+            ps.add_lwpolyline([(cx - 12 * s, base + 0.7 * s * 2 - off), (cx, base + 0.94 * s * 2 - off), (cx + 12 * s, base + 0.7 * s * 2 - off)],
+                              dxfattribs={'layer': 'G-ANNO-TABL'})
+        _line(ps, (cx - 12 * s, base + 0.7 * s * 2), (cx - 12 * s, base + 0.7 * s * 2 - off), layer='G-ANNO-TABL')
+        _line(ps, (cx + 12 * s, base + 0.7 * s * 2), (cx + 12 * s, base + 0.7 * s * 2 - off), layer='G-ANNO-TABL')
+        _txt(ps, 'PGL', cx, base + 0.94 * s * 2 + 0.12, 0.07, bold=True, align=TextEntityAlignment.BOTTOM_CENTER)
+        _line(ps, (cx, base + 0.94 * s * 2), (cx, base + 0.94 * s * 2 + 0.1), layer='G-ANNO-TABL')
+        for side in (-1, 1):
+            _txt(ps, '2%', cx + side * 6 * s, base + 0.85 * s * 2 + 0.05, 0.065, align=TextEntityAlignment.BOTTOM_CENTER)
+            _txt(ps, '4%', cx + side * 14 * s, base + 0.62 * s * 2 + 0.05, 0.06, align=TextEntityAlignment.BOTTOM_CENTER)
+            _txt(ps, '3:1', cx + side * 17 * s, base + 0.25 * s * 2 + 0.05, 0.06, align=TextEntityAlignment.BOTTOM_CENTER)
+            _txt(ps, '3:1', cx + side * 24 * s, base + 0.5 * s * 2 + 0.05, 0.06, align=TextEntityAlignment.BOTTOM_CENTER)
+        for xf, lab in ((-30, 'R/W'), (30, 'R/W'), (0, 'C/L')):
             _line(ps, (cx + xf * s, base - 0.3), (cx + xf * s, base + 0.9), layer='G-ANNO-TABL')
             _txt(ps, lab, cx + xf * s, base + 0.95, 0.07, align=TextEntityAlignment.BOTTOM_CENTER)
-        dims = [(-30, 30, "60' R/W"), (-12, 12, "24' PAVEMENT"), (-16, -12, "4' SHLD"), (12, 16, "4' SHLD"), (-22, -18, 'SWALE'), (18, 22, 'SWALE')]
+        dims = [(-30, 30, "60' R/W"), (-12, 12, "24' PAVEMENT (2 @ 12')"), (-16, -12, "4' SHLD"), (12, 16, "4' SHLD"),
+                (-22, -18, "SWALE"), (18, 22, "SWALE")]
         for i, (a, b, lab) in enumerate(dims):
-            yy = base - 0.45 - (0.22 if i == 0 else 0.0) * 0
             yy = base - 0.45 - 0.22 * (i // 2)
             _line(ps, (cx + a * s, yy), (cx + b * s, yy), layer='G-ANNO-TABL')
+            for e in (a, b): _line(ps, (cx + e * s, yy - 0.04), (cx + e * s, yy + 0.04), layer='G-ANNO-TABL')
             _txt(ps, lab, cx + (a + b) / 2 * s, yy + 0.03, 0.06, align=TextEntityAlignment.BOTTOM_CENTER)
-        notes = ['1 1/2" SURFACE + 2 1/2" BASE BIT. CONC. ON 6" GAB (DPW&T PAVEMENT SCHEDULE, RURAL RESIDENTIAL)',
-                 'CROSS SLOPE 2%; 4-FT STABILIZED SHOULDERS; SWALE FLOWLINE 20 FT OFF CENTRELINE, 3:1 SIDE SLOPES',
-                 'DRIVEWAYS CROSS THE SWALE ON 15" RCP CULVERTS WITH FLARED END SECTIONS (DPW&T STD. 600.02)']
-        yy = base - 1.3
+        yb, _ = table(ps, x, base - 1.2, 'PAVEMENT SECTION — PG DPW&T SPECIFICATIONS AND STANDARDS FOR ROADWAYS AND BRIDGES, SECTION III (RESIDENTIAL)',
+                      ['LAYER', 'MATERIAL', 'THICKNESS'],
+                      [['E  FINAL SURFACE COURSE', 'SUPERPAVE HMA SURFACE, 9.5 MM, PG 64-22', '1 1/2"'],
+                       ['D  INTERMEDIATE SURFACE COURSE', 'SUPERPAVE HMA SURFACE, 9.5 MM, PG 64-22', '1 1/2"'],
+                       ['C  BASE COURSE', 'SUPERPAVE HMA BASE, 19 MM, PG 64-22', '3"'],
+                       ['B  SUBBASE', 'GRADED AGGREGATE SUBBASE (GASB)', '6"'],
+                       ['A  SUBGRADE', 'TOP 12" OF IN-SITU SUBGRADE, CBR >= 7, COMPACTED', '12"'],
+                       ['SHOULDERS', 'GASB 6", SEEDED TOPSOIL 3" OUTSIDE PAVED AREA', '4\' @ 4%']], h=0.07)
+        notes = ['ALL UNPAVED AREAS IN THE R/W: 3" MIN. TOPSOIL AND SEED/SOD. SLOPES 2:1 MAX. (3:1 WHERE MOWED).',
+                 'DRIVEWAYS CROSS THE SWALE ON 15" RCP CULVERTS WITH FLARED END SECTIONS OR AS SWALE DRIVEWAYS (DPW&T STD. 600.02).',
+                 'SUBGRADE BELOW CBR 7: UNDERCUT AND REPLACE PER SECTION I, TABLES I-3 TO I-9, AS DIRECTED BY THE GEOTECHNICAL ENGINEER.']
+        yy = yb - 0.12
         for n in notes:
-            _txt(ps, n, x, yy, 0.065); yy -= 0.12
+            _txt(ps, n, x, yy, 0.06); yy -= 0.11
 
     def m6_section(self, ps, x, y):
-        _txt(ps, 'MICRO-BIORETENTION (M-6) — TYPICAL SECTION', x, y, 0.1, bold=True)
-        b = y - 2.4
-        w = 5.2
-        ps.add_lwpolyline([(x, b + 1.6), (x + 0.8, b + 1.0), (x + w - 0.8, b + 1.0), (x + w, b + 1.6)], dxfattribs={'layer': 'G-ANNO-TTLB'})
-        for yy, lab in ((1.0, '12" MAX. PONDING'), (0.55, '3" MULCH / 2.5\' FILTER MEDIA (n = 0.40)'), (0.2, '12" #57 STONE WITH 4" PVC UNDERDRAIN')):
-            _line(ps, (x + 0.8, b + yy), (x + w - 0.8, b + yy), layer='G-ANNO-TABL')
-            _txt(ps, lab, x + w / 2, b + yy + 0.03, 0.06, align=TextEntityAlignment.BOTTOM_CENTER)
-        ps.add_circle((x + w / 2, b + 0.1), 0.06, dxfattribs={'layer': 'G-ANNO-TABL'})
-        _txt(ps, 'MDE DESIGN MANUAL CH. 5, SEC. 5.4.3 (M-6); SIZED PER THE BMP SUMMARY TABLE', x, b - 0.2, 0.06)
+        """Micro-bioretention (M-6) typical section, MDE Stormwater Design Manual Ch. 5 Sec. 5.4.3."""
+        _txt(ps, 'MICRO-BIORETENTION (M-6) — TYPICAL SECTION   NTS', x, y, 0.1, bold=True)
+        b = y - 3.2
+        w = 5.6; L0, R0 = x + 0.9, x + w - 0.9         # bottom width of the cell
+        g = b + 2.0                                       # existing / finished grade
+        # side slopes 3:1 up to grade, berm crest
+        ps.add_lwpolyline([(x, g), (L0 - 0.1, g), (L0, b + 1.45), (R0, b + 1.45), (R0 + 0.1, g), (x + w, g)], dxfattribs={'layer': 'G-ANNO-TTLB'})
+        # layers inside the cell
+        strata = [(1.45, 1.40, '3" SHREDDED HARDWOOD MULCH'), (1.40, 0.75, "2.5' BIORETENTION SOIL MEDIA (MDE APPX. B.4)"),
+                  (0.75, 0.65, '3" PEA GRAVEL / CHOKER (NO FILTER FABRIC ON SIDES)'), (0.65, 0.20, '12" #57 WASHED STONE'),
+                  (0.20, 0.0, 'UNCOMPACTED SUBGRADE — SCARIFY')]
+        for top, bot, lab in strata:
+            _line(ps, (L0, b + bot), (R0, b + bot), layer='G-ANNO-TABL')
+            _txt(ps, lab, R0 + 0.15, b + (top + bot) / 2, 0.055, align=TextEntityAlignment.MIDDLE_LEFT)
+            _line(ps, (R0 - 0.2, b + (top + bot) / 2), (R0 + 0.12, b + (top + bot) / 2), layer='G-ANNO-TEXT')
+        _line(ps, (L0, b), (L0, b + 1.45), layer='G-ANNO-TABL'); _line(ps, (R0, b), (R0, b + 1.45), layer='G-ANNO-TABL')
+        # ponding
+        ps.add_lwpolyline([(L0 + 0.05, b + 1.45 + 0.35), (R0 - 0.05, b + 1.45 + 0.35)], dxfattribs={'layer': 'G-ANNO-TABL', 'linetype': 'DASHED', 'ltscale': 0.02})
+        _txt(ps, "12\" MAX. PONDING (6\" TYP.)", (L0 + R0) / 2, b + 1.45 + 0.4, 0.055, align=TextEntityAlignment.BOTTOM_CENTER)
+        # underdrain
+        ps.add_circle(((L0 + R0) / 2, b + 0.35), 0.08, dxfattribs={'layer': 'G-ANNO-TTLB'})
+        _txt(ps, '4" PERF. SCH. 40 PVC UNDERDRAIN @ 0.5% MIN., 3" STONE COVER', (L0 + R0) / 2, b - 0.12, 0.055, align=TextEntityAlignment.TOP_CENTER)
+        # observation well / cleanout
+        ow = L0 + 0.35
+        _line(ps, (ow, b + 0.35), (ow, g + 0.25), layer='G-ANNO-TTLB'); _line(ps, (ow + 0.08, b + 0.35), (ow + 0.08, g + 0.25), layer='G-ANNO-TTLB')
+        _txt(ps, '4" OBSERVATION WELL / CLEANOUT W/ CAP', ow - 0.05, g + 0.3, 0.05, align=TextEntityAlignment.BOTTOM_LEFT)
+        # overflow
+        ofx = R0 - 0.45
+        _line(ps, (ofx, b + 0.35), (ofx, b + 1.45 + 0.35), layer='G-ANNO-TTLB'); _line(ps, (ofx + 0.16, b + 0.35), (ofx + 0.16, b + 1.45 + 0.35), layer='G-ANNO-TTLB')
+        _txt(ps, 'OVERFLOW RISER, 12" DOMED GRATE @ PONDING EL.', ofx + 0.2, b + 2.05, 0.05, align=TextEntityAlignment.BOTTOM_LEFT)
+        _txt(ps, '3:1 MAX.', L0 - 0.55, b + 1.75, 0.055)
+        # notes
+        notes = ['SIZED PER THE BMP SUMMARY TABLE (C-000): SURFACE AREA, ESDv; CELL BOTTOM >= 2 FT ABOVE SEASONAL HIGH GROUNDWATER.',
+                 'UNDERDRAIN TO A STABLE OUTFALL; INFILTRATION CREDIT ONLY WHERE BORINGS SHOW >= 0.52 IN/HR (SEC. 32-131).',
+                 'MEDIA PER MDE MANUAL APPENDIX B.4 (SAND/TOPSOIL/ORGANIC); PLANT PER APPENDIX A, TABLE A.4.',
+                 'BUILD AFTER THE CONTRIBUTING AREA IS STABILIZED; PROTECT FROM CONSTRUCTION TRAFFIC AND SEDIMENT.',
+                 'PRIVATE PRACTICE: MAINTENANCE AGREEMENT RECORDED BEFORE PERMIT. MDE DESIGN MANUAL CH. 5, SEC. 5.4.3 (M-6).']
+        yy = b - 0.35
+        for n in notes:
+            _txt(ps, n, x, yy, 0.055); yy -= 0.1
 
     def m8_section(self, ps, x, y):
         _txt(ps, 'DRY SWALE (M-8) WITH CHECK DAM', x, y, 0.1, bold=True)
@@ -589,6 +659,127 @@ class Sheets:
         _txt(ps, 'CHECK DAMS AT 6" MAX. HEAD; UNDERDRAIN IN HSG C SOILS', x, b - 0.2, 0.06)
 
     # ── cover (laid out as the approved Yocum Property cover) ─────────────
+    # ── C-210: Estates Court plan and profile ──────────────────────────────
+    def sheet_profile(self, ps, sh):
+        self.plan_title(ps, sh)
+        pr = self.s.get('profile')
+        sc = sh.get('scaleFtPerIn', 30)
+        top = H - M - 0.55
+        split = 11.2                                      # plan above, profile below
+        if pr:
+            _z = [r['pgl'] for r in pr['stations']] + [r['existing'] for r in pr['stations'] if r['existing'] is not None]
+            _h = (math.ceil((max(_z) + 3) / 2) * 2 - math.floor((min(_z) - 3) / 2) * 2) / 3.0
+            split = min(11.2, M + 1.35 + _h + 1.3)        # profile grid height at 1" = 3', plus its title and PVI labels
+        self.viewport(ps, 'profile', DRAW_X0, split, DRAW_X1, top, sc, centre=self.plan_c)
+        _box(ps, DRAW_X0, split, DRAW_X1, top, layer='G-ANNO-TABL')
+        bar_scale(ps, DRAW_X0 + 0.15, split + 0.25, sc, 200)
+        self.legend(ps, M + 0.15, H - M - STAMP - 0.2, 'layout', h=0.08)
+        if not pr:
+            return
+        vs = 3.0                                          # vertical: 1" = 3' (10x)
+        st = pr['stations']
+        zs = [s['pgl'] for s in st] + [s['existing'] for s in st if s['existing'] is not None]
+        zmin = math.floor((min(zs) - 3) / 2) * 2; zmax = math.ceil((max(zs) + 3) / 2) * 2
+        gx0 = DRAW_X0 + 0.9; gy0 = M + 1.35               # grid origin (sta 0, zmin)
+        gx1 = gx0 + pr['lengthFt'] / sc; gy1 = gy0 + (zmax - zmin) / vs
+        if gy1 > split - 0.6:
+            vs = (zmax - zmin) / (split - 0.6 - gy0); gy1 = gy0 + (zmax - zmin) / vs
+        X = lambda s: gx0 + s / sc
+        Y = lambda z: gy0 + (z - zmin) / vs
+        _txt(ps, f"PROFILE — ESTATES COURT CENTERLINE   HORIZ. 1\" = {sc:.0f}'   VERT. 1\" = {vs:.0f}'", gx0, gy1 + 0.35, 0.12, bold=True)
+        # grid
+        for z in range(int(zmin), int(zmax) + 1, 2):
+            _line(ps, (gx0, Y(z)), (gx1, Y(z)), lw=(25 if z % 10 == 0 else 9))
+            _txt(ps, f"{z}", gx0 - 0.08, Y(z), 0.07, align=TextEntityAlignment.MIDDLE_RIGHT)
+            _txt(ps, f"{z}", gx1 + 0.08, Y(z), 0.07, align=TextEntityAlignment.MIDDLE_LEFT)
+        s = 0.0
+        while s <= pr['lengthFt'] + 0.01:
+            major = abs(s % 100) < 1e-6
+            _line(ps, (X(s), gy0), (X(s), gy1), lw=(25 if major else 9))
+            if major:
+                _txt(ps, f"{int(s // 100)}+00", X(s), gy0 - 0.08, 0.08, bold=True, align=TextEntityAlignment.TOP_CENTER)
+            s += 25
+        _box(ps, gx0, gy0, gx1, gy1, layer='G-ANNO-TABL', lw=35)
+        # elevations along the bottom: existing / proposed every 25 ft
+        for k, r in enumerate(st):
+            x = X(r['sta'])
+            if r['existing'] is not None:
+                _txt(ps, f"{r['existing']:.2f}", x - 0.03, gy0 - 0.3, 0.055, rot=90, align=TextEntityAlignment.MIDDLE_RIGHT)
+            _txt(ps, f"{r['pgl']:.2f}", x + 0.07, gy0 - 0.3, 0.055, bold=True, rot=90, align=TextEntityAlignment.MIDDLE_RIGHT)
+        _txt(ps, 'EX. GRADE / PROP. PGL', gx0 - 0.85, gy0 - 0.3, 0.055, bold=True)
+        # existing ground (dashed) and PGL (heavy)
+        eg = [(X(r['sta']), Y(r['existing'])) for r in st if r['existing'] is not None]
+        if len(eg) > 1:
+            ps.add_lwpolyline(eg, dxfattribs={'layer': 'C-TOPO-MAJR-E', 'linetype': 'DASHED', 'ltscale': 0.03, 'lineweight': 35})
+        fine = []
+        s = 0.0
+        from .profile_math import pgl_at
+        while s <= pr['lengthFt']:
+            fine.append((X(s), Y(pgl_at(pr['pvis'], s)))); s += 2.5
+        fine.append((X(pr['lengthFt']), Y(pgl_at(pr['pvis'], pr['lengthFt']))))
+        ps.add_lwpolyline(fine, dxfattribs={'layer': 'C-TOPO-MAJR-N', 'lineweight': 70})
+        _txt(ps, 'EXISTING GROUND AT CENTERLINE', eg[len(eg) // 3][0], eg[len(eg) // 3][1] + 0.12, 0.07)
+        _txt(ps, 'PROPOSED PROFILE GRADE LINE (PGL, CENTERLINE)', fine[len(fine) // 2][0], fine[len(fine) // 2][1] - 0.12, 0.07, bold=True,
+             align=TextEntityAlignment.TOP_LEFT)
+        # PVIs, vertical curves, grades
+        pv = pr['pvis']
+        for i, v in enumerate(pv):
+            x, y = X(v['sta']), Y(v['elev'])
+            ps.add_circle((x, y), 0.05, dxfattribs={'layer': 'G-ANNO-TEXT'})
+            lab = [f"PVI STA {self._sta(v['sta'])}", f"ELEV {v['elev']:.2f}"]
+            if v['vcLengthFt'] > 0:
+                L = v['vcLengthFt']
+                g1, g2 = v['gradeInPct'], v['gradeOutPct']
+                for nm, s_ in (('PVC', v['sta'] - L / 2), ('PVT', v['sta'] + L / 2)):
+                    z_ = pgl_at(pv, s_)
+                    _line(ps, (X(s_), Y(z_) - 0.25), (X(s_), Y(z_) + 0.25), layer='G-ANNO-TEXT')
+                    _txt(ps, f"{nm} {self._sta(s_)} EL {z_:.2f}", X(s_) - 0.04, Y(z_) + 0.3, 0.05, rot=90)
+                lab.append(f"{L:.0f}' {'CREST' if v['type'] == 'crest' else 'SAG'} V.C.  K = {v['k']:.1f}")
+                lab.append(f"A = {abs(g2 - g1):.2f}%")
+            for j, t in enumerate(lab):
+                _txt(ps, t, x + 0.05, gy1 - 0.12 - j * 0.1, 0.055, bold=(j == 0))
+            _line(ps, (x, y), (x, gy1 - 0.08 - len(lab) * 0.1), layer='G-ANNO-TEXT')
+            if i < len(pv) - 1:
+                b = pv[i + 1]
+                mx, my = (X(v['sta']) + X(b['sta'])) / 2, (Y(v['elev']) + Y(b['elev'])) / 2
+                _txt(ps, f"{v['gradeOutPct']:+.2f}%", mx, my + 0.15, 0.08, bold=True, align=TextEntityAlignment.BOTTOM_CENTER,
+                     rot=math.degrees(math.atan2(Y(b['elev']) - Y(v['elev']), X(b['sta']) - X(v['sta']))))
+        for hl in pr.get('highLow') or []:
+            _txt(ps, f"{'HIGH' if hl['kind'] == 'high' else 'LOW'} PT STA {self._sta(hl['sta'])} EL {hl['elev']:.2f}",
+                 X(hl['sta']), Y(hl['elev']) - 0.18, 0.055, align=TextEntityAlignment.TOP_CENTER)
+        # tables to the right of the grid
+        tx = max(gx1 + 0.6, BAND_X1 - 6.4)
+        rows = [[c['id'], f"{c['radiusFt']:.2f}'", f"{self._dms(c['deltaDeg'])}", f"{c['lengthFt']:.2f}'", f"{c['tangentFt']:.2f}'",
+                 f"{c['chordFt']:.2f}'", c['chordBearing'], self._sta(c['staPC']), self._sta(c['staPT'])]
+                for c in pr['alignment'] if c['kind'] == 'curve']
+        y = split - 0.2
+        if rows:
+            y, _ = table(ps, tx, y, 'CURVE TABLE — ESTATES COURT CENTERLINE', ['CURVE', 'RADIUS', 'DELTA', 'LENGTH', 'TANGENT', 'CHORD', 'CHORD BRG', 'PC STA', 'PT STA'], rows, h=0.07)
+        trows = [[self._sta(t['staStart']), self._sta(t['staEnd']), t['bearing'], f"{t['lengthFt']:.2f}'"] for t in pr['alignment'] if t['kind'] == 'tangent']
+        y, _ = table(ps, tx, y - 0.2, 'TANGENT TABLE', ['FROM STA', 'TO STA', 'BEARING', 'LENGTH'], trows, h=0.07)
+        c = pr['criteria']
+        paragraphs(ps, tx, y - 0.2, BAND_X1 - tx, 'STREET DESIGN CRITERIA AND NOTES', [
+            f"Design speed {c['designSpeedMph']} mph. Grades {c['minGradePct']:.1f}% min. (open section drainage) to {c['maxGradePct']:.0f}% max.; "
+            f"landing at Jennifer Drive {c['landingMaxGradePct']:.0f}% max. for {c['landingLengthFt']:.0f} ft.",
+            f"Vertical curves: crest K {c['kCrest']}, sag K {c['kSag']}, minimum {c['minVcFt']} ft; curves omitted where the grade break is under 1%.",
+            f"Cross slope {c['crossSlopePct']:.0f}% from the centerline; EP = PGL - 0.24' (12-ft half pavement). Shoulders {c['shoulderSlopePct']:.0f}%; slopes 2:1 max.",
+            f"Max. cut {pr['cutFill']['maxCutFt']:.2f} ft, max. fill {pr['cutFill']['maxFillFt']:.2f} ft at the centerline.",
+            'Pavement per the typical section on C-600 (DPW&T Specifications and Standards for Roadways and Bridges, Section III).',
+            c['citation'] + '.',
+        ], h=0.07)
+
+    @staticmethod
+    def _sta(s):
+        h = int(s // 100)
+        return f"{h}+{s - h * 100:05.2f}"
+
+    @staticmethod
+    def _dms(d):
+        a = abs(d); dd = int(a); mf = (a - dd) * 60; mm = int(mf); ss = round((mf - mm) * 60)
+        if ss == 60: mm += 1; ss = 0
+        if mm == 60: dd += 1; mm = 0
+        return f"{dd:02d}°{mm:02d}'{ss:02d}\""
+
     def sheet_cover(self, ps, sh):
         s = self.s
         p = s.get('project') or {}
@@ -649,11 +840,13 @@ class Sheets:
         ad = s['tables'].get('addresses')
         if ad and ad['rows']:
             y, _ = table(ps, xA, y, ad['title'], ad['columns'], ad['rows'], h=0.1)
-        self.cover_legend(ps, xB, top)
+        bottoms = [y]
+        bottoms.append(self.cover_legend(ps, xB, top))
         y = top
         idx_rows = [[str(i + 1), x['id'], x['title']] for i, x in enumerate(self.sheets)]
         y, _ = table(ps, xC, y, 'INDEX OF DRAWINGS', ['NO.', 'SHEET', 'TITLE'], idx_rows, h=0.085, wrap_cols={2: 4.4})
-        self.std_notes(ps, xC, y - 0.3, 6.0)
+        bottoms.append(self.std_notes(ps, xC, y - 0.3, 6.0))
+        self._cover_record_view(ps, min(bottoms) - 0.35)
         y = top
         wD = DRAW_X1 - xD
         for title, body in CERTIFICATIONS:
@@ -666,9 +859,27 @@ class Sheets:
             y -= 0.3
             if y < M + 4.8: break
 
+    def _cover_record_view(self, ps, ytop):
+        """The subdivision as it is of record — tract, lots, R/W, easements, adjoiners; no buildings or improvements."""
+        x0, x1 = DRAW_X0, RC_X - 0.3
+        y0 = M + 0.35
+        if ytop - y0 < 2.5: return
+        bx0, by0, bx1, by1 = self.site_bb
+        need_w, need_h = (bx1 - bx0) + 120, (by1 - by0) + 120
+        sc = next(v for v in (20, 30, 40, 50, 60, 80, 100, 150, 200) if need_w / v <= (x1 - x0) - 0.4 and need_h / v <= (ytop - y0) - 0.6)
+        w = min(x1 - x0, need_w / sc + 0.4)
+        vx0 = x0; vx1 = x0 + w
+        vy1 = ytop - 0.3
+        self.viewport(ps, 'record', vx0, y0, vx1, vy1, sc, centre=self.site_c)
+        _box(ps, vx0, y0, vx1, vy1, layer='G-ANNO-TABL', lw=35)
+        _txt(ps, 'EXISTING SUBDIVISION OF RECORD — LOTS 1-6, ESTATES AT INDIAN HEAD, PLAT BOOK PM 228 @ 83 (AS IS: NO DWELLINGS OR IMPROVEMENTS)',
+             vx0, ytop - 0.05, 0.1, bold=True)
+        bar_scale(ps, vx0 + 0.15, y0 + 0.2, float(sc), sc * 4)
+        ps.add_blockref('NORTH', (vx1 - 0.35, vy1 - 0.75), dxfattribs={'layer': 'G-ANNO-TTLB'})
+
     def cover_legend(self, ps, x, y):
         """LEGEND with NEW and EXISTING columns, drawn from the same layers the plan uses."""
-        rows = [('PROPERTY LINE', 'V-PROP-BNDY', 'V-PROP-ADJN'), ('LOT LINE', 'V-PROP-LOTS', None),
+        rows = [('PROPERTY LINE', 'V-PROP-BNDY', 'V-PROP-ADJN'), ('LOT LINE', 'V-PROP-LOTS', None), ('BUILDING (EXISTING)', None, 'V-BLDG-E'),
                 ('RIGHT-OF-WAY', 'C-ROAD-ROWL-N', 'C-ROAD-ROWL-E'), ('EDGE OF PAVEMENT', 'C-ROAD-PVMT-N', 'C-ROAD-EDGE-E'),
                 ('CENTER LINE', 'C-ROAD-CNTR-N', 'C-ROAD-CNTR-E'), ('CONTOURS', 'C-TOPO-MAJR-N', 'C-TOPO-MAJR-E'),
                 ('EASEMENT (WSSC)', 'V-ESMT', 'V-ESMT'), ('BUILDING', 'C-BLDG-FTPR-N', None),

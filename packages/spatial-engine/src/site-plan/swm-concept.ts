@@ -158,7 +158,7 @@ export function swmConceptReport(input: {
         v10Fps: Number(n10.v.toFixed(2)), v100Fps: Number(n100.v.toFixed(2)), d100Ft: Number(n100.d.toFixed(2)),
         permissibleFps: vPerm, stable,
         protection: stable
-          ? `10-yr velocity ${n10.v.toFixed(1)} ft/s is within ${vPerm.toFixed(1)} ft/s for a grass-lined channel; rock outlet protection is still provided where the swale meets ${input.receiving}, so the 100-yr flow (${n100.v.toFixed(1)} ft/s) does not cut a gully at the transition.`
+          ? `10-yr velocity ${n10.v.toFixed(1)} ft/s is within ${vPerm.toFixed(1)} ft/s for a grass-lined channel. The 100-yr velocity is ${n100.v.toFixed(2)} ft/s; provide engineered outlet protection and verify receiving-system capacity before technical approval.`
           : `10-yr velocity ${n10.v.toFixed(1)} ft/s exceeds ${vPerm.toFixed(1)} ft/s for a grass-lined channel: line the outfall reach with riprap on geotextile and provide rock outlet protection where the swale meets ${input.receiving}.`,
       },
     }
@@ -171,7 +171,7 @@ export function swmConceptReport(input: {
     return `${h.poi}: ${ac(h.areaSqFt)} ac, CN ${h.existing.cn} → ${h.proposed.cn}, Tc ${h.tc.existingHr} → ${h.tc.proposedHr} hr; 100-yr ${r.preCfs.toFixed(1)} → ${r.postCfs.toFixed(1)} cfs (${r.postCfs >= r.preCfs ? '+' : ''}${(r.postCfs - r.preCfs).toFixed(1)} cfs), runoff ${fmt(r.preRunoffCf)} → ${fmt(r.postRunoffCf)} cf.`
   })
   const outstanding = [
-    `Downstream adequacy of ${input.receiving} for the 10- and 100-yr flows at each POI, from the receiving system's section and capacity (SHA as-builts), at technical design. If inadequate, 10-yr quantity control is added (checklist D-10).`,
+    `Downstream adequacy of ${input.receiving} for the 10- and 100-yr flows at each POI, using field survey and available County/SHA drainage records, at technical design. If inadequate, quantity control and/or conveyance improvements are required (checklist D-10).`,
     'POIs, flow paths and the time of concentration are computed on M-NCPPC 2-ft topography.',
   ]
   const narrative: SwmConceptReport['narrative'] = {
@@ -179,12 +179,12 @@ export function swmConceptReport(input: {
       woodsPre > 0
         ? `Natural resources: there are no streams, wetlands, 100-yr floodplain or PMA on the property. Woodland (${fmt(woodsPre)} sf) is conserved outside the limit of disturbance shown on the sediment control plan.`
         : 'Natural resources: there are no environmental features on the property — no streams, wetlands, 100-yr floodplain, PMA or woodland. Disturbance is held to the limit shown on the sediment control plan.',
-      `Natural flow patterns: the tract falls toward MD 210 and leaves at ${pois.length === 1 ? 'one point of investigation' : `${pois.length} points of investigation`}, which the proposed grading keeps; no drainage is diverted between POIs.`,
+      `Natural flow patterns: the tract falls toward Jennifer Drive and leaves at ${pois.length === 1 ? 'one point of investigation' : `${pois.length} points of investigation`}, which the proposed grading keeps; no drainage is diverted between POIs.`,
       `Impervious reduction: rural open section (24-ft pavement, no curb and gutter); side-load courts kept to the turning area at each garage. Proposed impervious ${fmt(impPost)} sf (${(100 * impPost / A).toFixed(1)}%).`,
       `ESD to the MEP: ${input.practices} practices — micro-bioretention (M-6) on each lot and roadside dry swales with check dams (M-8) in the R/W. ESDv required ${fmt(input.esdvReqCf)} cf, provided ${fmt(input.esdvProvCf)} cf (MDE Manual Ch. 5, Table 5.3, HSG ${hsg}).`,
       'ESC integration: practice footprints are kept out of the sediment-trapping sequence and are built last, after the contributing area is stabilized; sediment control is shown on C-500.',
     ],
-    'D-3': pois.map(h => `${h.poi} lies where the Estates Court swales and the overland flow from the lots leave the tract, discharging to ${input.receiving}. The outfall is not on a stream or within a 100-yr floodplain; the receiving area is the state highway drainage system, which SHA must accept under the access permit.`),
+    'D-3': pois.map(h => `${h.poi} lies where the Estates Court swales and overland flow leave the tract, discharging to ${input.receiving}. The outfall is not on a mapped stream or within a mapped 100-yr floodplain. Field survey and County acceptance are required; no direct discharge point to MD 210 is proposed.`),
     'D-4': pois.map(h => `${h.poi}: ${h.outfall.protection} Normal depth at the 100-yr flow ${h.outfall.d100Ft} ft in the ${h.outfall.section} at ${(100 * h.outfall.slope).toFixed(1)}% slope. Upstream inflow from off site (${ac(input.poi.offsiteAreaSqFt)} ac) enters as sheet flow along the tract line and is carried by the swales; no concentrated inflow point needs stabilization.`),
     'D-10': [
       `ESDv required and provided per POI: BMP Summary Table (C-000). Rainfall: ${rainfall.citation}.`,

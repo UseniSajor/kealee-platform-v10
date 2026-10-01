@@ -13,7 +13,7 @@ rings are used as the boundary of record and every call is compared to the
 Outlot A is NOT in the tract: it was conveyed to M. & K. Doyal (L.51565
 F.455, 2025-12-29) in exchange for the 30' WSSC easement (L.51799 F.399).
 """
-import json, math, sys
+import json, math, os, sys
 from shapely.geometry import Polygon, LineString, Point
 from shapely.ops import unary_union
 
@@ -107,7 +107,8 @@ oc = list(off.coords)
 if math.dist(oc[0], C) < math.dist(oc[-1], C): oc = oc[::-1]
 oc = [q for q in oc if math.hypot(q[0] - C[0], q[1] - C[1]) > 20]
 cl = [tuple(q) for q in LineString(oc + [C]).simplify(0.5).coords]
-# start the centreline at the R/W mouth (highway right-of-way line)
+# Start the centreline at the recorded mouth on Jennifer Drive. Jennifer is
+# the frontage road between this subdivision and MD 210.
 mouth = LineString([lot1_nw, P])
 cl_line = LineString(cl)
 # MEASURED OFF THE 2009 APPROVED SHEET (source/stl-2009-georef.json):
@@ -115,11 +116,31 @@ cl_line = LineString(cl)
 #   shoulder/ditch line at +/-20 ft, cul-de-sac edge of pavement R = 42 ft
 #   (R/W R = 60.5 ft as scaled, 60 ft of record), entrance returns R = 50 ft
 #   (fitted 48.9 / 52.2 ft; both centres 62.4 / 62.9 ft off the centreline =
-#   12 + 50, i.e. tangent to the pavement edges), meeting MD 210's edge of road
-#   on a line S 38-29 W, found as the common tangent of the two returns.
+#   12 + 50, i.e. tangent to the pavement edges), meeting Jennifer Drive's
+#   near edge of pavement on a line S 38-29 W.
 PAVE_W, BULB_PAVE_R, RETURN_R = 24.0, 42.0, 50.0
-EOR_A, EOR_B = (1310943.8, 367545.4), (1310865.8, 367447.3)     # MD 210 edge of road (2009 sheet)
+EOR_A, EOR_B = (1310943.8, 367545.4), (1310865.8, 367447.3)     # Jennifer Drive near edge of pavement
 pavement = unary_union([cl_line.buffer(PAVE_W / 2, cap_style=2), Point(C).buffer(BULB_PAVE_R, 64)]).intersection(row.buffer(-1))
+# The cul-de-sac end is the approved layout's, not a circle (user, 2026-10-01:
+# "use the 2009 plan exactly except the utility layout"). Its edge of pavement
+# was traced off the approved sheet (source/estates-court-eop-trace.json): an
+# offset bulb, the south edge running straight into it and the north edge
+# sweeping in on a reverse curve. West of the trace's cut line the generated
+# 24-ft section already matches the approved edges to within 0.3 ft.
+_eop_file = os.path.join(out, 'source', 'estates-court-eop-trace.json')
+if os.path.exists(_eop_file):
+    _eop = json.load(open(_eop_file))
+    _bulb_end = Polygon(_eop['ring']).buffer(0)
+    _g = json.load(open(os.path.join(out, 'source', 'stl-2009-georef.json')))
+    def _W(u, v):
+        _c, _s = math.cos(_g['th']), math.sin(_g['th'])
+        return (_g['X0'] + (_c * (u - _g['tx']) + _s * (_g['ty'] - v)) / _g['s'],
+                _g['Y0'] + (-_s * (u - _g['tx']) + _c * (_g['ty'] - v)) / _g['s'])
+    _cu = _eop['cutU']
+    _west = Polygon([_W(_cu, 0), _W(0, 0), _W(0, 6000), _W(_cu, 6000)])        # sheet west of the cut
+    pavement = unary_union([pavement.intersection(_west), _bulb_end]).buffer(0.01).buffer(-0.01).intersection(row.buffer(-1))
+    pavement = max(pavement.geoms, key=lambda g: g.area) if hasattr(pavement, 'geoms') else pavement
+    print(f'cul-de-sac end from the traced approved layout: {_bulb_end.area:,.0f} sf')
 # the entrance: returns tangent to the pavement edges and to the edge of road
 _p0, _p1 = cl[0], cl[1]
 _u = ((_p1[0] - _p0[0]) / math.dist(_p0, _p1), (_p1[1] - _p0[1]) / math.dist(_p0, _p1)); _n = (-_u[1], _u[0])
@@ -228,7 +249,7 @@ print(f'{len(adjoiners)} adjoiners')
 SRC = ("Boundary of record: plat 'LOTS 1-6 AND OUTLOT A, ESTATES AT INDIAN HEAD', Plat Book PM 228 "
        "Plat 83. Lot geometry from the county parcel layer (PGAtlas Address/MapServer/15), which "
        "reproduces the plat's bearings to the second and its distances to 0.02 ft. Estates Court dedication = the tract less "
-       "the lots, closed at the Indian Head Hwy R/W on the plat's N 51-26-53 W 147.04' call.")
+       "the lots, closed at Jennifer Drive on the plat's N 51-26-53 W 147.04' call. Jennifer Drive lies between the tract and MD 210.")
 common = {
     '_source': SRC, 'basisOfBearings': 'Maryland State Plane Coordinate System (NAD 83), per plat PM 228/83',
     'programme': {'totalFloorAreaSqFt': 2800, 'storeys': 2, 'hasBasement': True,
@@ -274,12 +295,12 @@ rec = {
     'proposedStreets': [{
         'name': 'ESTATES COURT', 'rightOfWayFt': 60, 'pavementFt': PAVE_W,
         'bulbRightOfWayRadiusFt': 60.0, 'bulbPavementRadiusFt': BULB_PAVE_R,
-        'entrance': {**ENTRANCE, 'basis': '2009 approved sheet (DPW&T 9399-2009), measured: 50-ft returns tangent to +/-12-ft pavement edges and the MD 210 edge of road'},
+        'entrance': {**ENTRANCE, 'basis': '2009 approved sheet (DPW&T 9399-2009), measured: 50-ft returns tangent to +/-12-ft pavement edges and the Jennifer Drive edge of road'},
         'centreline': [list(p) for p in cl], 'bulbCentre': list(C),
         'rowRings': [[list(p) for p in list(row.exterior.coords)[:-1]]],
         'pavementRings': [[list(p) for p in list(g.exterior.coords)[:-1]] for g in (pavement.geoms if hasattr(pavement, 'geoms') else [pavement])],
         'rowSqFt': round(row.area),
-        'basis': "60' R/W per plat PM 228/83; measured on the 2009 approved sheet: 24' pavement centred (EOP +/-12'), shoulder/ditch line +/-20', cul-de-sac EOP R 42', entrance returns R 50' to MD 210 (rural open section, DPW&T Std. 500.10/600.02/600.04)",
+        'basis': "60' R/W per plat PM 228/83; measured on the 2009 approved sheet: 24' pavement centred (EOP +/-12'), shoulder/ditch line +/-20', cul-de-sac EOP R 42', entrance returns R 50' to Jennifer Drive (rural open section, DPW&T Std. 500.10/600.02/600.04)",
         'note': "Section to be confirmed against the current DPW&T/DPIE road standard for a rural residential cul-de-sac at technical review.",
         'utilities': {
             'water': {'sizeIn': 8, 'offsetFt': 6, 'label': 'PROP. 8" W', 'connectsTo': 'EX. WSSC WATER IN HENRIETTA DR'},

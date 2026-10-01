@@ -1,0 +1,195 @@
+{
+ "source": "PGAtlas Administrative/MapServer/2 (Building 2023), queried 2026-10-01",
+ "parcel": {
+  "OBJECTID": 47514,
+  "SHAPE.AREA": 41424.6901238673,
+  "SHAPE.LEN": 851.06237680043,
+  "ACCOUNT": "0296038",
+  "ASSESS_DIST": "05",
+  "LAND_AREA_ACRE": 0.949,
+  "LAND_AREA_SQFT": 41338.0,
+  "PLAT": null,
+  "LOT": null,
+  "BLOCK": null,
+  "PROPERTY_DESC": null,
+  "PARCEL": "199",
+  "LIBER": "51024",
+  "FOLIO": "546",
+  "SUB_NAME": null,
+  "CONDO_PLAT_NUMBER": null,
+  "CONDO_PHASE_NUMBER": null,
+  "CONDO_BUILDING_NUMBER": null,
+  "CONDO_UNIT_NUMBER": null,
+  "SUBDIVIDED": "N",
+  "SUB_CODE": null,
+  "SUBDIVISION_PLAT_DATE": null,
+  "SECTION": null,
+  "PLAT_PARCEL": null,
+  "OUT_LOT": null,
+  "OUT_PARCEL": null,
+  "FIVE_DASH": null,
+  "TAXMAPGRID": "151F3",
+  "WSSCGRID": "220SE01",
+  "TAXMAP": "151",
+  "TAXGRID": "F3",
+  "OWNER_NAME": "CLARK JAMIE A",
+  "ICO_NAME": null,
+  "MAIL_STREET": "15608 INDIAN HEAD HWY",
+  "MAIL_CITY": "ACCOKEEK",
+  "MAIL_STATE": "MD",
+  "MAIL_ZIP5": "20607",
+  "MAIL_ZIP4": null,
+  "MAIL_IND": "O",
+  "HOUSE_NUMBER": "015608",
+  "HOUSE_SUFFIX": null,
+  "UNIT": null,
+  "STREET_NAME": "INDIAN HEAD",
+  "STREET_TYPE": "HWY",
+  "STREET_DIRECTION": null,
+  "CITY": "ACCOKEEK",
+  "ZIP5": "20607",
+  "PROP_ADDR_SOURCE": "PMS",
+  "AZC": "002",
+  "BPRUC": null,
+  "DWELLING_TYPE": "A001",
+  "DWELLING_UNITS": "0001",
+  "DWELLING_STORY_CODE": "A002",
+  "STRUCTURE_SQ_FT": "0001209",
+  "YEAR_BUILT": "1959",
+  "SALES_PRICE": 435000,
+  "SALES_PRICE_IND": "IO",
+  "TRANSFER_DATE": "20250625",
+  "TENANCY_CODE": null,
+  "DEVELOPED": "Y",
+  "RESIDENTIAL_IND": "H",
+  "FCV_IMPS": 181667,
+  "FCV_LAND": 102000,
+  "CURR_ASSESS": 283667,
+  "PREF_ASSESS": 0,
+  "CYCLE_CODE": "1",
+  "CYCLE_YEAR": "2",
+  "AGRICULTURE_INDICATOR": null,
+  "AGRICULTURE_CODE": null,
+  "AG_TAX_DUE_UNTIL_DATE": null,
+  "CURTILAGE_ASSESS_IND": "N",
+  "TOWN_CODE": null,
+  "PREF_CODE": null,
+  "EXEMPT_CLASS": null,
+  "EXEMPT_STATUS": "0",
+  "SCENIC_EASEMENT_IND": "N",
+  "ZONE_CODE1": "RR",
+  "ZONE_CODE2": null,
+  "ZONE_CODE3": null,
+  "ZONE_CODE4": null,
+  "ZONE_CODE5": null,
+  "CHESBAY_CRIT_AREA_CD": null,
+  "CHESBAY_CA_ADOPT_DATE": null,
+  "PLANAREA": "84",
+  "PGTAZ": "1399",
+  "COGTAZ": "1399",
+  "HISTORIC_RESOURCE": null,
+  "HISTORIC_SITE": null,
+  "HISTORIC_SITE_DATE": null,
+  "HISTORIC_DISTRICT_ID": null,
+  "HISTORIC_DISTRICT_DATE": null,
+  "HISTORIC_PARENT_ACCOUNT": null,
+  "CENSUS_TRACT": "1310",
+  "CENSUS_BLOCK": "3013",
+  "FLOOD_PLAIN": null,
+  "MNCPPC_USE": "SFD",
+  "PRIOR_CENSUS_TRACT": "2018",
+  "PRIOR_CENSUS_BLOCK": "1310",
+  "ZIP4": "0000",
+  "ZONE_MULTIPLES": "1",
+  "LAND_AREA_RAW": 41338000.0,
+  "LAND_AREA_UNIT": "F",
+  "PROPERTY_ID": "050296038",
+  "DOS_ACCOUNT": "1509000",
+  "PARENT_ACCOUNT": "0000000",
+  "UPDATED_DATE": 1786320000000,
+  "CONFLICTS": null,
+  "ACTIVE_DATE": 1351123200000,
+  "INACTIVE_DATE": null,
+  "SDAT_ACCOUNT_URL": "https://sdat.dat.maryland.gov/RealProperty/Pages/MDP_viewdetails.aspx?County=17&SearchType=ACCT&District=05&AccountNumber=0296038",
+  "PG_TAX_CLASS": "21",
+  "EXEMPT_ASSESSMENT": 0,
+  "UNIQUE_ID": "254961-37403"
+ },
+ "buildings": [
+  {
+   "ring": [
+    [
+     1310972.816390194,
+     367347.1038140341
+    ],
+    [
+     1310976.1995855349,
+     367344.50703444675
+    ],
+    [
+     1310986.3216125271,
+     367336.73506836
+    ],
+    [
+     1310979.1146059474,
+     367327.34794802614
+    ],
+    [
+     1310982.8563963713,
+     367324.47393803473
+    ],
+    [
+     1310959.4824273684,
+     367294.029773185
+    ],
+    [
+     1310947.6635533671,
+     367303.10488627333
+    ],
+    [
+     1310941.1885007008,
+     367294.67084803234
+    ],
+    [
+     1310926.3105777025,
+     367306.0940535299
+    ],
+    [
+     1310933.3614166186,
+     367315.2790745376
+    ],
+    [
+     1310932.1816289476,
+     367316.1849126008
+    ],
+    [
+     1310955.5464116123,
+     367346.61792261474
+    ],
+    [
+     1310959.573306448,
+     367343.5270495326
+    ],
+    [
+     1310966.2133850283,
+     367352.17401387106
+    ],
+    [
+     1310972.816390194,
+     367347.1038140341
+    ]
+   ],
+   "attributes": {
+    "OBJECTID": 338520,
+    "HEIGHT": 18.088,
+    "ROOF_TYPE": "Gable",
+    "FEATURE_CODE": 2201,
+    "SOURCE_CODE": 3,
+    "SHAPE.AREA": 1851.8326276988703,
+    "SHAPE.LEN": 191.991094136641,
+    "GLOBALID": "{77AC8F7E-36B5-43BE-9929-C5C2F2104842}"
+   },
+   "areaSqFt": 1852
+  }
+ ]
+}

@@ -146,13 +146,89 @@ class Model:
         h.paths.add_polyline_path(pts, is_closed=True)
         return h
 
-    def text(self, s, at, h_in, layer, angle=0, align=TextEntityAlignment.MIDDLE_CENTER, bold=False):
+    # ── label placement: no overprinting; moved labels get a leader ────────
+    def _sheets_of(self, layer):
+        from .style import SHEET_LAYERS
+        if not hasattr(self, '_lay_sheets'):
+            self._lay_sheets = {}
+            for k, lays in SHEET_LAYERS.items():
+                for l in lays: self._lay_sheets.setdefault(l, set()).add(k)
+        return self._lay_sheets.get(layer, {'*'})
+
+    def _box(self, s, at, H, angle, align, lines=None):
+        from shapely.geometry import Polygon as _P
+        rows = lines or [s]
+        w = max(len(r) for r in rows) * H * 0.62 + H * 0.3
+        h = H * (1.45 * len(rows)) + H * 0.2
+        name = getattr(align, 'name', str(align))
+        dx = 0 if 'LEFT' in name else (-w if 'RIGHT' in name else -w / 2)
+        dy = (-h if 'TOP' in name else (0 if 'BOTTOM' in name or 'BASELINE' in name else -h / 2))
+        a = math.radians(angle); c, s_ = math.cos(a), math.sin(a)
+        pts = [(dx, dy), (dx + w, dy), (dx + w, dy + h), (dx, dy + h)]
+        return _P([(at[0] + x * c - y * s_, at[1] + x * s_ + y * c) for x, y in pts])
+
+    def _free(self, poly, sheets):
+        for q, qs in self._occ:
+            if (sheets & qs or '*' in qs or '*' in sheets) and poly.intersects(q):
+                return False
+        return True
+
+    def _place(self, s, at, H, angle, align, layer, lines=None, fixed=False):
+        """Return a clear insertion point for this label (and whether it moved)."""
+        if not hasattr(self, '_occ'):
+            self._occ = []
+            from shapely.geometry import Polygon as _P
+            for f in self.feats:
+                if f.get('kind') == 'Building' and len(_ring(f)) > 2:
+                    self._occ.append((_P(_ring(f)).buffer(0), {'*'}))
+        sheets = self._sheets_of(layer)
+        box = self._box(s, at, H, angle, align, lines)
+        if fixed or self._free(box, sheets):
+            self._occ.append((box, sheets)); return at, False
+        a = math.radians(angle); ux, uy = math.cos(a), math.sin(a); nx, ny = -uy, ux
+        cands = []
+        for k in range(1, 9):
+            for sg in (1, -1):
+                cands.append((nx * sg * k * H * 1.25, ny * sg * k * H * 1.25))
+        for k in range(1, 6):
+            for sg in (1, -1):
+                for j in (0, 1, -1, 2, -2):
+                    cands.append((ux * sg * k * H * 3 + nx * j * H * 1.25, uy * sg * k * H * 3 + ny * j * H * 1.25))
+        for r in (6, 10, 15, 20, 28, 36):
+            for t in range(0, 360, 30):
+                cands.append((r * math.cos(math.radians(t)), r * math.sin(math.radians(t))))
+        for dx, dy in cands:
+            p = (at[0] + dx, at[1] + dy)
+            b = self._box(s, p, H, angle, align, lines)
+            if self._free(b, sheets):
+                self._occ.append((b, sheets))
+                if math.hypot(dx, dy) > 1.5 * H:
+                    # leader from the anchor to the nearest point of the moved label
+                    from shapely.ops import nearest_points as _np
+                    from shapely.geometry import Point as _Pt
+                    q = _np(b, _Pt(at))[0]
+                    self.msp.add_lwpolyline([at, (q.x, q.y)], dxfattribs={'layer': layer, 'lineweight': 13})
+                    self.msp.add_circle(at, H * 0.18, dxfattribs={'layer': layer})
+                return p, True
+        self._occ.append((box, sheets))
+        return at, False
+
+    def text(self, s, at, h_in, layer, angle=0, align=TextEntityAlignment.MIDDLE_CENTER, bold=False, fixed=False):
+        at = (at[0], at[1])
+        at, _ = self._place(str(s), at, th(h_in), angle, align, layer, fixed=fixed)
         t = self.msp.add_text(s, height=th(h_in), rotation=angle,
                               dxfattribs={'layer': layer, 'style': 'KEALEE-B' if bold else 'KEALEE'})
         t.set_placement(at, align=align)
         return t
 
-    def mtext(self, s, at, h_in, layer, width_in=None, attach=5, bold=False):
+    def mtext(self, s, at, h_in, layer, width_in=None, attach=5, bold=False, fixed=False):
+        at = (at[0], at[1])
+        lines = str(s).split('\\P')
+        if width_in:
+            import textwrap as _tw
+            n = max(8, int(width_in / (h_in * 0.62)))
+            lines = [w for ln in lines for w in (_tw.wrap(ln, n) or [''])]
+        at, _ = self._place(str(s), at, th(h_in), 0, TextEntityAlignment.MIDDLE_CENTER, layer, lines=lines, fixed=fixed)
         m = self.msp.add_mtext(s, dxfattribs={'layer': layer, 'char_height': th(h_in), 'attachment_point': attach,
                                               'style': 'KEALEE-B' if bold else 'KEALEE'})
         m.set_location(at)
@@ -172,12 +248,15 @@ class Model:
     def build(self):
         self.property()
         self.adjoiners()
+        self.existing_structures()
         self.roads()
         self.street()
         self.site()
         self.topo()
         self.environment()
         self.utilities()
+        self.street_geometry()
+        self.sight_lines()
         self.stormwater()
         self.sediment()
         self.grid()
@@ -231,8 +310,8 @@ class Model:
                 h1, h2 = th(0.14), th(0.1)
                 w = max(len(l1) * h1, len(l2) * h2) * 0.72 + th(0.12)
                 top, bot = c[1] + h1 * 1.25, c[1] - h2 * 1.6
-                self.text(l1, (c[0], c[1] + h1 * 0.5), 0.14, 'V-PROP-ANNO', bold=True)
-                self.text(l2, (c[0], c[1] - h2 * 0.6), 0.1, 'V-PROP-ANNO')
+                self.text(l1, (c[0], c[1] + h1 * 0.5), 0.14, 'V-PROP-ANNO', bold=True, fixed=True)
+                self.text(l2, (c[0], c[1] - h2 * 0.6), 0.1, 'V-PROP-ANNO', fixed=True)
                 self.pl([(c[0] - w / 2, bot), (c[0] + w / 2, bot), (c[0] + w / 2, top), (c[0] - w / 2, top)], 'V-PROP-ANNO', close=True)
                 if addr: self.text(str(addr).upper(), (c[0], bot - th(0.11)), 0.075, 'V-PROP-ANNO')
 
@@ -250,6 +329,15 @@ class Model:
                     d = poly.exterior.distance(P)
                     if d > bd: bd, best = d, pt
         return best
+
+    def existing_structures(self):
+        # existing buildings off site, drawn screened with a light hatch and labelled EXISTING
+        for st in (self.s.get('extras') or {}).get('existingStructures') or []:
+            r = [(p[0], p[1]) for p in st.get('ring') or []]
+            if len(r) < 3: continue
+            self.fill(r, 'V-BLDG-E', pattern='ANSI31', scale=PAT)
+            self.pl(r, 'V-BLDG-E', close=True)
+            self.mtext(st.get('label', 'EXISTING DWELLING'), _centroid(r), 0.08, 'V-BLDG-ANNO-E', width_in=1.6, bold=True)
 
     def adjoiners(self):
         from shapely.geometry import Polygon
@@ -282,8 +370,12 @@ class Model:
             a = f['attributes']
             ln = _line(f)
             lay = {'edge-of-road': 'C-ROAD-EDGE-E', 'lane-line': 'C-ROAD-CNTR-E', 'centerline': 'C-ROAD-CNTR-E',
-                   'right-of-way': 'C-ROAD-ROWL-E'}.get(a['roadLine'], 'C-ROAD-EDGE-E')
+                   'right-of-way': 'C-ROAD-ROWL-E', 'barrier': 'C-ROAD-ROWL-E'}.get(a['roadLine'], 'C-ROAD-EDGE-E')
             self.pl(ln, lay)
+            if a['roadLine'] == 'barrier' and a.get('label') and len(ln) >= 2:
+                p, q = ln[0], ln[-1]
+                at = (p[0] + (q[0] - p[0]) * 0.43, p[1] + (q[1] - p[1]) * 0.43)
+                self.text(a['label'], at, 0.055, 'C-ROAD-ANNO-E', angle=_text_angle(p, q), bold=True)
             road = a.get('road', '')
             if road not in named and a['roadLine'] in ('centerline', 'lane-line') and len(ln) >= 2:
                 named.add(road)
@@ -292,7 +384,19 @@ class Model:
                 mid = ((p[0] + q[0]) / 2, (p[1] + q[1]) / 2)
                 if len(ln) == 2:
                     mid = (p[0] + (q[0] - p[0]) * 0.28, p[1] + (q[1] - p[1]) * 0.28)
-                self.text(a.get('roadLabel', road), mid, 0.13, 'C-ROAD-ANNO-E', angle=_text_angle(p, q), bold=True)
+                label = a.get('roadLabel', road)
+                if 'INDIAN HEAD' in str(label).upper() or '210' in str(label):
+                    # beside the site, inside the plan view: the point on the highway
+                    # nearest the tract, 150 ft along it clear of the entrance
+                    from shapely.geometry import LineString as _L, Point as _Pt
+                    hw = _L(ln)
+                    tx = [t[0] for t in self.s['tract']]; ty = [t[1] for t in self.s['tract']]
+                    s0 = hw.project(_Pt((sum(tx) / len(tx), sum(ty) / len(ty))))
+                    s1 = s0 + 150 if s0 + 150 < hw.length else s0 - 150
+                    m = hw.interpolate(s1); m2 = hw.interpolate(min(hw.length, s1 + 5))
+                    mid, p, q = (m.x, m.y), (m.x, m.y), (m2.x, m2.y)
+                    label = "INDIAN HEAD HIGHWAY — MD ROUTE 210 (SHA, VARIABLE WIDTH R/W)"
+                self.text(label, mid, 0.13, 'C-ROAD-ANNO-E', angle=_text_angle(p, q), bold=True)
 
     def street(self):
         ps = self.s['extras'].get('proposedStreet') or {}
@@ -328,7 +432,7 @@ class Model:
         if ent:
             n, s_ = ent['northReturnCentre'], ent['southReturnCentre']
             mid = ((n[0] + s_[0]) / 2, (n[1] + s_[1]) / 2)
-            self.mtext(f"ENTRANCE — R={ent['returnRadiusFt']:.0f}' RETURNS\\PSHA ACCESS PERMIT REQUIRED", (mid[0] - 30, mid[1] + 55), 0.075, 'C-ROAD-ANNO-N', width_in=2.2)
+            self.mtext(f"ESTATES CT / JENNIFER DR ENTRANCE — R={ent['returnRadiusFt']:.0f}' RETURNS\\PCOUNTY REVIEW — EXISTING MD 210 SEPARATION TO REMAIN", (mid[0] - 30, mid[1] + 55), 0.065, 'C-ROAD-ANNO-N', width_in=2.4)
         for f in self.of('ProposedFeature', type='roadside swale'):
             self.pl(_line(f), 'C-ROAD-SWAL-N')
         sw = self.of('ProposedFeature', type='roadside swale')
@@ -359,17 +463,93 @@ class Model:
             a = f.get('attributes') or {}
             c = self._pole(r)
             ff = a.get('finishedFloorElevFt')
-            self.mtext(f"{a.get('lotLabel', '')}\\PFF {ff:.2f}" if ff else a.get('lotLabel', ''), c, 0.075, 'C-BLDG-ANNO-N', bold=True)
+            if ff: self.mtext(f"FF {ff:.2f}", c, 0.075, 'C-BLDG-ANNO-N', bold=True, fixed=True)
         for f in self.of('Pavement'):
             a = f.get('attributes') or {}
-            if a.get('improvement') in ('Driveway', 'Apron', 'Walk', 'Stoop'):
+            imp = a.get('improvement')
+            if imp in ('Driveway', 'Apron'):
                 r = _ring(f)
                 self.pl(r, 'C-PVMT-DRWY-N', close=True)
                 self.fill(r, 'C-PVMT-DRWY-N', rgb=(232, 232, 232))
+            elif imp in ('Walk', 'Stoop'):
+                # concrete: heavier outline and a stipple, so a 4-ft walk reads at 1" = 30'
+                r = _ring(f)
+                self.fill(r, 'C-PVMT-WALK-N', pattern='AR-CONC', scale=PAT * 0.25)
+                self.pl(r, 'C-PVMT-WALK-N', close=True)
+                if imp == 'Walk' and len(r) > 2:
+                    from shapely.geometry import Polygon as _Pw
+                    mrr = _Pw(r).minimum_rotated_rectangle.exterior.coords
+                    e = max(((mrr[i], mrr[i + 1]) for i in range(4)), key=lambda q: math.dist(*q))
+                    if math.dist(*e) > 8:
+                        c = _centroid(r)
+                        self.text("4' CONC. WALK", (c[0], c[1]), 0.05, 'C-PVMT-ANNO-N', angle=_text_angle(*e))
         for f in self.of('ProposedFeature'):
             gid = str(f.get('id', ''))
             if gid.endswith('buildable-envelope') and _ring(f):
                 self.pl(_ring(f), 'V-PROP-BRL', close=True)
+
+    def street_geometry(self):
+        """Stationing, tangent bearings, curve labels and EOP spot grades on Estates Court."""
+        pr = self.s.get('profile')
+        if not pr: return
+        lay, ann = 'C-ROAD-STA-N', 'C-ROAD-STA-N'
+        sts = pr['stations']
+        cl = [tuple(st['at']) for st in sts]
+        for k, st in enumerate(sts):
+            s = st['sta']
+            p = st['at']
+            q = sts[min(k + 1, len(sts) - 1)]['at'] if k + 1 < len(sts) else st['at']
+            r = sts[max(k - 1, 0)]['at']
+            dx, dy = q[0] - r[0], q[1] - r[1]
+            L = math.hypot(dx, dy) or 1
+            ux, uy = dx / L, dy / L; nx, ny = -uy, ux
+            major = abs(s / 100 - round(s / 100)) < 1e-6
+            tick = 3.0 if major else 1.5
+            self.msp.add_line((p[0] - nx * tick, p[1] - ny * tick), (p[0] + nx * tick, p[1] + ny * tick), dxfattribs={'layer': lay})
+            if major:
+                h = int(round(s / 100))
+                self.text(f"{h}+00", (p[0] + nx * 6.5, p[1] + ny * 6.5), 0.065, ann, angle=_text_angle((0, 0), (ux, uy)), bold=True)
+            if abs(s / 50 - round(s / 50)) < 1e-6:
+                # EOP elevations both sides, 2% cross slope
+                for side in (1, -1):
+                    e = (p[0] + nx * 12 * side, p[1] + ny * 12 * side)
+                    self.msp.add_blockref('SPOT', e, dxfattribs={'layer': 'C-TOPO-SPOT-N'})
+                    self.text(f"EP {st['eopLeft']:.2f}", (e[0] + nx * 3.5 * side, e[1] + ny * 3.5 * side), 0.045, 'C-TOPO-SPOT-N',
+                              angle=_text_angle((0, 0), (ux, uy)))
+        # end station
+        self.text(f"END STA {self._sta(pr['lengthFt'])}", (cl[-1][0], cl[-1][1] - 6), 0.06, ann, bold=True)
+        self.text("STA 0+00 — EX. EDGE OF ROAD, JENNIFER DRIVE", (cl[0][0], cl[0][1] + 8), 0.06, ann, bold=True)
+        for el in pr['alignment']:
+            if el['kind'] == 'tangent' and el['lengthFt'] > 40:
+                a, b = el['start'], el['end']
+                m = ((a[0] + b[0]) / 2, (a[1] + b[1]) / 2)
+                ux, uy = (b[0] - a[0]) / el['lengthFt'], (b[1] - a[1]) / el['lengthFt']
+                self.text(f"{el['bearing']}  {el['lengthFt']:.2f}'", (m[0] + uy * 2.5, m[1] - ux * 2.5), 0.06, ann,
+                          angle=_text_angle(a, b))
+            elif el['kind'] == 'curve':
+                for nm, pt in (('PC', el['pc']), ('PT', el['pt'])):
+                    self.msp.add_circle(tuple(pt), 0.9, dxfattribs={'layer': lay})
+                    self.text(f"{nm} {self._sta(el['staPC'] if nm == 'PC' else el['staPT'])}", (pt[0], pt[1] + 4), 0.05, ann)
+                mid = ((el['pc'][0] + el['pt'][0]) / 2, (el['pc'][1] + el['pt'][1]) / 2)
+                self.text(el['id'], mid, 0.08, ann, bold=True)
+
+    def sight_lines(self):
+        sd = (self.s.get('extras') or {}).get('sightDistance')
+        if not sd: return
+        for ln in sd['lines']:
+            a, b = tuple(ln['from']), tuple(ln['to'])
+            self.pl([a, b], 'C-ROAD-SIGHT-N')
+            self.msp.add_circle(b, 1.5, dxfattribs={'layer': 'C-ROAD-SIGHT-N'})
+            m = (a[0] + (b[0] - a[0]) * 0.55, a[1] + (b[1] - a[1]) * 0.55)
+            self.text(f"ISD {ln['isdFt']:.0f}' ({ln['tgS']} s)", m, 0.06, 'C-ROAD-SIGHT-N', angle=_text_angle(a, b), bold=True)
+        dp = sd['decisionPoint']
+        self.msp.add_circle((dp[0], dp[1]), 1.2, dxfattribs={'layer': 'C-ROAD-SIGHT-N'})
+        self.text("DECISION PT. 14.5' FROM EDGE OF ROAD", (dp[0], dp[1] - 4), 0.05, 'C-ROAD-SIGHT-N')
+
+    @staticmethod
+    def _sta(s):
+        h = int(s // 100)
+        return f"{h}+{s - h * 100:05.2f}"
 
     def topo(self):
         for f in self.of('Contour'):
@@ -398,6 +578,11 @@ class Model:
             r = [(p[0], p[1]) for p in sl['ring']]
             self.fill(r, 'C-ENVR-SLOP-E', pattern='DOTS' if sl['range'] == '15-25%' else 'ANSI37', scale=PAT)
             self.pl(r, 'C-ENVR-SLOP-E', close=True)
+        for wo in eg.get('woodland') or []:
+            r = [(p[0], p[1]) for p in wo['ring']]
+            self.fill(r, 'C-ENVR-WOOD-E', pattern='ANSI31', scale=PAT * 1.8, transparency=65)
+            self.pl(r, 'C-ENVR-WOOD-E', close=True)
+            self.text(wo['label'], self._pole(r), 0.065, 'C-ENVR-ANNO', bold=True)
         for so in eg.get('soils') or []:
             r = [(p[0], p[1]) for p in so['ring']]
             self.pl(r, 'C-ENVR-SOIL-E', close=True)
@@ -499,15 +684,56 @@ class Model:
             self.mtext(f"OFF-SITE DRAINAGE AREA\\P{poi['offsiteAreaSqFt'] / 43560:.2f} AC", (rp.x, rp.y), 0.07, 'C-SWM-ANNO')
 
     def sediment(self):
-        for f in self.of('LimitOfDisturbance'):
-            self.pl(_ring(f), 'C-ESC-LOD', close=True)
+        ex = self.s.get('extras') or {}
+        site_lod = ex.get('siteLod') or []
+        if site_lod:
+            # one L.O.D. around the whole development, labelled along its run
+            for r in site_lod:
+                r = [(p[0], p[1]) for p in r]
+                self.pl(r, 'C-ESC-LOD', close=True, ltscale=1.6)
+                # 'LOD' inline along the line every ~90 ft, as the approved Yocum sheets letter it
+                ring = r + [r[0]]
+                walked, nxt = 0.0, 45.0
+                for i in range(len(ring) - 1):
+                    p, q = ring[i], ring[i + 1]
+                    L = math.dist(p, q)
+                    while L > 0 and walked + L >= nxt:
+                        t = (nxt - walked) / L
+                        if L > 12:
+                            m = self.msp.add_mtext('LOD', dxfattribs={'layer': 'C-ESC-ANNO', 'char_height': th(0.075), 'attachment_point': 5,
+                                                                     'style': 'KEALEE-B', 'rotation': _text_angle(p, q)})
+                            m.set_location((p[0] + (q[0] - p[0]) * t, p[1] + (q[1] - p[1]) * t))
+                            m.set_bg_color('canvas', scale=1.2)          # mask the line under the lettering
+                        nxt += 90.0
+                    walked += L
+            area = ex.get('siteLodSqFt')
+            if area:
+                c = _centroid([(p[0], p[1]) for p in max(site_lod, key=len)])
+        else:
+            for f in self.of('LimitOfDisturbance'):
+                self.pl(_ring(f), 'C-ESC-LOD', close=True)
+        # super silt fence on the down-gradient side of the L.O.D.
+        for run in ex.get('siltFence') or []:
+            run = [(p[0], p[1]) for p in run]
+            self.pl(run, 'C-ESC-SILT')
+            for i in range(0, len(run) - 1, max(1, len(run) // 4)):
+                p, q = run[i], run[i + 1]
+                if math.dist(p, q) > 25:
+                    nx, ny = -(q[1] - p[1]) / math.dist(p, q), (q[0] - p[0]) / math.dist(p, q)
+                    self.text('SSF', ((p[0] + q[0]) / 2 + nx * 3, (p[1] + q[1]) / 2 + ny * 3), 0.055, 'C-ESC-ANNO', angle=_text_angle(p, q), bold=True)
+        sce = ex.get('constructionEntrance')
+        if sce:
+            r = [(p[0], p[1]) for p in sce]
+            self.pl(r, 'C-ESC-SCE', close=True)
+            self.fill(r, 'C-ESC-SCE', pattern='GRAVEL', scale=PAT * 0.5)
+            self.mtext("STABILIZED CONSTRUCTION ENTRANCE (MDE B-1)\\PFULL JENNIFER DR APRON + 30' INTO ESTATES CT; 50' MIN. TOTAL TRAVEL LENGTH\\P6\" MIN. 2\"-3\" AGGREGATE ON NONWOVEN GEOTEXTILE; INSTALL BEFORE PERMANENT PAVING\\PTEMP. PIPE UNDER SCE WHERE FLOW CROSSES; SIZE FOR 2-YR STORM, 6\" MIN.", _centroid(r), 0.052, 'C-ESC-ANNO', width_in=2.2, bold=True)
         for f in self.of('ProposedFeature'):
             a = f.get('attributes') or {}
             ty = str(a.get('type', ''))
             if 'silt fence' in ty.lower():
                 r = _ring(f) or _line(f)
                 self.pl(r, 'C-ESC-SILT', close=bool(_ring(f)))
-            elif 'construction entrance' in ty.lower():
+            elif 'construction entrance' in ty.lower() and not sce:
                 r = _ring(f)
                 self.pl(r, 'C-ESC-SCE', close=True)
                 self.fill(r, 'C-ESC-SCE', pattern='GRAVEL', scale=PAT * 0.5)

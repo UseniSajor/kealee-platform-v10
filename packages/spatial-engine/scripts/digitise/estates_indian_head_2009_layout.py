@@ -251,8 +251,17 @@ for n, d in L2009.items():
     # stoop and walk
     sp = d.get('stoop_world') or W(*d['stoop'])
     stoop = Polygon([(sp[0] + ue[0] * dx + nrm[0] * dy, sp[1] + ue[1] * dx + nrm[1] * dy) for dx, dy in ((-4, -2.5), (4, -2.5), (4, 2.5), (-4, 2.5))])
-    wp, _ = nearest_points(on_lot, Point(sp))
-    walk = strip(sp, (wp.x, wp.y), 4.0).difference(house).buffer(0) if math.dist(sp, (wp.x, wp.y)) > 3 else None
+    # The lead walk leaves the stoop square to the front wall for 5 ft, then runs
+    # to the drive and 1 ft into it, so it always joins the paving (user
+    # 2026-10-01: walks "incomplete and not visible" — Lot 6's straight walk
+    # clipped the house and stopped 4.35 ft short).
+    _hc = house.centroid
+    uo = unit((_hc.x, _hc.y), sp)                      # out from the house through the front door
+    out_pt = (sp[0] + uo[0] * 5.0, sp[1] + uo[1] * 5.0)
+    wp, _ = nearest_points(on_lot, Point(out_pt))
+    uw = unit(out_pt, (wp.x, wp.y)) if math.dist(out_pt, (wp.x, wp.y)) > 0.1 else (0.0, 0.0)
+    w_end = (wp.x + uw[0] * 1.0, wp.y + uw[1] * 1.0)
+    walk = unary_union([strip(sp, out_pt, 4.0), strip(out_pt, w_end, 4.0), Point(out_pt).buffer(2.0, cap_style=3)]).difference(house).buffer(0)
     geomlist = lambda gg: [list(p) for p in list((max(gg.geoms, key=lambda x: x.area) if hasattr(gg, 'geoms') else gg).exterior.coords)[:-1]]
     spec['fixedFootprint'] = [list(p) for p in list(house.exterior.coords)[:-1]]
     spec['fixedPaving'] = [
