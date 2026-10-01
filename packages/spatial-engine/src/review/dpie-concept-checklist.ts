@@ -123,7 +123,7 @@ export function evaluateChecklist(f: ChecklistFacts, overrides: Record<string, {
     'A-6': r('C', 'Vicinity map at 1" = 2,000\' with north arrow and bar scale, upper right.', f.coverSheet),
     'A-7': r('C', 'Graphic bar scale in every plan viewport.', 'ALL'),
     'A-8': r('C', 'Three State Plane grid ticks with N/E values on each plan.', f.planSheet),
-    'A-9': r('C', `Horizontal ${f.datum.horizontal}; vertical ${f.datum.vertical}. NGVD 29 conversion to be stated by the field-run survey.`, 'ALL'),
+    'A-9': r('C', `Horizontal ${f.datum.horizontal}; vertical ${f.datum.vertical}.`, 'ALL'),
     'A-10': r('C', 'General notes on the cover sheet.', f.coverSheet),
     'A-11': r(f.planScaleFtPerIn <= 50 ? 'C' : 'O', `Entire property at 1" = ${f.planScaleFtPerIn}'.`, f.planSheet),
     'A-12': r('C', 'Existing structures, adjoining houses, fences, sheds, well, easements of record shown; no historic sites or ruins.', f.existingSheet),

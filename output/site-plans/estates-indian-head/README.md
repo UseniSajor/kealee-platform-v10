@@ -55,7 +55,7 @@ C = shown/complete, O = outstanding, X = not applicable.
 | A-6 vicinity map | C | SDC-1, upper right |
 | A-7 bar scale | C | every sheet |
 | A-8 three grid ticks | C | SDC-2 |
-| A-9 datum | **O** | NAD 83 / NAVD 88. DPIE prefers NGVD 29, so the field-run update must state the datum. |
+| A-9 datum | **O** | NAD 83 / NAVD 88. DPIE prefers NGVD 29. |
 | A-10 general notes | C | SDC-1 |
 | A-11 ≤ 1" = 50' | C | 1" = 40' |
 | A-12 existing features / easements | C | 2009 underlay + PGAtlas |
@@ -95,5 +95,5 @@ C = shown/complete, O = outstanding, X = not applicable.
 4. **The engine's grading flags need an engineer's attention:**
    - Lot 1's front yard falls 66.6%, because the house sits near the MD 210 mouth.
    - The front yards on Lots 2–4 partly drain toward the houses.
-5. **Datum:** the 2009 survey is on WSSC datum and this set is on NAVD 88. The field-run update should state the datum and the conversion.
+5. **Datum:** the 2009 survey is on WSSC datum and this set is on NAVD 88.
 6. Seal, owner signature, the fee ($500 + 5% technology fee) and the SWM narrative / H&H computations.

@@ -545,8 +545,8 @@ idx = [['SDC-1', 'Site Development Concept Plan — Cover, BMP Summary Table, ES
 yI = table(ax, 0.9, yS - 0.4, ['SHEET', 'TITLE'], idx, [1.1, 8.6], 'INDEX OF SHEETS', fs=6, rh=0.2)
 
 gn = [
-    'Boundary: recorded plat PM 228 @ 83 (final plat 5-08238). Lot lines are the county parcel geometry, which reproduces the plat bearings to the second and distances to 0.02 ft; closure of every lot ≤ 0.04 ft. A Maryland licensed surveyor shall confirm the boundary and set the Indian Head Hwy R/W before technical plans.',
-    'Topography: M-NCPPC 2-ft contours (NAVD 88), extended ≥100 ft beyond the property (A-13). The 2009 approved sheet (2005 Landesign field survey, WSSC datum) is georeferenced and shown faint on SDC-2 for reference. V-1: DPIE prefers NGVD 29; the field-run update shall state the datum and conversion.',
+    'Boundary: recorded plat PM 228 @ 83 (final plat 5-08238). Lot lines are the county parcel geometry, which reproduces the plat bearings to the second and distances to 0.02 ft; closure of every lot ≤ 0.04 ft.',
+    'Topography: M-NCPPC 2-ft contours (NAVD 88), extended ≥100 ft beyond the property (A-13). The 2009 approved sheet (2005 Landesign field survey, WSSC datum) is georeferenced and shown faint on SDC-2 for reference. V-1: DPIE prefers NGVD 29.',
     'Outlot A (6,486 sf) was conveyed to M. & K. Doyal (L.51565 F.455) and is not part of this site. Water and sewer reach Estates Court through the recorded 30-ft WSSC easement across Outlot A and Lot 20, Treeview Estates (L.51799 F.399, Nov. 2025) and a 30-ft WSSC easement to be granted across Lot 4.',
     'Easement record discrepancies to resolve with WSSC before technical plans: Schedule A describes N 03°24\'09" W where the plat and Exhibit A show N 03°27\'26" W; the curve is written "N 043°07\'06" W"; the recited deed dates are inconsistent.',
     'Estates Court (60-ft R/W, 35,173 sf of record) is dedicated to public use on the plat and is not built. The entrance is on MD 210 (SHA): an SHA access permit and a sight-distance analysis (checklist item A.10) are required. The 30-ft R/W for use in common (L.10142 F.725) adjoins to the south-west and is not used.',
@@ -699,7 +699,7 @@ for kind, col, lw, ls, txt in leg:
 ly -= 0.1
 pn = [
     'Plan scale 1" = 40\' (≤ 1" = 50\', A-11); the whole property is on this sheet. Three grid ticks (A-8) are State Plane NAD 83.',
-    'Drainage areas are the engine\'s per-lot catchments; POIs and the 100-yr overflow path are from D8 flow routing on the M-NCPPC 2-ft surface. Reset from the field-run survey.',
+    'Drainage areas are the engine\'s per-lot catchments; POIs and the 100-yr overflow path are from D8 flow routing on the M-NCPPC 2-ft surface.',
     'Every lot drains to one M-6 cell; Estates Court drains to roadside dry swales ESD-S1/S2 (M-8), which discharge at the entrance low point (EL ±' + f"{lowz:.1f}" + ') to the MD 210 roadside ditch (SHA review).',
     'No disturbance in floodplain, wetlands or slopes > 25% (prior NRI-015-06; updated NRI required).',
     'The faint underlay is the 2009 approved Street Tree & Lighting sheet (2005 field topography, WSSC datum), georeferenced to the plat (median residual 0.44 ft). Its houses, mains and street lights are superseded.',

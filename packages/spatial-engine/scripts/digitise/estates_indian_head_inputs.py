@@ -217,8 +217,7 @@ SRC = ("Boundary of record: plat 'LOTS 1-6 AND OUTLOT A, ESTATES AT INDIAN HEAD'
        "Plat 83. Lot geometry from the county parcel layer (PGAtlas Address/MapServer/15), which "
        "reproduces the plat's bearings to the second and its distances to 0.02 ft (checked against "
        "the 2009 approved sheet, DPW&T permit 9399-2009). Estates Court dedication = the tract less "
-       "the lots, closed at the Indian Head Hwy R/W on the plat's N 51-26-53 W 147.04' call. "
-       "A Maryland licensed surveyor must confirm before technical plans are sealed.")
+       "the lots, closed at the Indian Head Hwy R/W on the plat's N 51-26-53 W 147.04' call.")
 common = {
     '_source': SRC, 'basisOfBearings': 'Maryland State Plane Coordinate System (NAD 83), per plat PM 228/83',
     'programme': {'totalFloorAreaSqFt': 2800, 'storeys': 2, 'hasBasement': True,

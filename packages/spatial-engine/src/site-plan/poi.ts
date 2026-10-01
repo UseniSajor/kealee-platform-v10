@@ -190,6 +190,6 @@ export function analysePois(input: {
   return {
     pois, overflow, offsiteCells, cellFt: CELL,
     offsiteAreaSqFt: offsiteCells.length * CELL * CELL,
-    method: `D8 flow routing on a ${CELL}-ft surface interpolated from the existing 2-ft contours; exit points clustered at ${CL} ft; POIs carrying under ${Math.round(100 * (input.minShare ?? 0.04))}% of the site omitted. Concept-level — reset from the field-run survey.`,
+    method: `D8 flow routing on a ${CELL}-ft surface interpolated from the existing 2-ft contours; exit points clustered at ${CL} ft; POIs carrying under ${Math.round(100 * (input.minShare ?? 0.04))}% of the site omitted.`,
   }
 }
