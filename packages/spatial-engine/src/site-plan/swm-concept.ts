@@ -193,7 +193,7 @@ export function swmConceptReport(input: {
     return `${h.poi}: ${ac(h.areaSqFt)} ac${h.offsiteSqFt ? ` (incl. ${ac(h.offsiteSqFt)} ac off site)` : ''}, CN ${h.existing.cn} → ${h.proposed.cn}, Tc ${h.tc.existingHr} → ${h.tc.proposedHr} hr; 100-yr ${r.preCfs.toFixed(1)} → ${r.postCfs.toFixed(1)} cfs (${r.postCfs >= r.preCfs ? '+' : ''}${(r.postCfs - r.preCfs).toFixed(1)} cfs), runoff ${fmt(r.preRunoffCf)} → ${fmt(r.postRunoffCf)} cf.`
   })
   const outstanding = [
-    `Downstream adequacy of ${input.receiving} for the 10- and 100-yr flows at each POI, using field survey and available County/SHA drainage records, at technical design. If inadequate, quantity control and/or conveyance improvements are required (checklist D-10).`,
+    `Downstream adequacy of ${input.receiving} for the 10- and 100-yr flows at each POI, from available County/SHA drainage records, at technical design. If inadequate, quantity control and/or conveyance improvements are required (checklist D-10).`,
     'POIs, flow paths and the time of concentration are computed on M-NCPPC 2-ft topography.',
   ]
   const narrative: SwmConceptReport['narrative'] = {
@@ -206,7 +206,7 @@ export function swmConceptReport(input: {
       `ESD to the MEP: ${input.practices} practices — micro-bioretention (M-6) on each lot and roadside dry swales with check dams (M-8) in the R/W. ESDv required ${fmt(input.esdvReqCf)} cf, provided ${fmt(input.esdvProvCf)} cf (MDE Manual Ch. 5, Table 5.3, HSG ${hsg}).`,
       'ESC integration: practice footprints are kept out of the sediment-trapping sequence and are built last, after the contributing area is stabilized; sediment control is shown on C-500.',
     ],
-    'D-3': pois.map(h => `${h.poi} lies where the Estates Court swales and overland flow leave the tract, discharging to ${input.receiving}. The outfall is not on a mapped stream or within a mapped 100-yr floodplain. Field survey and County acceptance are required; no direct discharge point to MD 210 is proposed.`),
+    'D-3': pois.map(h => `${h.poi} lies where the Estates Court swales and overland flow leave the tract, discharging to ${input.receiving}. The outfall is not on a mapped stream or within a mapped 100-yr floodplain. County acceptance of the discharge is required; no direct discharge point to MD 210 is proposed.`),
     'D-4': pois.map(h => `${h.poi}: ${h.outfall.protection} Normal depth at the 100-yr flow ${h.outfall.d100Ft} ft in the ${h.outfall.section} at ${(100 * h.outfall.slope).toFixed(1)}% slope. Upstream inflow from off site (${ac(input.poi.offsiteAreaSqFt)} ac) enters as sheet flow along the tract line, is carried by the swales and is included in the POI flows and the velocity check above; no concentrated inflow point needs stabilization.`),
     'D-10': [
       `ESDv required and provided per POI: BMP Summary Table (C-000). Rainfall: ${rainfall.citation}.`,

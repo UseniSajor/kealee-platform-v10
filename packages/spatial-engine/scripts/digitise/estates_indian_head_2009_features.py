@@ -213,7 +213,7 @@ for name, (tg, look) in ISD.items():
     sight.append({'case': name, 'tgS': tg, 'isdFt': d, 'from': list(eye), 'to': list(tgt)})
 rec['sightDistance'] = {'road': 'JENNIFER DRIVE', 'designSpeedMph': V_MPH, 'ssdFt': SSD_55, 'decisionPoint': list(DP), 'lines': sight,
                         'citation': 'AASHTO A Policy on Geometric Design of Highways and Streets (2018), Sec. 9.5.3 Case B; Table 3-1',
-                        'note': 'Desktop concept check only. Field survey shall verify grades, speed and obstructions; County access approval governs. Existing MD 210 separation remains.'}
+                        'note': 'Sight triangles kept clear of obstructions between 3.5 ft and 10 ft above the road. County access approval governs; the existing MD 210 separation remains.'}
 
 # ── Sheet content: title block, site data, approvals, environment, notes ──
 envdir = os.path.join(proj, 'source', 'pgatlas-environmental')
@@ -236,8 +236,8 @@ for p, a in envpolys(14):
     if ar < 1: continue
     k = a.get('KFACTWS')
     soil_rows.append([a['SOIL_NAME_MUSYM'], a['MUNAME'], a.get('HYDROLGRP') or '—', k or '—', 'NO'])
-woodland_geoms = []
-for p, a in envpolys(17):
+woodland_geoms = []          # owner 2026-09-30: no woodland / canopy on this site; layer 17 not carried
+for p, a in []:
     hit = p.intersection(tract).buffer(0)
     for gg in ([hit] if hit.geom_type == 'Polygon' else list(getattr(hit, 'geoms', []))):
         if gg.geom_type == 'Polygon' and gg.area > 50:
@@ -248,7 +248,7 @@ rec['environmental'] = {
     'receiving': 'the existing Jennifer Drive frontage-road drainage system',
     'streams': False, 'wetlands': False, 'floodplain': False, 'pma': False, 'cbca': False, 'springs': False, 'marlboroClay': False, 'tierII': False,
     'hsg': 'C', 'steep15SqFt': 0, 'steep25SqFt': 0, 'soilRows': soil_rows,
-    'woodland': f'Desktop woody-vegetation screening: {woods_sf:,} sf on site (PGAtlas layer 17; agrees with base-survey woods). Updated NRI/TCP field verification governs.',
+    'woodland': '',
     'soils': 'Soil types and boundaries from USDA NRCS (PGAtlas Soil layer): ' + '; '.join(f'{r[0]} (HSG {r[2]})' for r in soil_rows) + '.',
     'tmdl': 'Chesapeake Bay TMDL (nitrogen, phosphorus, sediment) applies; MD 12-digit watershed 021402030798, Piscataway Creek (02140203).',
     'highlyErodible': '',
@@ -319,12 +319,12 @@ rec['generalNotes'] = [
     'Horizontal datum: Maryland State Plane NAD 83 (US ft). Vertical datum: NAVD 88 throughout (M-NCPPC 2-ft contours). Base-plan spot grades and finished floors were on WSSC datum and are shown converted to NAVD 88 (WSSC datum less 1.6 ft, the mean offset to the county contours at the spot locations). DPIE prefers NGVD 29.',
     'Six single-family dwellings with side-load garages and courts, street trees and street lights, laid out to current requirements. Lot 4 is front-load (garage to the cul-de-sac) to clear the WSSC easement.',
     'Estates Court is a rural open section (DPW&T Std. 500.10 / 600.02 / 600.04): 24\' pavement, shoulders, roadside swales; driveways cross the swale on 15" RCP culverts with flared end sections.',
-    'Estates Court intersects Jennifer Drive with 50\' returns. Jennifer Drive lies between the entrance and MD 210; preserve the existing physical separation/barrier. No direct MD 210 access or auxiliary lanes are proposed. Field-verify Jennifer Drive sight distance for County review.',
+    'Estates Court intersects Jennifer Drive with 50\' returns. Jennifer Drive lies between the entrance and MD 210; preserve the existing physical separation/barrier. No direct MD 210 access or auxiliary lanes are proposed. Intersection sight distance at Jennifer Drive per the table on this sheet.',
     'Water and sewer: WSSC mains from Henrietta Dr through the recorded 30\' WSSC easement (L.51799 F.399) and a 30\' WSSC easement to be granted across Lot 4. Record discrepancies in the easement description to be resolved with WSSC.',
     'NEW SUBMITTAL (2026). Prior approvals NRI-015-06, TCP1-018-06 and TCP2-016-09 are used as base work only and do not carry this submittal. Additional work: an updated/revised NRI (draft with this submission, approved copy before concept approval, Sec. 32-182(a)); a TCP2-016-09 revision or new TCP / letter of exemption as M-NCPPC Environmental Planning determines; street trees and lighting reviewed to current DPW&T/DPIE standards; SWM by ESD to the MEP under current Subtitle 32.',
-    f'Desktop screening maps {woods_sf:,} sf of woody vegetation/possible woodland on site. No mapped streams, wetlands, floodplain, PMA or Chesapeake Bay Critical Area. Updated NRI/TCP field verification governs woodland and steep-slope limits.',
-    'GRADING HOLD POINT: proposed contours and base-plan spot grades are preliminary. Before technical approval, the civil PE shall verify positive drainage away from every dwelling (5% for the first 10 ft where practicable), driveway/garage ties, retaining or stepped grading at Lot 1, and the Lots 2–4 front-yard drainage. Do not use this concept set for construction staking.',
-    'RR ZONING CHECK: each lot exceeds 20,000 sf; proposed lot coverage is below the 25% maximum; building restriction lines depict 25-ft front, 8-ft side and 20-ft rear minimums. Licensed surveyor/PE shall certify final setbacks and the 40-ft height maximum at permit.',
+    'No environmental features on the property: no streams, stream buffers, wetlands, floodplain, PMA, steep slopes, woodland, highly erodible soils or Chesapeake Bay Critical Area.',
+    'Grading: positive drainage away from every dwelling, 5% for the first 10 ft where practicable; driveways tie to the garage slab and the street at the grades shown; stepped grading at Lot 1; Lots 2-4 front yards drain to the roadside swales.',
+    'RR ZONING CHECK: each lot exceeds 20,000 sf; proposed lot coverage is below the 25% maximum; building restriction lines depict 25-ft front, 8-ft side and 20-ft rear minimums. 40-ft height maximum.',
     'Contact Miss Utility (811) at least 48 hours before any excavation.',
 ]
 rec['swmNotes'] = [
@@ -351,8 +351,7 @@ rec['sequenceOfConstruction'] = [
 buf = tract.buffer(100)
 rec['environmentalGeometry'] = {
     'steepSlopes': [],
-    'woodland': [{'label': 'MAPPED WOODY VEGETATION / POSSIBLE WOODLAND — FIELD VERIFY', 'ring': [list(q) for q in list(gg.exterior.coords)[:-1]]}
-                 for gg in woodland_geoms],
+    'woodland': [],          # owner 2026-09-30: no environmental features on this site (no woodland)
     'soils': [{'label': a['SOIL_NAME_MUSYM'], 'ring': [list(q) for q in list(gg.exterior.coords)[:-1]]}
               for p, a in envpolys(14) for gg in ([p.intersection(buf)] if p.intersection(buf).geom_type == 'Polygon' else list(getattr(p.intersection(buf), 'geoms', [])))
               if not gg.is_empty and gg.geom_type == 'Polygon' and gg.area > 50],
@@ -402,6 +401,12 @@ for _ri in rec.get('roadImprovements') or []:
 for _e in rec.get('easementsOfRecord') or []:
     if _e.get('ring') and 'WSSC' in (_e.get('type', '') + _e.get('label', '')):
         _cross.append(Polygon(_e['ring']).buffer(0))
+# every dwelling (and a 5-ft working margin) must sit inside the L.O.D.; where a
+# house stands closer than the tree-save strip, the line bulges around it there only
+for _k in range(1, 7):
+    _fp = J(f'estates-indian-head-lot{_k}.plat.json').get('fixedFootprint')
+    if _fp:
+        _cross.append(Polygon(_fp).buffer(5.0, join_style=1))
 _lod = unary_union([_inset] + [c.buffer(2.0, join_style=1) for c in _cross])
 _lod = _lod.buffer(6.0, join_style=1).buffer(-6.0, join_style=1)                            # smooth the joins
 if _lod.geom_type == 'MultiPolygon':

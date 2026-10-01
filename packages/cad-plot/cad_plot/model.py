@@ -72,9 +72,10 @@ def setup(doc):
     doc.header['$INSUNITS'] = 2          # feet
     doc.header['$LTSCALE'] = 12.0
     doc.header['$PSLTSCALE'] = 0
-    for name in ('DASHED2', 'PHANTOM2'):
+    for name in ('DASHED2', 'PHANTOM2', 'LOD'):
         if name not in doc.linetypes:
-            base = {'DASHED2': [0.6, 0.4, -0.2], 'PHANTOM2': [1.25, 1.0, -0.12, 0.06, -0.12]}[name]
+            # LOD: 12-ft dash / 6-ft gap in model space at $LTSCALE 12 (0.4" / 0.2" plotted at 1" = 30')
+            base = {'DASHED2': [0.6, 0.4, -0.2], 'PHANTOM2': [1.25, 1.0, -0.12, 0.06, -0.12], 'LOD': [1.5, 1.0, -0.5]}[name]
             doc.linetypes.add(name, pattern=base, description=name)
     for name, (aci, lt, lw) in LAYERS.items():
         if name not in doc.layers:
@@ -687,25 +688,44 @@ class Model:
         ex = self.s.get('extras') or {}
         site_lod = ex.get('siteLod') or []
         if site_lod:
-            # one L.O.D. around the whole development, labelled along its run
+            # one L.O.D. around the whole development: bold black dashed, 'LOD' lettered
+            # in gaps left in the line every ~90 ft (Yocum convention). The line is
+            # broken at each label rather than masked: the PDF plotter ignores masks.
+            GAP = th(0.10) * 3 * 0.9 + 3.0               # label width (3 chars) + clearance, ft
             for r in site_lod:
                 r = [(p[0], p[1]) for p in r]
-                self.pl(r, 'C-ESC-LOD', close=True, ltscale=20.0)     # ~10 ft dash / 5 ft gap: ~1/3" at 1" = 30'
-                # 'LOD' inline along the line every ~90 ft, as the approved Yocum sheets letter it
                 ring = r + [r[0]]
-                walked, nxt = 0.0, 45.0
-                for i in range(len(ring) - 1):
+                cum = [0.0]
+                for i in range(1, len(ring)): cum.append(cum[-1] + math.dist(ring[i - 1], ring[i]))
+                total = cum[-1]
+
+                def at(s):
+                    i = 0
+                    while i < len(ring) - 2 and cum[i + 1] < s: i += 1
+                    L = (cum[i + 1] - cum[i]) or 1
+                    t = (s - cum[i]) / L
                     p, q = ring[i], ring[i + 1]
-                    L = math.dist(p, q)
-                    while L > 0 and walked + L >= nxt:
-                        t = (nxt - walked) / L
-                        if L > 12:
-                            m = self.msp.add_mtext('LOD', dxfattribs={'layer': 'C-ESC-ANNO', 'char_height': th(0.10), 'attachment_point': 5,
-                                                                     'style': 'KEALEE-B', 'rotation': _text_angle(p, q)})
-                            m.set_location((p[0] + (q[0] - p[0]) * t, p[1] + (q[1] - p[1]) * t))
-                            m.set_bg_color('canvas', scale=1.2)          # mask the line under the lettering
-                        nxt += 90.0
-                    walked += L
+                    return (p[0] + (q[0] - p[0]) * t, p[1] + (q[1] - p[1]) * t), (p, q)
+
+                labels = [s for s in [45.0 + 90.0 * k for k in range(int(total // 90.0) + 1)] if s < total - GAP]
+                cuts, s0 = [], 0.0
+                for s in labels:
+                    cuts.append((s0, s - GAP / 2)); s0 = s + GAP / 2
+                cuts.append((s0, total))
+                # dashes drawn as geometry (12-ft dash / 6-ft gap = 0.4" / 0.2" at 1" = 30'):
+                # the PDF plotter does not apply linetypes inside viewports
+                DASH, SKIP = 12.0, 6.0
+                for a, b in cuts:
+                    if b - a < 1: continue
+                    s = a
+                    while s < b:
+                        e = min(b, s + DASH)
+                        pts = [at(s)[0]] + [ring[i] for i in range(len(ring)) if s < cum[i] < e] + [at(e)[0]]
+                        self.pl(pts, 'C-ESC-LOD', linetype='CONTINUOUS')
+                        s = e + SKIP
+                for s in labels:
+                    pt, (p, q) = at(s)
+                    self.text('LOD', pt, 0.10, 'C-ESC-ANNO', angle=_text_angle(p, q), bold=True, fixed=True)
             area = ex.get('siteLodSqFt')
             if area:
                 c = _centroid([(p[0], p[1]) for p in max(site_lod, key=len)])
