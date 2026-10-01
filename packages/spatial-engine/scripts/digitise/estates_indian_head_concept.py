@@ -437,7 +437,7 @@ ax.text(0.9, H_IN - 1.05, 'SITE DEVELOPMENT CONCEPT PLAN', fontsize=30, fontweig
 ax.text(0.9, H_IN - 1.65, 'ESTATES AT INDIAN HEAD — LOTS 1–6 AND ESTATES COURT', fontsize=16, va='top')
 ax.text(0.9, H_IN - 2.0, 'Plat Book PM 228 Plat 83 · 200–205 Estates Court, Accokeek, MD 20607 · Tax Map 151 Grid F-3 · Zone RR · Piscataway Election District 5 · Prince George\'s County, Maryland',
         fontsize=8.5, va='top')
-ax.text(0.9, H_IN - 2.25, 'Stormwater management by Environmental Site Design to the Maximum Extent Practicable (MDE Design Manual Ch. 5; PGC Subtitle 32, Div. 3). Follows the approved 2009 layout (Street Tree & Lighting Plan, DPW&T permit 9399-2009-00).',
+ax.text(0.9, H_IN - 2.25, 'Stormwater management by Environmental Site Design to the Maximum Extent Practicable (MDE Design Manual Ch. 5; PGC Subtitle 32, Div. 3). New submittal; base layout from the prior 2009 Street Tree & Lighting Plan (DPW&T permit 9399-2009-00).',
         fontsize=7.5, va='top', color='#333333')
 
 # vicinity map (A-6) — upper right of the drawing area
@@ -507,7 +507,7 @@ site = [
     ['New site imp. area', f"{tot['imp']:,.0f} sf ({tot_I:.1f}% of tract) — roofs, driveways, walks, Estates Court pavement, curb and sidewalk"],
     ['Est. disturbed area', f"{lod.area:,.0f} sf ({lod.area / 43560:.2f} ac), incl. {lod_offsite.area:,.0f} sf off-site in the WSSC easement (Outlot A, Lot 20)"],
     ['Marlboro clay / public project', 'No (PGAtlas Environmental/7: none within 100 ft) / No'],
-    ['Road section', 'Open section (rural), as approved 2009: Estates Court 60\' R/W, 24\' pavement, 4\' shoulders, roadside swales, cul-de-sac'],
+    ['Road section', 'Open section (rural), per the 2009 base plan: Estates Court 60\' R/W, 24\' pavement, 4\' shoulders, roadside swales, cul-de-sac'],
     ['Water / sewer', 'W-3 / S-3 community systems (WSSC), Piscataway Creek sewer basin; mains from Henrietta Dr via 30\' WSSC esmt L.51799 F.399'],
 ]
 yS = table(ax, 0.9, yL, ['APPLICATION DATA', ''], site, [2.1, 7.6], 'SITE DATA (DPIE Concept Application, rev. 07/28/2021)', fs=5.8, rh=0.165)
@@ -518,7 +518,7 @@ env = [
     ['B-4 100-yr floodplain', 'None. FEMA Zone X (area of minimal flood hazard); no DPIE or consultant floodplain within 100 ft.'],
     ['B-5 Steep slopes', f"15–25%: {summary['steep15to25OnSiteSqFt']:,.0f} sf;  >25%: {summary['steep25OnSiteSqFt']:,.0f} sf on site (PGAtlas Slope 2023) — isolated."],
     ['B-6 PMA', 'None on site (prior NRI-015-06). Updated NRI required (new submittal).'],
-    ['B-7 Woodland', f"Prior NRI-015-06 / TCP2-016-09 are base work only. Woodland per the updated NRI; TCP2 revision or new TCP / exemption as M-NCPPC determines. 2023 canopy {summary['canopyOnSiteSqFt']:,.0f} sf shown for reference."],
+    ['B-7 Woodland', f"Per updated NRI (prior NRI-015-06/TCP2-016-09 = base work); TCP2 revision or new TCP per M-NCPPC."],
     ['B-9 Soils', '; '.join(f"{s['musym']} {s['name']} (HSG {s['hsg']}, K {s['k']}) {100 * s['sqft'] / tract.area:.0f}%" for s in summary['soilsOnSite'])],
     ['B-10 TMDL / Tier II', 'Chesapeake Bay TMDL watershed; not within a Tier II catchment; DNR Stronghold watershed (021402030798).'],
     ['B-11 Highly erodible', 'Slopes ≥15% with K ≥ 0.35 are highly erodible: the 15–25% patches on BaB (K .37) qualify — stabilize within 3 days.'],
