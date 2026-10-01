@@ -1,0 +1,524 @@
+"""
+Model space: the site, drawn once, on NCS layers, in State Plane feet.
+
+Every sheet is a paper-space viewport onto this one drawing; what a sheet
+shows is decided by which layers its viewport freezes (style.SHEET_LAYERS).
+"""
+import json
+import math
+from ezdxf.enums import TextEntityAlignment
+from ezdxf import colors
+
+from .style import LAYERS
+
+SCALE = 30.0  # ft per plotted inch on the plan sheets
+# Hatch patterns are defined in inch-like units (ANSI31 spacing 0.125). In a
+# model drawn in FEET they must be scaled up, or a 1/8" hatch becomes one line
+# every 0.125 ft — millions of lines, re-plotted in every viewport.
+PAT = SCALE * 0.9
+
+
+def th(inches):
+    """Model-space text height (ft) for a plotted height in inches."""
+    return inches * SCALE
+
+
+def _ring(f):
+    r = (f.get('ring') or {}).get('coordinates') or []
+    return [(p[0], p[1]) for p in r]
+
+
+def _line(f):
+    ln = f.get('line')
+    if isinstance(ln, dict):
+        ln = ln.get('coordinates')
+    return [(p[0], p[1]) for p in (ln or [])]
+
+
+def _centroid(pts):
+    n = len(pts) or 1
+    return (sum(p[0] for p in pts) / n, sum(p[1] for p in pts) / n)
+
+
+def _area(pts):
+    a = 0.0
+    for i in range(len(pts)):
+        x1, y1 = pts[i]; x2, y2 = pts[(i + 1) % len(pts)]
+        a += x1 * y2 - x2 * y1
+    return abs(a) / 2
+
+
+def _bearing(a, b):
+    dx, dy = b[0] - a[0], b[1] - a[1]
+    az = math.degrees(math.atan2(dx, dy)) % 360
+    if az <= 90: ns, ew, ang = 'N', 'E', az
+    elif az <= 180: ns, ew, ang = 'S', 'E', 180 - az
+    elif az <= 270: ns, ew, ang = 'S', 'W', az - 180
+    else: ns, ew, ang = 'N', 'W', 360 - az
+    D = int(ang); M = int((ang - D) * 60); S = round((ang - D - M / 60) * 3600)
+    if S == 60: S, M = 0, M + 1
+    if M == 60: M, D = 0, D + 1
+    return f"{ns} {D:02d}°{M:02d}'{S:02d}\" {ew}"
+
+
+def _text_angle(a, b):
+    ang = math.degrees(math.atan2(b[1] - a[1], b[0] - a[0]))
+    if ang > 90: ang -= 180
+    if ang < -90: ang += 180
+    return ang
+
+
+def setup(doc):
+    doc.header['$INSUNITS'] = 2          # feet
+    doc.header['$LTSCALE'] = 12.0
+    doc.header['$PSLTSCALE'] = 0
+    for name in ('DASHED2', 'PHANTOM2'):
+        if name not in doc.linetypes:
+            base = {'DASHED2': [0.6, 0.4, -0.2], 'PHANTOM2': [1.25, 1.0, -0.12, 0.06, -0.12]}[name]
+            doc.linetypes.add(name, pattern=base, description=name)
+    for name, (aci, lt, lw) in LAYERS.items():
+        if name not in doc.layers:
+            doc.layers.add(name, color=aci, linetype=lt if lt in doc.linetypes or lt == 'CONTINUOUS' else 'CONTINUOUS', lineweight=lw)
+    if 'KEALEE' not in doc.styles:
+        doc.styles.add('KEALEE', font='arial.ttf')
+    if 'KEALEE-B' not in doc.styles:
+        doc.styles.add('KEALEE-B', font='arialbd.ttf')
+    _blocks(doc)
+
+
+def _blocks(doc):
+    """Symbol library — drawn once as blocks, inserted everywhere."""
+    if 'TREE' not in doc.blocks:
+        b = doc.blocks.new('TREE')
+        L = {'layer': 'L-PLNT-TREE-N'}
+        b.add_circle((0, 0), 7.5, dxfattribs=L)
+        n = 10
+        pts = [(7.5 * math.cos(2 * math.pi * k / n) * (1 if k % 2 else 0.82), 7.5 * math.sin(2 * math.pi * k / n) * (1 if k % 2 else 0.82)) for k in range(n)]
+        b.add_lwpolyline(pts, close=True, dxfattribs=L)
+        b.add_line((-1.5, 0), (1.5, 0), dxfattribs=L); b.add_line((0, -1.5), (0, 1.5), dxfattribs=L)
+    if 'LIGHT' not in doc.blocks:
+        b = doc.blocks.new('LIGHT')
+        L = {'layer': 'E-LITE-N'}
+        b.add_circle((0, 0), 1.6, dxfattribs=L)
+        b.add_hatch(color=7, dxfattribs=L).paths.add_polyline_path([(1.6 * math.cos(t / 12 * 2 * math.pi), 1.6 * math.sin(t / 12 * 2 * math.pi)) for t in range(12)], is_closed=True)
+        for k in range(4):
+            a = math.pi / 4 + k * math.pi / 2
+            b.add_line((2.2 * math.cos(a), 2.2 * math.sin(a)), (4.2 * math.cos(a), 4.2 * math.sin(a)), dxfattribs=L)
+    if 'SPOT' not in doc.blocks:
+        b = doc.blocks.new('SPOT')
+        L = {'layer': 'C-TOPO-SPOT-N'}
+        b.add_line((-0.9, -0.9), (0.9, 0.9), dxfattribs=L); b.add_line((-0.9, 0.9), (0.9, -0.9), dxfattribs=L)
+    if 'POI' not in doc.blocks:
+        b = doc.blocks.new('POI')
+        L = {'layer': 'C-SWM-POI'}
+        b.add_circle((0, 0), 5.0, dxfattribs=L); b.add_circle((0, 0), 3.2, dxfattribs=L)
+    if 'NORTH' not in doc.blocks:
+        b = doc.blocks.new('NORTH')   # paper units (inches)
+        b.add_lwpolyline([(0, 0.55), (-0.16, -0.25), (0, -0.1)], close=True)
+        h = b.add_hatch(color=7); h.paths.add_polyline_path([(0, 0.55), (-0.16, -0.25), (0, -0.1)], is_closed=True)
+        b.add_lwpolyline([(0, 0.55), (0.16, -0.25), (0, -0.1)], close=True)
+        b.add_text('N', height=0.16, dxfattribs={'style': 'KEALEE-B'}).set_placement((0, 0.62), align=TextEntityAlignment.BOTTOM_CENTER)
+
+
+class Model:
+    def __init__(self, doc, sheetset):
+        self.doc = doc
+        self.msp = doc.modelspace()
+        self.s = sheetset
+        self.twin = sheetset['twin']
+        self.feats = self.twin['features']
+
+    # ── helpers ────────────────────────────────────────────────────────────
+    def pl(self, pts, layer, close=False, **kw):
+        if len(pts) < 2: return None
+        return self.msp.add_lwpolyline(pts, close=close, dxfattribs={'layer': layer, **kw})
+
+    def fill(self, pts, layer, rgb=None, pattern=None, scale=1.0, transparency=None):
+        if len(pts) < 3: return None
+        h = self.msp.add_hatch(dxfattribs={'layer': layer})
+        if pattern:
+            h.set_pattern_fill(pattern, scale=scale)
+        else:
+            h.set_solid_fill(color=7)
+            if rgb: h.rgb = rgb
+        if transparency is not None:
+            h.transparency = transparency
+        h.paths.add_polyline_path(pts, is_closed=True)
+        return h
+
+    def text(self, s, at, h_in, layer, angle=0, align=TextEntityAlignment.MIDDLE_CENTER, bold=False):
+        t = self.msp.add_text(s, height=th(h_in), rotation=angle,
+                              dxfattribs={'layer': layer, 'style': 'KEALEE-B' if bold else 'KEALEE'})
+        t.set_placement(at, align=align)
+        return t
+
+    def mtext(self, s, at, h_in, layer, width_in=None, attach=5, bold=False):
+        m = self.msp.add_mtext(s, dxfattribs={'layer': layer, 'char_height': th(h_in), 'attachment_point': attach,
+                                              'style': 'KEALEE-B' if bold else 'KEALEE'})
+        m.set_location(at)
+        if width_in: m.dxf.width = th(width_in)
+        return m
+
+    def of(self, kind, **match):
+        out = []
+        for f in self.feats:
+            if f.get('kind') != kind: continue
+            a = f.get('attributes') or {}
+            if all((a.get(k) == v) if not callable(v) else v(a.get(k)) for k, v in match.items()):
+                out.append(f)
+        return out
+
+    # ── authoring ──────────────────────────────────────────────────────────
+    def build(self):
+        self.property()
+        self.adjoiners()
+        self.roads()
+        self.street()
+        self.site()
+        self.topo()
+        self.environment()
+        self.utilities()
+        self.stormwater()
+        self.sediment()
+        self.grid()
+        self.vicinity()
+
+    def property(self):
+        tract = [(p[0], p[1]) for p in self.s['tract']]
+        self.pl(tract, 'V-PROP-BNDY', close=True)
+        for f in self.of('Parcel'):
+            r = _ring(f)
+            if len(r) < 3: continue
+            self.pl(r, 'V-PROP-LOTS', close=True)
+            a = f.get('attributes') or {}
+            c = _centroid(r)
+            lbl = str(f.get('id', '')).upper()
+            area = _area(r)
+            name = a.get('label') or a.get('name') or lbl
+            # lot bearings and distances along each edge > 25 ft
+            for i in range(len(r) - 1):
+                p, q = r[i], r[i + 1]
+                L = math.dist(p, q)
+                if L < 25: continue
+                mid = ((p[0] + q[0]) / 2, (p[1] + q[1]) / 2)
+                ang = _text_angle(p, q)
+                nx, ny = -(q[1] - p[1]) / L, (q[0] - p[0]) / L
+                inward = (c[0] - mid[0]) * nx + (c[1] - mid[1]) * ny > 0
+                off = 2.6 if inward else -2.6
+                self.text(f"{_bearing(p, q)}  {L:.2f}'", (mid[0] + nx * off, mid[1] + ny * off), 0.065, 'V-PROP-ANNO', angle=ang)
+        for lp in self.twin.get('projectLots') or []:
+            pass
+        # lot numbers and areas from the project lots
+        from shapely.geometry import Polygon as _P
+        from shapely.ops import unary_union as _U
+        occupied = _U([_P(_ring(g)).buffer(8) for g in self.feats if g.get('kind') in ('Building', 'Pavement', 'SWMPractice') and len(_ring(g)) > 2])
+        for f in self.of('Parcel'):
+            r = _ring(f)
+            if len(r) < 3: continue
+            free = _P(r).buffer(-6).difference(occupied)
+            if not free.is_empty:
+                big = max(free.geoms, key=lambda g: g.area) if hasattr(free, 'geoms') else free
+                c = self._pole(list(big.exterior.coords)) if big.geom_type == 'Polygon' else self._pole(r)
+            else:
+                c = self._pole(r)
+            lotno = None
+            for lp in self.twin.get('projectLots') or []:
+                if str(f.get('id', '')).startswith(lp.get('featurePrefix', '~')):
+                    lotno = lp['label']; addr = lp.get('address', '')
+            if lotno:
+                self.mtext(f"{lotno}\\P{_area(r):,.0f} SF\\P{addr}", c, 0.12, 'V-PROP-ANNO', bold=True)
+
+    def _pole(self, r):
+        # a point well inside the ring (grid search for the point farthest from the edges)
+        xs = [p[0] for p in r]; ys = [p[1] for p in r]
+        best, bd = _centroid(r), -1
+        from shapely.geometry import Polygon, Point
+        poly = Polygon(r)
+        for i in range(12):
+            for j in range(12):
+                pt = (min(xs) + (max(xs) - min(xs)) * (i + 0.5) / 12, min(ys) + (max(ys) - min(ys)) * (j + 0.5) / 12)
+                P = Point(pt)
+                if poly.contains(P):
+                    d = poly.exterior.distance(P)
+                    if d > bd: bd, best = d, pt
+        return best
+
+    def adjoiners(self):
+        from shapely.geometry import Polygon
+        tract = Polygon(self.s['tract']).buffer(0)
+        reach = tract.buffer(180)
+        for ap in self.twin.get('adjacentParcels') or []:
+            r = [(p[0], p[1]) for p in (ap.get('ring') or {}).get('coordinates') or []]
+            if len(r) < 3: continue
+            poly = Polygon(r).buffer(0)
+            if poly.representative_point().within(tract): continue
+            clip = poly.intersection(reach)
+            if clip.is_empty: continue
+            for g in (clip.geoms if hasattr(clip, 'geoms') else [clip]):
+                if g.geom_type != 'Polygon': continue
+                self.pl(list(g.exterior.coords), 'V-PROP-ADJN', close=True)
+            rec = ap.get('record') or {}
+            if rec.get('ownerName'):
+                vis = clip if clip.geom_type == 'Polygon' else max(clip.geoms, key=lambda x: x.area)
+                pt = vis.representative_point()
+                lines = [f"N/F {rec['ownerName']}"]
+                if rec.get('subdivision'):
+                    lines.append(f"LOT {rec.get('lot') or ''} {rec['subdivision']}".strip())
+                if rec.get('liber'):
+                    lines.append(f"L.{rec['liber']} F.{rec.get('folio') or ''}")
+                self.mtext('\\P'.join(lines), (pt.x, pt.y), 0.06, 'V-PROP-ANNO')
+
+    def roads(self):
+        named = set()
+        for f in self.of('ExistingFeature', roadLine=lambda v: bool(v)):
+            a = f['attributes']
+            ln = _line(f)
+            lay = {'edge-of-road': 'C-ROAD-EDGE-E', 'lane-line': 'C-ROAD-CNTR-E', 'centerline': 'C-ROAD-CNTR-E',
+                   'right-of-way': 'C-ROAD-ROWL-E'}.get(a['roadLine'], 'C-ROAD-EDGE-E')
+            self.pl(ln, lay)
+            road = a.get('road', '')
+            if road not in named and a['roadLine'] in ('centerline', 'lane-line') and len(ln) >= 2:
+                named.add(road)
+                i = len(ln) // 2
+                p, q = (ln[i - 1], ln[i]) if len(ln) > 2 else (ln[0], ln[1])
+                mid = ((p[0] + q[0]) / 2, (p[1] + q[1]) / 2)
+                if len(ln) == 2:
+                    mid = (p[0] + (q[0] - p[0]) * 0.28, p[1] + (q[1] - p[1]) * 0.28)
+                self.text(a.get('roadLabel', road), mid, 0.13, 'C-ROAD-ANNO-E', angle=_text_angle(p, q), bold=True)
+
+    def street(self):
+        ps = self.s['extras'].get('proposedStreet') or {}
+        for f in self.of('ProposedFeature', type='right-of-way'):
+            self.pl(_ring(f), 'C-ROAD-ROWL-N', close=True)
+        for f in self.of('ProposedFeature', type='centerline'):
+            self.pl(_line(f), 'C-ROAD-CNTR-N')
+        for f in self.of('Pavement'):
+            a = f.get('attributes') or {}
+            r = _ring(f)
+            imp = a.get('improvement')
+            if imp in ('street', 'entrance'):
+                self.pl(r, 'C-ROAD-PVMT-N', close=True)
+                self.fill(r, 'C-ROAD-PVMT-N', rgb=(214, 214, 214))
+            elif imp == 'road-widening':
+                self.pl(r, 'C-ROAD-IMPR-N', close=True)
+                self.fill(r, 'C-ROAD-IMPR-N', pattern='ANSI37', scale=PAT)
+                c = _centroid(r)
+                self.mtext(a.get('label', ''), (c[0] - 40, c[1] + 25), 0.07, 'C-ROAD-ANNO-N', width_in=2.6)
+        cl = ps.get('centreline') or []
+        if len(cl) > 3:
+            p, q = cl[len(cl) // 2 - 1], cl[len(cl) // 2]
+            mid = ((p[0] + q[0]) / 2, (p[1] + q[1]) / 2)
+            self.text(f"{ps.get('name', 'ESTATES COURT')} — {ps.get('rightOfWayFt', 60)}' PUBLIC R/W (PLAT PM 228 @ 83)",
+                      mid, 0.12, 'C-ROAD-ANNO-N', angle=_text_angle(p, q), bold=True)
+            self.text(f"PROP. {ps.get('pavementFt', 24)}' BIT. PAVEMENT — RURAL OPEN SECTION", (mid[0], mid[1] - th(0.2)), 0.08,
+                      'C-ROAD-ANNO-N', angle=_text_angle(p, q))
+        if ps.get('bulbCentre'):
+            c = ps['bulbCentre']
+            self.mtext(f"CUL-DE-SAC\\PR/W R={ps.get('bulbRightOfWayRadiusFt', 60):.0f}'\\PPAVEMENT R={ps.get('bulbPavementRadiusFt', 42):.0f}'",
+                       (c[0], c[1]), 0.085, 'C-ROAD-ANNO-N')
+        ent = ps.get('entrance') or None
+        if ent:
+            n, s_ = ent['northReturnCentre'], ent['southReturnCentre']
+            mid = ((n[0] + s_[0]) / 2, (n[1] + s_[1]) / 2)
+            self.mtext(f"ENTRANCE — R={ent['returnRadiusFt']:.0f}' RETURNS (2009 PLAN)\\PSHA ACCESS PERMIT REQUIRED", (mid[0] - 30, mid[1] + 55), 0.075, 'C-ROAD-ANNO-N', width_in=2.2)
+        for f in self.of('ProposedFeature', type='roadside swale'):
+            self.pl(_line(f), 'C-ROAD-SWAL-N')
+        sw = self.of('ProposedFeature', type='roadside swale')
+        if sw:
+            ln = _line(sw[0]); i = len(ln) // 2
+            self.text('ROADSIDE SWALE (M-8) — FLOW TO ENTRANCE', ln[i], 0.07, 'C-SWM-ANNO', angle=_text_angle(ln[max(0, i - 1)], ln[min(len(ln) - 1, i + 1)]))
+        for f in self.of('ProposedFeature', type='culvert'):
+            ln = _line(f)
+            if len(ln) < 2: continue
+            a, b = ln[0], ln[-1]
+            L = math.dist(a, b); ux, uy = (b[0] - a[0]) / L, (b[1] - a[1]) / L; nx, ny = -uy, ux
+            hw = (f['attributes'].get('sizeIn', 15) / 12) / 2
+            for sgn in (1, -1):
+                self.pl([(a[0] + nx * hw * sgn, a[1] + ny * hw * sgn), (b[0] + nx * hw * sgn, b[1] + ny * hw * sgn)], 'C-STRM-CULV-N')
+            for e, d in ((a, -1), (b, 1)):
+                fl = 2.5
+                self.pl([(e[0] + nx * hw, e[1] + ny * hw), (e[0] + ux * d * fl + nx * hw * 2.2, e[1] + uy * d * fl + ny * hw * 2.2),
+                         (e[0] + ux * d * fl - nx * hw * 2.2, e[1] + uy * d * fl - ny * hw * 2.2), (e[0] - nx * hw, e[1] - ny * hw)], 'C-STRM-CULV-N')
+            m = ((a[0] + b[0]) / 2, (a[1] + b[1]) / 2)
+            at = f['attributes']
+            self.text(f"{at.get('sizeIn', 15)}\" {at.get('material', 'RCP')} CULV. L={at.get('lengthFt') or L:.0f}'", (m[0] + nx * 5, m[1] + ny * 5), 0.06, 'C-SWM-ANNO', angle=_text_angle(a, b))
+
+    def site(self):
+        for f in self.of('Building'):
+            r = _ring(f)
+            self.pl(r, 'C-BLDG-FTPR-N', close=True)
+            self.fill(r, 'C-BLDG-FTPR-N', pattern='ANSI31', scale=PAT)
+            a = f.get('attributes') or {}
+            c = self._pole(r)
+            ff = a.get('finishedFloorElevFt')
+            self.mtext(f"{a.get('lotLabel', '')}\\PFF {ff:.2f}" if ff else a.get('lotLabel', ''), c, 0.075, 'C-BLDG-ANNO-N', bold=True)
+        for f in self.of('Pavement'):
+            a = f.get('attributes') or {}
+            if a.get('improvement') in ('Driveway', 'Apron', 'Walk', 'Stoop'):
+                r = _ring(f)
+                self.pl(r, 'C-PVMT-DRWY-N', close=True)
+                self.fill(r, 'C-PVMT-DRWY-N', rgb=(232, 232, 232))
+        for f in self.of('ProposedFeature'):
+            gid = str(f.get('id', ''))
+            if gid.endswith('buildable-envelope') and _ring(f):
+                self.pl(_ring(f), 'V-PROP-BRL', close=True)
+
+    def topo(self):
+        for f in self.of('Contour'):
+            a = f.get('attributes') or {}
+            if a.get('hidden'): continue
+            ln = _line(f)
+            if len(ln) < 2: continue
+            z = a.get('elevationFt')
+            prop = a.get('proposed') is True
+            major = z is not None and round(z) % 10 == 0
+            lay = ('C-TOPO-MAJR-N' if major else 'C-TOPO-MINR-N') if prop else ('C-TOPO-MAJR-E' if major else 'C-TOPO-MINR-E')
+            self.pl(ln, lay)
+            if major and len(ln) > 6:
+                i = len(ln) // 2
+                self.text(f"{z:.0f}", ln[i], 0.07, 'C-TOPO-ANNO', angle=_text_angle(ln[i - 1], ln[i + 1]))
+        for f in self.of('SpotElevation'):
+            p = f.get('point')
+            if not p: continue
+            a = f.get('attributes') or {}
+            self.msp.add_blockref('SPOT', (p[0], p[1]), dxfattribs={'layer': 'C-TOPO-SPOT-N'})
+            self.text(str(a.get('label', '')), (p[0] + 1.5, p[1] + 1.2), 0.055, 'C-TOPO-SPOT-N', align=TextEntityAlignment.BOTTOM_LEFT)
+
+    def environment(self):
+        eg = self.s['extras'].get('environmentalGeometry') or {}
+        for sl in eg.get('steepSlopes') or []:
+            r = [(p[0], p[1]) for p in sl['ring']]
+            self.fill(r, 'C-ENVR-SLOP-E', pattern='DOTS' if sl['range'] == '15-25%' else 'ANSI37', scale=PAT)
+            self.pl(r, 'C-ENVR-SLOP-E', close=True)
+        for so in eg.get('soils') or []:
+            r = [(p[0], p[1]) for p in so['ring']]
+            self.pl(r, 'C-ENVR-SOIL-E', close=True)
+            c = self._pole(r)
+            self.text(so['label'], c, 0.1, 'C-ENVR-ANNO', bold=True)
+
+    def utilities(self):
+        for f in self.of('Utility'):
+            a = f.get('attributes') or {}
+            ln = _line(f)
+            ty = str(a.get('type', ''))
+            if ty == 'Water main': lay = 'C-WATR-MAIN-N'
+            elif ty == 'Sanitary sewer main': lay = 'C-SSWR-MAIN-N'
+            else: lay = 'C-UTIL-SVCS-N'
+            self.pl(ln, lay)
+            if lay != 'C-UTIL-SVCS-N' and len(ln) > 3:
+                i = len(ln) // 3
+                self.text(f"{a.get('label', ty)} — {a.get('sizeAtMain', '')}", ln[i], 0.065, 'C-UTIL-ANNO-N', angle=_text_angle(ln[i - 1], ln[i + 1]))
+        for f in self.of('Easement'):
+            r = _ring(f)
+            if len(r) < 3: continue
+            self.pl(r, 'V-ESMT', close=True)
+            a = f.get('attributes') or {}
+            lbl = a.get('label') or f.get('recordReference') or ''
+            if lbl and _area(r) > 400:
+                c = _centroid(r)
+                self.mtext(lbl, c, 0.06, 'V-ESMT-ANNO', width_in=1.6)
+        for f in self.of('Tree'):
+            r = _ring(f)
+            if not r: continue
+            c = _centroid(r)
+            self.msp.add_blockref('TREE', c, dxfattribs={'layer': 'L-PLNT-TREE-N'})
+        for f in self.of('ProposedFeature', type='street light'):
+            p = f.get('point')
+            if p: self.msp.add_blockref('LIGHT', (p[0], p[1]), dxfattribs={'layer': 'E-LITE-N'})
+
+    def stormwater(self):
+        for f in self.of('DrainageArea'):
+            self.pl(_ring(f), 'C-SWM-DRAN-N', close=True)
+        for f in self.of('SWMPractice'):
+            r = _ring(f)
+            self.pl(r, 'C-SWM-ESD-N', close=True)
+            self.fill(r, 'C-SWM-ESD-N', pattern='GRASS', scale=PAT * 0.5)
+        for row in self.s['bmp']['rows']:
+            p = row['at']
+            self.mtext(f"{row['bmp']} ({row['mdeCode']})\\PESDv {row['esdvReqCf']:,} CF REQ / {row['esdvProvCf']:,} PROV\\P→ {row['poi']}",
+                       (p[0] + 14, p[1] + 10), 0.06, 'C-SWM-ANNO', attach=7)
+        poi = self.s['poi']
+        for p in poi['pois']:
+            self.msp.add_blockref('POI', tuple(p['at']), dxfattribs={'layer': 'C-SWM-POI'})
+            self.text(p['id'], (p['at'][0] + 8, p['at'][1] - 8), 0.1, 'C-SWM-POI', align=TextEntityAlignment.TOP_LEFT, bold=True)
+        for o in poi['overflow']:
+            ln = [(q[0], q[1]) for q in o['line']]
+            # simplify the staircase of cell centres
+            from shapely.geometry import LineString
+            ls = LineString(ln).simplify(4.0)
+            pts = list(ls.coords)
+            self.pl(pts, 'C-SWM-FLOW')
+            if len(pts) >= 2:
+                a, b = pts[-2], pts[-1]
+                L = math.dist(a, b) or 1; ux, uy = (b[0] - a[0]) / L, (b[1] - a[1]) / L
+                self.pl([(b[0] - ux * 5 - uy * 2, b[1] - uy * 5 + ux * 2), b, (b[0] - ux * 5 + uy * 2, b[1] - uy * 5 - ux * 2)], 'C-SWM-FLOW')
+        cells = poi.get('offsiteCells') or []
+        if cells:
+            from shapely.geometry import Point
+            from shapely.ops import unary_union
+            cf = poi.get('cellFt', 5)
+            g = unary_union([Point(c).buffer(cf * 0.72, cap_style=3) for c in cells]).simplify(3)
+            for pg in (g.geoms if hasattr(g, 'geoms') else [g]):
+                if pg.geom_type == 'Polygon' and pg.area > 400:
+                    self.pl(list(pg.exterior.coords), 'C-SWM-OFFS', close=True)
+            big = max((g.geoms if hasattr(g, 'geoms') else [g]), key=lambda x: x.area)
+            rp = big.representative_point()
+            self.mtext(f"OFF-SITE DRAINAGE AREA\\P{poi['offsiteAreaSqFt'] / 43560:.2f} AC", (rp.x, rp.y), 0.07, 'C-SWM-ANNO')
+
+    def sediment(self):
+        for f in self.of('LimitOfDisturbance'):
+            self.pl(_ring(f), 'C-ESC-LOD', close=True)
+        for f in self.of('ProposedFeature'):
+            a = f.get('attributes') or {}
+            ty = str(a.get('type', ''))
+            if 'silt fence' in ty.lower():
+                r = _ring(f) or _line(f)
+                self.pl(r, 'C-ESC-SILT', close=bool(_ring(f)))
+            elif 'construction entrance' in ty.lower():
+                r = _ring(f)
+                self.pl(r, 'C-ESC-SCE', close=True)
+                self.fill(r, 'C-ESC-SCE', pattern='GRAVEL', scale=PAT * 0.5)
+                c = _centroid(r)
+                self.text('S.C.E.', c, 0.08, 'C-ESC-ANNO', bold=True)
+
+    def grid(self):
+        tx = [p[0] for p in self.s['tract']]; ty = [p[1] for p in self.s['tract']]
+        pts = []
+        for x in range(int(min(tx) // 200 * 200), int(max(tx)) + 200, 200):
+            for y in range(int(min(ty) // 200 * 200), int(max(ty)) + 200, 200):
+                pts.append((x, y))
+        from shapely.geometry import Polygon, Point
+        t = Polygon(self.s['tract']).buffer(40)
+        chosen = [p for p in pts if t.contains(Point(p))][:3] or pts[:3]
+        for x, y in chosen:
+            self.pl([(x - 6, y), (x + 6, y)], 'V-GRID'); self.pl([(x, y - 6), (x, y + 6)], 'V-GRID')
+            self.mtext(f"N {y:,.0f}\\PE {x:,.0f}", (x + 3, y + 3), 0.055, 'V-GRID', attach=7)
+        self.grid_pts = chosen
+
+    def vicinity(self):
+        path = self.s['extras'].get('vicinityStreetsFile')
+        if not path: return
+        try:
+            v = json.load(open(path))
+        except Exception:
+            return
+        named = set()
+        for f in v.get('features', []):
+            a = f.get('attributes') or {}
+            fcc = a.get('FCC') or ''
+            major = fcc[:2] in ('A1', 'A2', 'A3')
+            nm = (a.get('FULLNAME') or '').strip()
+            for p in (f.get('geometry') or {}).get('paths', []):
+                pts = [(q[0], q[1]) for q in p]
+                e = self.msp.add_lwpolyline(pts, dxfattribs={'layer': 'V-VICN', 'lineweight': 50 if major else 13})
+                if nm and major and nm not in named and len(pts) > 2:
+                    L = sum(math.dist(pts[i], pts[i + 1]) for i in range(len(pts) - 1))
+                    if L > 1500:
+                        named.add(nm)
+                        i = len(pts) // 2
+                        t = self.msp.add_text(nm, height=180, rotation=_text_angle(pts[i - 1], pts[i]),
+                                              dxfattribs={'layer': 'V-VICN', 'style': 'KEALEE-B'})
+                        t.set_placement(pts[i], align=TextEntityAlignment.BOTTOM_CENTER)
+        tract = [(p[0], p[1]) for p in self.s['tract']]
+        h = self.msp.add_hatch(color=1, dxfattribs={'layer': 'V-VICN'})
+        h.paths.add_polyline_path(tract, is_closed=True)
