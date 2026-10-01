@@ -222,6 +222,7 @@ rec['titleBlock'] = {
     'status': 'CONCEPT SUBMISSION 1 — NOT SEALED',
     'date': '2026-09-30',
     'jobNo': 'KEA-EIH-2026',
+    'basisNote': 'New submittal; base layout from the prior 2009 Street Tree & Lighting Plan, DPW&T 9399-2009-00.',
 }
 rec['siteData'] = [
     ['Project', 'Estates at Indian Head, Lots 1–6 and Estates Court'],

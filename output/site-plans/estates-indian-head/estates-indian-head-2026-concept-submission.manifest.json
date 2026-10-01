@@ -1,6 +1,6 @@
 {
  "record": "ESTATES AT INDIAN HEAD \u2014 LOTS 1-6 \u2014 2026 SITE DEVELOPMENT CONCEPT SUBMISSION (DRAFT FOR PE REVIEW)",
- "generatedAt": "2026-09-30",
+ "generatedAt": "2026-09-30T21:42:20-04:00",
  "status": "DRAFT \u2014 not sealed; W.L. Meekins, Inc. (engineer of record per application) to review and seal",
  "asked": [
   "refer to existing site plans/Estates Subdivision for the 2009 approved plans",
@@ -15,7 +15,8 @@
   "base": "2009 Street Tree & Lighting Plan, DPW&T 9399-2009-00 (Landesign), georeferenced to the plat: 1\"=29.80', rot -0.22 deg, median residual 0.44 ft (source/stl-2009-georef.json)",
   "topography": "M-NCPPC 2-ft contours NAVD88 (PGAtlas Elevation/1); 2009 field topo (WSSC datum) as underlay only",
   "esd": "MDE Design Manual Ch.5 Table 5.3 (docs/site-plan-reference/mde/), HSG C",
-  "easement": "WSSC 30-ft easement L.51799 F.399 (Utility Easement (3).pdf), Outlot A conveyed to Doyal L.51565 F.455"
+  "easement": "WSSC 30-ft easement L.51799 F.399 (Utility Easement (3).pdf), Outlot A conveyed to Doyal L.51565 F.455",
+  "approvals": "NEW SUBMITTAL (user, 2026-09-30/10-01): prior NRI-015-06, TCP1-018-06, TCP2-016-09 and DPW&T 9399-2009-00 are base work only; additional work: updated/revised NRI (checklist E-4 = O), TCP2 revision or new TCP/exemption per M-NCPPC, street tree & lighting re-review to current standards."
  },
  "computations": {
   "tractSqFt": 165901.8260713808,
@@ -198,17 +199,17 @@
  ],
  "inputs": {
   "estates-indian-head.plat.json": "00a34644e2d81ad95279686a66bb506e538c9dd0668d8a3b0149dae14f17e71e",
-  "estates-indian-head.plat-record.json": "80d7305b65a97c339991f0017f140bb22a8d6fd8cc60bb4ef9ad4018c318ae90",
-  "estates-indian-head-lot1.plat.json": "c51d94bf11705fd3fa77b0262c6a3ba229190083fc08dbf85f03b9ddc8ca4530",
-  "estates-indian-head-lot2.plat.json": "4267c762bcefd167c857fb01c6d6c3e1c571854837bc04b85877536b9ae9eba6",
-  "estates-indian-head-lot3.plat.json": "340dcc37a3a03781d11eeae98e377896a4d80896d2e698b0b9dec38d762486ca",
-  "estates-indian-head-lot4.plat.json": "6893ebbe1ec0659e1219faa3d9db675249b79fa1658303ef938c36fd094092eb",
-  "estates-indian-head-lot5.plat.json": "4b60bbd799bd480388f784412313fceac0c0701efb8f391236ed2ec71cfe4b5a",
-  "estates-indian-head-lot6.plat.json": "0712b145e708cf3e335b7bf50e03f30f533414ecce41cc5926d013561e685715"
+  "estates-indian-head.plat-record.json": "8a761ff6bd93d898119e847b36b49bcdcb2a6aff2f6e4a4a076632f5b00ebc22",
+  "estates-indian-head-lot1.plat.json": "6c4eefe0e64282be986cc4e64649fdb2a4c71154474115219839a2f8cd83d95e",
+  "estates-indian-head-lot2.plat.json": "6bb4a763471a14e32c1dd9098e907ed188ba9b9a37efe911d07f708684131fc1",
+  "estates-indian-head-lot3.plat.json": "88b9249d6afe015acaa67d51bcacdeec2662b641905333d5393771a2ac521ddd",
+  "estates-indian-head-lot4.plat.json": "d57e8c4fc5f8e18cba58d0d69ee2a1ad4d55e9c7af76d39d78deac10728ecb2f",
+  "estates-indian-head-lot5.plat.json": "53f44182597f14e042be857c1524aaafc76f52bf7b3f29a48565d284b7608a6f",
+  "estates-indian-head-lot6.plat.json": "9c61394aeaba63f284d52f49f58e96a579213688c88da9139507f44f6383f1e4"
  },
  "outputs": {
-  "estates-indian-head-2026-concept-submission.pdf": "73e8be3bc608d160f697607f2a507f909717480e5fe7ba6f51cb691d5b598b66",
-  "estates-indian-head-concept-SDC.pdf": "77044e549875491a265c73418df40432a4f2d30cf18e35eb81358f21b69d1560",
+  "estates-indian-head-2026-concept-submission.pdf": "1f908fa96ccbafd370b3ac5273093ba77003247f4679ddd9003d776ef227aee8",
+  "estates-indian-head-concept-SDC.pdf": "1da3074fb942f837f0fff1f0231b670d1f6d6fe81babcc9da8b875590defab6e",
   "estates-indian-head-permit-set.pdf": "9a93c97a587ee36e77e5f1f7640a2c9b3e901961145351addfeeb8ac0466e6ee",
   "estates-indian-head-permit-set.dxf": "aef2edbe3155e31fbf9770fedaba7605f3765c59a1a4febde71849f0c56ced0f",
   "estates-indian-head-DPIE-concept-application.pdf": "baedc2ff1eb6a6f9700c72d520840096d679e5b8eb5d6f4a91738ed18801fc8b"

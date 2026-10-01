@@ -470,7 +470,7 @@ class Sheets:
         _txt(ps, p.get('project', ''), TL_X, H - M - 0.78, 0.22)
         _txt(ps, f"{p.get('location', '')}  ·  {p.get('record', '')}  ·  {p.get('districts', '')}", TL_X, H - M - 1.1, 0.1)
         _txt(ps, 'Stormwater management by Environmental Site Design to the Maximum Extent Practicable (MDE Design Manual Ch. 5; PGC Subtitle 32). '
-             'Layout per the approved 2009 Street Tree & Lighting Plan, DPW&T 9399-2009-00.', TL_X, H - M - 1.28, 0.085)
+             + p.get('basisNote', ''), TL_X, H - M - 1.28, 0.085)
         # vicinity map, upper right
         vx0, vx1 = DRAW_X1 - 6.4, DRAW_X1
         vy1 = H - M - 0.2; vy0 = vy1 - 4.3
