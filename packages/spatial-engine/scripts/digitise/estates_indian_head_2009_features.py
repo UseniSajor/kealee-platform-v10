@@ -379,6 +379,38 @@ rec['culverts'] = culverts
 rec['spotElevationsFromPlan'] = {'datum': f'NAVD 88 — converted from WSSC datum, which reads about {WSSC_ABOVE_NAVD88_FT} ft above the NAVD 88 county contours (scatter 1.2 ft)',
                                  'replaceGenerated': True, 'points': spots}
 if entrance: rec['entranceApron'] = entrance
+# ── Site L.O.D. (owner 2026-10-01) ──────────────────────────────────────────
+# One smooth line around the whole development: 10 ft inside the rear line of
+# every lot and the outer sides of Lots 1 and 6 (tree-save strip, 8-15 ft), with
+# rounded corners — not a stepped union of per-lot grading. Only the street
+# R/W at its connection, the entrance, the off-site road work and the WSSC
+# easement corridor cross the strip.
+LOD_SETBACK_FT, LOD_ROUND_FT = 10.0, 25.0
+_geo = J('estates-indian-head.geometry.json')
+_tract = Polygon(_geo['tract']).buffer(0)
+_inset = _tract.buffer(-LOD_SETBACK_FT, join_style=1)
+_inset = _inset.buffer(-LOD_ROUND_FT, join_style=1).buffer(LOD_ROUND_FT, join_style=1)      # round the corners
+_cross = []
+for _r in st.get('rowRings') or []:
+    _cross.append(Polygon(_r).buffer(0))
+for _r in st.get('pavementRings') or []:
+    _cross.append(Polygon(_r).buffer(0))
+if rec.get('entranceApron'):
+    _cross.append(Polygon(rec['entranceApron']['ring']).buffer(0))
+for _ri in rec.get('roadImprovements') or []:
+    _cross.append(Polygon(_ri['ring']).buffer(0))
+for _e in rec.get('easementsOfRecord') or []:
+    if _e.get('ring') and 'WSSC' in (_e.get('type', '') + _e.get('label', '')):
+        _cross.append(Polygon(_e['ring']).buffer(0))
+_lod = unary_union([_inset] + [c.buffer(2.0, join_style=1) for c in _cross])
+_lod = _lod.buffer(6.0, join_style=1).buffer(-6.0, join_style=1)                            # smooth the joins
+if _lod.geom_type == 'MultiPolygon':
+    _lod = max(_lod.geoms, key=lambda g: g.area)
+_lod = Polygon(_lod.exterior).simplify(0.25)
+rec['siteLod'] = {'ring': [list(p) for p in list(_lod.exterior.coords)[:-1]], 'areaSqFt': round(_lod.area),
+                  'setbackFt': LOD_SETBACK_FT, 'cornerRadiusFt': LOD_ROUND_FT,
+                  'note': "Limit of disturbance held 10 ft inside the rear lot lines and the outer sides of Lots 1 and 6 (existing tree line preserved); crossed only by the street, entrance and WSSC easement."}
+
 json.dump(rec, open(os.path.join(proj, 'estates-indian-head.plat-record.json'), 'w'), indent=1)
 print(f'roads {len(roads)} · trees {len(trees)} · lights {len(lights)} · swale runs {len(swales)} '
       f'({sum(LineString(s["line"]).length for s in swales):.0f} ft) · culverts {len(culverts)} · spots {len(spots)} · '

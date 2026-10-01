@@ -690,7 +690,7 @@ class Model:
             # one L.O.D. around the whole development, labelled along its run
             for r in site_lod:
                 r = [(p[0], p[1]) for p in r]
-                self.pl(r, 'C-ESC-LOD', close=True, ltscale=1.6)
+                self.pl(r, 'C-ESC-LOD', close=True, ltscale=20.0)     # ~10 ft dash / 5 ft gap: ~1/3" at 1" = 30'
                 # 'LOD' inline along the line every ~90 ft, as the approved Yocum sheets letter it
                 ring = r + [r[0]]
                 walked, nxt = 0.0, 45.0
@@ -700,7 +700,7 @@ class Model:
                     while L > 0 and walked + L >= nxt:
                         t = (nxt - walked) / L
                         if L > 12:
-                            m = self.msp.add_mtext('LOD', dxfattribs={'layer': 'C-ESC-ANNO', 'char_height': th(0.075), 'attachment_point': 5,
+                            m = self.msp.add_mtext('LOD', dxfattribs={'layer': 'C-ESC-ANNO', 'char_height': th(0.10), 'attachment_point': 5,
                                                                      'style': 'KEALEE-B', 'rotation': _text_angle(p, q)})
                             m.set_location((p[0] + (q[0] - p[0]) * t, p[1] + (q[1] - p[1]) * t))
                             m.set_bg_color('canvas', scale=1.2)          # mask the line under the lettering

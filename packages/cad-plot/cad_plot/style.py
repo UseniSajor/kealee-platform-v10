@@ -76,7 +76,7 @@ LAYERS = {
     'C-SWM-OFFS': (7, 'DOT', 18),
     'C-SWM-ANNO': (7, 'CONTINUOUS', 18),
     # sediment control
-    'C-ESC-LOD': (7, 'DASHED', 50),          # L.O.D.: heavy black long dash, 'LOD' inline (Yocum approved plans)
+    'C-ESC-LOD': (7, 'DASHED', 70),          # L.O.D.: heavy black long dash, 'LOD' inline (Yocum approved plans)
     'C-ESC-SILT': (7, 'DASHED', 25),
     'C-ESC-SCE': (7, 'CONTINUOUS', 25),
     'C-ESC-ANNO': (7, 'CONTINUOUS', 18),

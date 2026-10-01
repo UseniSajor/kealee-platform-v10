@@ -486,20 +486,6 @@ class Sheets:
                        'the sewer, subject to WSSC approval at plumbing permit; otherwise relocate the lead walk.')
         return out
 
-    def _service_notes(self):
-        svc = [f for f in self.s['twin']['features'] if f.get('kind') == 'Utility' and (f.get('attributes') or {}).get('routedClearOfPaving')]
-        if not svc:
-            return []
-        common = sorted({(f.get('attributes') or {}).get('lotLabel') or str(f.get('id', '')).split('-')[0].upper().replace('L', 'LOT ')
-                         for f in svc if (f.get('attributes') or {}).get('commonTrench')})
-        out = ['House connections: 1" copper water service and 4" PVC sewer lateral per lot, each tapped on its own main and run to the dwelling '
-               'clear of every driveway, apron, walk, stoop, culvert and ESD cell (3 ft min.), so no concrete or structure is removed to lay or repair them; '
-               'water and sewer 10 ft apart (WSSC).']
-        if common:
-            out.append(f"{', '.join(common)}: water and sewer in a COMMON TRENCH (no 10-ft corridor clear of the paving) — water on a shelf 12 in above "
-                       'the sewer, subject to WSSC approval at plumbing permit; otherwise relocate the lead walk.')
-        return out
-
     def sheet_swm(self, ps, sh):
         x, y0 = self.sheet_plan(ps, sh)
         rows = [[r['bmp'], r['mdeCode'], r['location'], r['poi'], f"{r['daSqFt']:,}", f"{r['percentImpervious']:.1f}", f"{r['peIn']:.1f}",
@@ -523,44 +509,6 @@ class Sheets:
         col = (DRAW_X1 - DRAW_X0 - 0.6) / 3
         x1, x2, x3 = DRAW_X0, DRAW_X0 + col + 0.3, DRAW_X0 + 2 * (col + 0.3)
         h = 0.1
-        y = paragraphs(ps, x1, top, col, 'D-1  SWM CONCEPT NARRATIVE', r['narrative']['D-1'], h=h)
-        y = paragraphs(ps, x1, y - 0.2, col, 'D-3  OUTFALLS AND RECEIVING AREAS', r['narrative']['D-3'], h=h)
-        paragraphs(ps, x1, y - 0.2, col, 'D-4  OUTFALL STABILIZATION', r['narrative']['D-4'], h=h)
-
-        y = top
-        for p in r['pois']:
-            cov = [['Existing', f"{p['existing']['woodsSqFt']:,}", f"{p['existing']['openSqFt']:,}", f"{p['existing']['impSqFt']:,}", f"{p['existing']['cn']}", f"{p['tc']['existingHr']}"],
-                   ['Proposed', f"{p['proposed']['woodsSqFt']:,}", f"{p['proposed']['openSqFt']:,}", f"{p['proposed']['impSqFt']:,}", f"{p['proposed']['cn']}", f"{p['tc']['proposedHr']}"]]
-            y, _ = table(ps, x2, y, f"{p['poi']} — COVER, CURVE NUMBER AND Tc ({p['areaSqFt']:,} SF, HSG {r['hsg']})",
-                         ['CONDITION', 'WOODS SF', 'OPEN SPACE SF', 'IMPERVIOUS SF', 'CN', 'Tc HR'], cov, h=h, max_width=col)
-            segs = [[sg['label'], f"{sg['lengthFt']:,.0f}", f"{sg['slopeFtPerFt']:.4f}", f"{sg.get('velocityFps', 0):.2f}", f"{sg.get('travelTimeHr', 0):.3f}"] for sg in p['tc']['segments']]
-            y, _ = table(ps, x2, y - 0.25, 'TIME OF CONCENTRATION — PROPOSED (TR-55)', ['SEGMENT', 'L FT', 'S FT/FT', 'V FPS', 'Tt HR'], segs, h=h, max_width=col)
-            pk = [[f"{q['yr']}", f"{q['rainfallIn']:.2f}", f"{q['preCfs']:.2f}", f"{q['postCfs']:.2f}", f"{q['postCfs'] - q['preCfs']:+.2f}",
-                   f"{q['preRunoffCf']:,}", f"{q['postRunoffCf']:,}"] for q in p['peaks']]
-            y, _ = table(ps, x2, y - 0.25, f"{p['poi']} — PEAK DISCHARGE, EXISTING VS. PROPOSED (NO ESD CREDIT)",
-                         ['STORM YR', 'P 24-HR IN', 'Q EXIST CFS', 'Q PROP CFS', 'CHANGE', 'RUNOFF EXIST CF', 'RUNOFF PROP CF'], pk, h=h, max_width=col)
-            o = p['outfall']
-            orow = [[o['section'], f"{o['slope']:.4f}", f"{o['q10Cfs']:.2f}", f"{o['v10Fps']:.2f}", f"{o['q100Cfs']:.2f}", f"{o['v100Fps']:.2f}", f"{o['d100Ft']:.2f}",
-                     f"{o['permissibleFps']:.1f}"]]
-            y, _ = table(ps, x2, y - 0.25, f"{p['poi']} — OUTFALL VELOCITY CHECK (MANNING, NORMAL DEPTH)",
-                         ['SECTION', 'S FT/FT', 'Q10 CFS', 'V10 FPS', 'Q100 CFS', 'V100 FPS', 'd100 FT', 'V ALLOW FPS'], orow, h=h, max_width=col, wrap_cols={0: 1.6})
-            y -= 0.35
-
-        y = paragraphs(ps, x3, top, col, 'D-10  COMPUTATIONS', r['narrative']['D-10'], h=h)
-        y = paragraphs(ps, x3, y - 0.2, col, 'OUTSTANDING FOR TECHNICAL DESIGN', r['outstanding'], h=h)
-        paragraphs(ps, x3, y - 0.2, col, 'METHOD AND SOURCES', [r['method'], r['rainfall']['citation']], h=h, numbered=False)
-
-    def sheet_swmreport(self, ps, sh):
-        """C-410: the SWM concept narrative (checklist D-1, D-3, D-4) and the
-        existing-vs-proposed computations at each POI (D-10). Three columns right
-        of the ePlan stamp space; the third stops above the County approval block."""
-        self.plan_title(ps, sh)
-        r = self.s.get('swm')
-        if not r: return
-        top = H - M - 0.7
-        col = (DRAW_X1 - TL_X - 0.6) / 3
-        x1, x2, x3 = TL_X, TL_X + col + 0.3, TL_X + 2 * (col + 0.3)
-        h = 0.13
         y = paragraphs(ps, x1, top, col, 'D-1  SWM CONCEPT NARRATIVE', r['narrative']['D-1'], h=h)
         y = paragraphs(ps, x1, y - 0.2, col, 'D-3  OUTFALLS AND RECEIVING AREAS', r['narrative']['D-3'], h=h)
         paragraphs(ps, x1, y - 0.2, col, 'D-4  OUTFALL STABILIZATION', r['narrative']['D-4'], h=h)

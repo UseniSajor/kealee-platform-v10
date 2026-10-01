@@ -389,6 +389,10 @@ export const LOD_TREE_SAVE_FT = 10
 
 function siteDisturbance(feats: any[], pr: Record<string, any>, closed: (r: Position[]) => Position[], tract: Position[]): { rings: Position[][]; mp: MP } {
   const polys: MP = []
+  // The site L.O.D. drawn by the inputs (smooth, 10 ft inside the rear lines and the
+  // outer sides of Lots 1 and 6, owner 2026-10-01) is authoritative when present.
+  const given = (pr.siteLod?.ring ?? null) as Position[] | null
+  if (given && given.length > 2) return { rings: [given], mp: [[closed(given) as [number, number][]]] }
   const ringOf = (f: any): Position[] | null => {
     const r = f?.ring?.coordinates ?? (Array.isArray(f?.ring) ? f.ring : null)
     return r && r.length > 2 ? r : null
