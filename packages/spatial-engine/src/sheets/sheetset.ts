@@ -171,6 +171,7 @@ export function buildSheetSet(input: {
       woodland: String(env.woodland ?? ''), soils: String(env.soils ?? 'NRCS soils shown.'),
       tmdl: String(env.tmdl ?? ''), tierII: Boolean(env.tierII), highlyErodible: String(env.highlyErodible ?? ''),
       marlboroClay: Boolean(env.marlboroClay), springs: Boolean(env.springs), wells: String(env.wells ?? ''), approvals: String(env.approvals ?? ''),
+      nriCurrentForSubmittal: Boolean(env.nriCurrentForSubmittal),
     },
   }
   const checklist = evaluateChecklist(facts, pr.checklistOverrides ?? {})

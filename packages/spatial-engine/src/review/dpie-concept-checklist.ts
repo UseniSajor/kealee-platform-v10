@@ -106,6 +106,9 @@ export interface ChecklistFacts {
     steep15SqFt: number; steep25SqFt: number; woodland: string; soils: string
     tmdl: string; tierII: boolean; highlyErodible: string; marlboroClay: boolean; springs: boolean
     wells: string; approvals: string
+    /** True only when an NRI is approved and current FOR THIS SUBMITTAL. A
+     *  prior approval reused as base work does not count: E-4 stays open. */
+    nriCurrentForSubmittal?: boolean
   }
 }
 
@@ -180,7 +183,7 @@ export function evaluateChecklist(f: ChecklistFacts, overrides: Record<string, {
     'E-1': r('O', 'Geotechnical report for SWM (borings and Sec. 32-131 infiltration tests at each practice) — to be submitted.'),
     'E-2': r('O', 'Geotechnical report to address Marlboro/Christiana clays, sulfidic and diatomaceous soils.'),
     'E-3': r('O', 'Affidavit of the adjacent-owner mailing (within 7 days of submittal) — with second submission.'),
-    'E-4': r('C', e.approvals),
+    'E-4': r(e.nriCurrentForSubmittal ? 'C' : 'O', e.approvals),
   }
   return DPIE_CONCEPT_CHECKLIST.map(it => ({ ...it, ...(ans[it.id] ?? r('O', 'Not evaluated.')), ...(overrides[it.id] ?? {}) }))
 }

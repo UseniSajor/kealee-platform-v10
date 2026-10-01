@@ -433,7 +433,7 @@ ax.text(0.9, H_IN - 1.05, 'SITE DEVELOPMENT CONCEPT PLAN', fontsize=30, fontweig
 ax.text(0.9, H_IN - 1.65, 'ESTATES AT INDIAN HEAD — LOTS 1–6 AND ESTATES COURT', fontsize=16, va='top')
 ax.text(0.9, H_IN - 2.0, 'Plat Book PM 228 Plat 83 · 200–205 Estates Court, Accokeek, MD 20607 · Tax Map 151 Grid F-3 · Zone RR · Piscataway Election District 5 · Prince George\'s County, Maryland',
         fontsize=8.5, va='top')
-ax.text(0.9, H_IN - 2.25, 'Stormwater management by Environmental Site Design to the Maximum Extent Practicable (MDE Design Manual Ch. 5; PGC Subtitle 32, Div. 3). Follows the approved 2009 layout (Street Tree & Lighting Plan, DPW&T permit 9399-2009-00).',
+ax.text(0.9, H_IN - 2.25, 'Stormwater management by Environmental Site Design to the Maximum Extent Practicable (MDE Design Manual Ch. 5; PGC Subtitle 32, Div. 3). New submittal; base layout from the prior 2009 Street Tree & Lighting Plan (DPW&T permit 9399-2009-00).',
         fontsize=7.5, va='top', color='#333333')
 
 # vicinity map (A-6) — upper right of the drawing area
@@ -486,7 +486,7 @@ site = [
     ['Project name', 'Estates at Indian Head, Lots 1–6'],
     ['Geographic location', 'S. side of MD 210 (Indian Head Hwy), ±3,000 ft NE of MD 210 / MD 373 (Livingston Rd)'],
     ['Street address', '200, 201, 202, 203, 204, 205 Estates Court, Accokeek, MD 20607'],
-    ['Companion cases', 'NRI-015-06, TCP1-018-06, TCP2-016-09 (current); final plat 5-08238 (PM 228 @ 83); DPW&T 9399-2009-00 street tree & lighting'],
+    ['Companion cases', 'Prior (base work, not carrying this submittal): NRI-015-06, TCP1-018-06, TCP2-016-09, DPW&T 9399-2009-00 street tree & lighting. Of record: final plat 5-08238 (PM 228 @ 83)'],
     ['Lots / area', '6 lots + public R/W; 165,902 sf (3.809 ac) computed, 165,019 sf of record (plat 171,505 sf less Outlot A)'],
     ['Tax accounts', ', '.join(lots[n][1]['ACCOUNT'] for n in sorted(lots))],
     ['Tax map / WSSC 200\'', '151 F-3  /  220SE01'],
@@ -503,7 +503,7 @@ site = [
     ['New site imp. area', f"{tot['imp']:,.0f} sf ({tot_I:.1f}% of tract) — roofs, driveways, walks, Estates Court pavement, curb and sidewalk"],
     ['Est. disturbed area', f"{lod.area:,.0f} sf ({lod.area / 43560:.2f} ac), incl. {lod_offsite.area:,.0f} sf off-site in the WSSC easement (Outlot A, Lot 20)"],
     ['Marlboro clay / public project', 'No (PGAtlas Environmental/7: none within 100 ft) / No'],
-    ['Road section', 'Open section (rural), as approved 2009: Estates Court 60\' R/W, 24\' pavement, 4\' shoulders, roadside swales, cul-de-sac'],
+    ['Road section', 'Open section (rural), per the 2009 base plan: Estates Court 60\' R/W, 24\' pavement, 4\' shoulders, roadside swales, cul-de-sac'],
     ['Water / sewer', 'W-3 / S-3 community systems (WSSC), Piscataway Creek sewer basin; mains from Henrietta Dr via 30\' WSSC esmt L.51799 F.399'],
 ]
 yS = table(ax, 0.9, yL, ['APPLICATION DATA', ''], site, [2.1, 7.6], 'SITE DATA (DPIE Concept Application, rev. 07/28/2021)', fs=5.8, rh=0.165)
@@ -550,7 +550,7 @@ gn = [
     'All six lots are vacant (no existing impervious area, no structures to remove). No wells or septic systems are proposed; the existing well on Parcel 199 (15608 Indian Head Hwy) is ≥100 ft from the proposed mains.',
     'Stormwater management is ESD to the MEP: each lot drains to one micro-bioretention cell (M-6) sized for its own roof and paving; Estates Court sheet-flows off the shoulders into roadside dry swales (M-8) with check dams, north and south, draining west to the entrance. Rooftop and non-rooftop disconnection (N-1, N-2) are to be credited at technical design and will reduce the cells.',
     'Quantity: the site is < 1 ac of new impervious area on HSG C soils. The 10-yr and 100-yr (Qp10/Qf) analyses at each POI accompany this plan in the concept narrative; ESD storage is subtracted per MDE Ch. 5. Outfalls as tabulated; each discharges as sheet flow through a level spreader.',
-    'Approvals of record (current): NRI-015-06, TCP1-018-06, TCP2-016-09. Still to be submitted: geotechnical report with Sec. 32-131 infiltration tests (E-1, E-2), soil borings, affidavit of the adjacent-owner notification (Sec. 32-182(g), mailed within 7 days of submittal), and the application fee ($500 + 5% technology fee).',
+    'NEW SUBMITTAL (2026). Prior approvals NRI-015-06, TCP1-018-06, TCP2-016-09 and DPW&T 9399-2009-00 are used as base work only and do not carry this submittal. Additional work: an updated/revised NRI (draft with this submission, approved copy before concept approval, Sec. 32-182(a)); a TCP2-016-09 revision or new TCP / letter of exemption as M-NCPPC Environmental Planning determines; street tree and lighting plan re-reviewed to current DPW&T/DPIE standards; SWM by ESD to the MEP under current Subtitle 32. Also still to be submitted: geotechnical report with Sec. 32-131 infiltration tests (E-1, E-2), soil borings, affidavit of the adjacent-owner notification (Sec. 32-182(g), mailed within 7 days of submittal), and the application fee ($500 + 5% technology fee).',
     'Contact Miss Utility (811) at least 48 hours before any excavation.',
 ]
 notes(ax, 0.9, yI - 0.35, 'GENERAL NOTES', gn, width_chars=150, fs=5.6, lh=0.1)

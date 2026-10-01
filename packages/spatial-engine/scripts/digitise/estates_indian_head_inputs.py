@@ -257,7 +257,7 @@ rec = {
         'Tract 165,019 sf (3.788 ac) = plat 171,505 sf less Outlot A (6,486 sf), which was conveyed to M. & K. Doyal (L.51565 F.455) and is no longer part of this site.',
         'Estates Court: 60-ft public right-of-way dedicated on the plat (35,173 sf) with a cul-de-sac; to be constructed with this development.',
         'Water and sewer: WSSC. The mains in Estates Court connect to the existing mains in Henrietta Drive through the 30-ft WSSC easement recorded at L.51799 F.399 (Outlot A 906 sf, Lot 20 3,154 sf) and a 30-ft WSSC easement to be granted across Lot 4.',
-        'Approvals of record: NRI-015-06, TCP1-018-06, TCP2-016-09 (current); Street Tree and Lighting Plan, DPW&T permit 9399-2009-00 (approved 05/06/2009). This submission follows the 2009 layout and is prepared to the current DPIE Site Development Concept checklist (rev. 08/25/2021).',
+        'New submittal. Prior approvals NRI-015-06, TCP1-018-06, TCP2-016-09 and the Street Tree and Lighting Plan, DPW&T permit 9399-2009-00 (approved 05/06/2009), are base work only and do not carry this submittal; an updated NRI, a TCP2 revision or new TCP as M-NCPPC determines, and re-review of the street tree and lighting plan are required. The 2009 layout is the base, prepared to the current DPIE Site Development Concept checklist (rev. 08/25/2021).',
     ],
     'adjoiners': adjoiners,
     'dedicationWidthFt': 0,
