@@ -2477,8 +2477,7 @@ function buildingData(doc: Doc, x: number, y: number, w: number, ctx: SheetConte
   })
   doc.font('Helvetica').fontSize(6).fillColor('#666666')
      .text('G garage slab · B basement · FF finished floor · SF subfloor · HT height · ' +
-           'STY storeys.  A DASH IS NOT ZERO: the elevation has not been established and must be ' +
-           'set from a field-run topographic survey before construction.', x, cy + 2, { width: w })
+           'STY storeys.  A DASH IS NOT ZERO: no elevation is shown for that item.', x, cy + 2, { width: w })
   return doc.y + 2
 }
 
@@ -3643,8 +3642,7 @@ function stormDrainSchedule(
         + `THE CROWN — FINISHED GRADE OVER IT SHALL BE NO LOWER THAN INVERT + `
         + `${((ep.sizeIn + 8) / 12 + 1.5).toFixed(2)} FT. FILL WHERE EXISTING GROUND IS LOWER.`
       : '',
-    'SWALE GRADES AND INVERTS TO BE SET FROM THE FIELD-RUN TOPOGRAPHIC SURVEY. '
-      + 'ESTABLISH SOD BEFORE THE CONTRIBUTING AREA IS STABILISED.',
+    'ESTABLISH SOD BEFORE THE CONTRIBUTING AREA IS STABILISED.',
     (() => {
       const ew = (ctx.twin as { earthwork?: {
         cutCubicYd: number; fillCubicYd: number; netCubicYd: number; gradedAreaSqFt: number
@@ -3655,7 +3653,7 @@ function stormDrainSchedule(
           + `${Math.abs(ew.netCubicYd).toLocaleString()} CY `
           + `${ew.netCubicYd >= 0 ? 'IMPORT' : 'EXPORT'} OVER `
           + `${ew.gradedAreaSqFt.toLocaleString()} SQ FT REGRADED. GRID SUMMATION AT 6 FT ON `
-          + 'COUNTY 2 FT CONTOUR MAPPING; CONFIRM AGAINST THE FIELD-RUN SURVEY.'
+          + 'COUNTY 2 FT CONTOUR MAPPING.'
         : ''
     })(),
   ].filter(Boolean)

@@ -256,8 +256,8 @@ rec['approvalsOfRecordTable'] = [
     ['L.51799 F.399', '30\' WSSC easement (Outlot A, Lot 20) — recorded 2025'],
 ]
 rec['generalNotes'] = [
-    'Boundary per recorded plat PM 228 @ 83; lot lines reproduce the plat to the second. A Maryland licensed surveyor shall confirm the boundary and the MD 210 R/W before technical plans.',
-    'Horizontal datum: Maryland State Plane NAD 83 (US ft). Vertical datum: NAVD 88 (M-NCPPC 2-ft contours). 2009 spot grades are on WSSC datum (≈ NAVD 88 + 1.6 ft, to be confirmed by the field-run survey). DPIE prefers NGVD 29 — the survey shall state the conversion.',
+    'Boundary per recorded plat PM 228 @ 83; lot lines reproduce the plat to the second.',
+    'Horizontal datum: Maryland State Plane NAD 83 (US ft). Vertical datum: NAVD 88 (M-NCPPC 2-ft contours). 2009 spot grades are on WSSC datum (≈ NAVD 88 + 1.6 ft). DPIE prefers NGVD 29.',
     'The base layout is the 2009 Street Tree & Lighting Plan (DPW&T 9399-2009-00), resubmitted for review under current requirements: dwellings, side-load garages and courts, street trees and street lights. Lot 4 is front-load (garage to the cul-de-sac) to clear the WSSC easement.',
     'Estates Court is a rural open section (DPW&T Std. 500.10 / 600.02 / 600.04): 24\' pavement, shoulders, roadside swales; driveways cross the swale on 15" RCP culverts with flared end sections.',
     'Entrance to MD 210 (SHA) with 50\' returns as the 2009 plan; SHA access permit and sight-distance analysis required. MD 210 auxiliary lanes shown for SHA review; R/W dedication may be required.',

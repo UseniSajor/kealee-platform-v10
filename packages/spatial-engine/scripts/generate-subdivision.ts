@@ -807,8 +807,7 @@ async function main(): Promise<void> {
     return {
       to: st.at as Position,
       label: `House drainage collected and conveyed to ${st.id} (${st.type}) on the shared storm `
-        + 'drain trunk in the rear easement. Invert to be set from the field-run topographic '
-        + 'survey; see the STORM DRAIN SCHEDULE for the trunk sizes and flows.',
+        + 'drain trunk in the rear easement. See the STORM DRAIN SCHEDULE for the trunk sizes and flows.',
     }
   }
 
@@ -1814,8 +1813,7 @@ async function main(): Promise<void> {
             + 'ROAD CULVERT. BURIED: outside diameter 4.17 ft, 1.5 ft minimum cover over the '
             + 'crown, so finished grade over this main shall be no lower than the invert plus '
             + '5.67 ft for its full length — where the existing ground is lower, fill is '
-            + 'required and is carried on the grading plan. Invert and slope to be set from the '
-            + 'field-run topographic survey and the existing inlet; bedding per P.G. County DER '
+            + 'required and is carried on the grading plan. Bedding per P.G. County DER '
             + 'SWM Std. and Specification #02200.',
         },
       } as never as SiteFeature)
@@ -1861,8 +1859,7 @@ async function main(): Promise<void> {
         + `${(odFt + COVER_FT).toFixed(2)} ft`)
       if (needUp != null && needDn != null) {
         console.log(`                    existing ground over the run: EL ${needUp.toFixed(1)} at `
-          + `the street end, EL ${needDn.toFixed(1)} at the rear — county 2 ft contour mapping; `
-          + 'inverts to be set from the field-run survey and the existing inlet')
+          + `the street end, EL ${needDn.toFixed(1)} at the rear — county 2 ft contour mapping`)
       }
     }
 
@@ -1927,7 +1924,7 @@ async function main(): Promise<void> {
         attributes: {
           label: `${st.id}  GR ${st.gradeEl.toFixed(1)}`, monument: true,
           note: `${st.type}${st.lot ? `, lot ${st.lot}` : ''}. Grade shown from county contour `
-            + 'mapping; TOP and INVERT to be set from the field-run topographic survey.',
+            + 'mapping.',
         },
       } as never as SiteFeature)
     }
