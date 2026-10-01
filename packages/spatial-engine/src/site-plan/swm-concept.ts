@@ -48,7 +48,10 @@ export interface CoverSplit { woodsSqFt: number; openSqFt: number; impSqFt: numb
 export interface PeakRow { yr: number; rainfallIn: number; preCfs: number; postCfs: number; preRunoffCf: number; postRunoffCf: number }
 export interface PoiHydrology {
   poi: string
+  /** Drainage area at the POI: the tract's share plus the off-site land draining onto it. */
   areaSqFt: number
+  /** Of areaSqFt, the off-site part (open space, existing and proposed). */
+  offsiteSqFt?: number
   existing: CoverSplit
   proposed: CoverSplit
   tc: { existingHr: number; proposedHr: number; lengthFt: number; slope: number; segments: TcSegment[] }
@@ -98,6 +101,10 @@ export function swmConceptReport(input: {
   /** Swale section at the outfall: bottom width ft, side slope z:1, Manning n. */
   outfallSection?: { bottomFt: number; z: number; n: number; label: string }
   permissibleFps?: number
+  /** Off-site land draining onto the tract, sf. Carried in every POI's flow as open space (existing and proposed). */
+  offsiteSqFt?: number
+  /** The roadside swale the development builds: its run to the outfall and its (least) grade. */
+  swale?: { lengthFt: number; slope: number }
 }): SwmConceptReport {
   const { hsg, rainfall } = input
   for (const yr of [2, 10, 100]) {
@@ -111,17 +118,21 @@ export function swmConceptReport(input: {
   // Canopy outside the LOD is kept. Where the LOD's position against the
   // canopy is unknown, the cleared share is taken proportionally.
   const woodsPost = Math.max(0, woodsPre * (1 - lod / A))
+  // Off-site inflow is in the drainage area of record for the POI: the flow
+  // the outfall carries includes it, before and after, as open space.
+  const off = Math.max(0, input.offsiteSqFt ?? 0)
+  const At = A + off
   const cnOf = (w: number, i: number) => compositeCurveNumber([
-    { label: 'woods', fraction: w / A, curveNumber: CN.woods[hsg] },
-    { label: 'open space', fraction: Math.max(0, A - w - i) / A, curveNumber: CN.openSpace[hsg] },
-    { label: 'impervious', fraction: i / A, curveNumber: CN.impervious[hsg] },
+    { label: 'woods', fraction: w / At, curveNumber: CN.woods[hsg] },
+    { label: 'open space', fraction: Math.max(0, At - w - i) / At, curveNumber: CN.openSpace[hsg] },
+    { label: 'impervious', fraction: i / At, curveNumber: CN.impervious[hsg] },
   ]).curveNumber
   const cnPre = cnOf(woodsPre, impPre), cnPost = cnOf(woodsPost, impPost)
   const sec = input.outfallSection ?? { bottomFt: 2, z: 3, n: 0.035, label: 'grass-lined roadside swale, 2-ft bottom, 3:1 sides, n = 0.035' }
   const vPerm = input.permissibleFps ?? 4.0
 
   const pois: PoiHydrology[] = input.poi.pois.map(p => {
-    const area = A * p.share
+    const area = At * p.share
     const L = Math.max(100, p.longestFlowFt ?? Math.sqrt(area))
     const slope = Math.max(0.005, (p.longestFlowDropFt ?? 0) / L)
     const segs = (n: number): TcSegment[] => [
@@ -132,7 +143,13 @@ export function swmConceptReport(input: {
     // The existing path starts in woods where the tract is mostly wooded; the
     // proposed one starts on lawn.
     const tcPre = timeOfConcentration(segs(woodsPre / A > 0.5 ? 0.4 : 0.24), p2)
-    const tcPost = timeOfConcentration(segs(0.24), p2)
+    // Proposed: lawn, then overland to the street, then the length of the
+    // roadside swale to the outfall at its grade (TR-55 channel flow, the
+    // swale section running 1 ft deep).
+    const swaleR = (() => { const d = 1, a = d * (sec.bottomFt + sec.z * d), w = sec.bottomFt + 2 * d * Math.sqrt(1 + sec.z * sec.z); return a / w })()
+    const tcPost = timeOfConcentration(input.swale
+      ? [...segs(0.24), { kind: 'channel', label: `roadside swale, ${sec.bottomFt}-ft bottom, ${sec.z}:1, n = ${sec.n}`, lengthFt: input.swale.lengthFt, slopeFtPerFt: input.swale.slope, manningN: sec.n, hydraulicRadiusFt: swaleR }]
+      : segs(0.24), p2)
     const sqMi = area / 27878400
     const peaks: PeakRow[] = Object.keys(rainfall.depthsIn).map(Number).filter(yr => [1, 2, 10, 100].includes(yr)).sort((a, b) => a - b).map(yr => {
       const P = rainfall.depthsIn[yr]
@@ -145,21 +162,26 @@ export function swmConceptReport(input: {
       }
     })
     const q10 = peaks.find(r => r.yr === 10)!.postCfs, q100 = peaks.find(r => r.yr === 100)!.postCfs
-    const n10 = normalDepth(q10, sec.bottomFt, sec.z, sec.n, slope), n100 = normalDepth(q100, sec.bottomFt, sec.z, sec.n, slope)
-    const stable = n10.v <= vPerm
+    // The outfall reach is the swale, so its velocity is checked at the
+    // swale's grade, and at BOTH the 10- and the 100-yr flow.
+    const sOut = input.swale?.slope ?? slope
+    const n10 = normalDepth(q10, sec.bottomFt, sec.z, sec.n, sOut), n100 = normalDepth(q100, sec.bottomFt, sec.z, sec.n, sOut)
+    const stable = n10.v <= vPerm && n100.v <= vPerm
     return {
-      poi: p.id, areaSqFt: Math.round(area),
+      poi: p.id, areaSqFt: Math.round(area), offsiteSqFt: Math.round(off * p.share),
       existing: { woodsSqFt: Math.round(woodsPre * p.share), openSqFt: Math.round((A - woodsPre - impPre) * p.share), impSqFt: Math.round(impPre * p.share), cn: Number(cnPre.toFixed(1)) },
       proposed: { woodsSqFt: Math.round(woodsPost * p.share), openSqFt: Math.round((A - woodsPost - impPost) * p.share), impSqFt: Math.round(impPost * p.share), cn: Number(cnPost.toFixed(1)) },
       tc: { existingHr: Number(tcPre.tcHr.toFixed(3)), proposedHr: Number(tcPost.tcHr.toFixed(3)), lengthFt: Math.round(L), slope: Number(slope.toFixed(4)), segments: tcPost.segments },
       peaks,
       outfall: {
-        section: sec.label, slope: Number(slope.toFixed(4)), q10Cfs: q10, q100Cfs: q100,
+        section: sec.label, slope: Number(sOut.toFixed(4)), q10Cfs: q10, q100Cfs: q100,
         v10Fps: Number(n10.v.toFixed(2)), v100Fps: Number(n100.v.toFixed(2)), d100Ft: Number(n100.d.toFixed(2)),
         permissibleFps: vPerm, stable,
         protection: stable
-          ? `10-yr velocity ${n10.v.toFixed(1)} ft/s is within ${vPerm.toFixed(1)} ft/s for a grass-lined channel. The 100-yr velocity is ${n100.v.toFixed(2)} ft/s; provide engineered outlet protection and verify receiving-system capacity before technical approval.`
-          : `10-yr velocity ${n10.v.toFixed(1)} ft/s exceeds ${vPerm.toFixed(1)} ft/s for a grass-lined channel: line the outfall reach with riprap on geotextile and provide rock outlet protection where the swale meets ${input.receiving}.`,
+          ? `10-yr velocity ${n10.v.toFixed(2)} ft/s and 100-yr velocity ${n100.v.toFixed(2)} ft/s are within ${vPerm.toFixed(1)} ft/s for a grass-lined channel; rock outlet protection where the swale meets ${input.receiving}.`
+          : n10.v <= vPerm
+            ? `10-yr velocity ${n10.v.toFixed(2)} ft/s is within ${vPerm.toFixed(1)} ft/s, but the 100-yr velocity ${n100.v.toFixed(2)} ft/s exceeds it: line the outfall reach with permanent turf reinforcement matting rated for at least ${n100.v.toFixed(1)} ft/s, and provide rock outlet protection where the swale meets ${input.receiving}.`
+            : `10-yr velocity ${n10.v.toFixed(2)} ft/s exceeds ${vPerm.toFixed(1)} ft/s for a grass-lined channel: line the outfall reach with riprap on geotextile and provide rock outlet protection where the swale meets ${input.receiving}.`,
       },
     }
   })
@@ -168,7 +190,7 @@ export function swmConceptReport(input: {
   const ac = (sf: number) => (sf / 43560).toFixed(2)
   const lines100 = pois.map(h => {
     const r = h.peaks.find(x => x.yr === 100)!
-    return `${h.poi}: ${ac(h.areaSqFt)} ac, CN ${h.existing.cn} → ${h.proposed.cn}, Tc ${h.tc.existingHr} → ${h.tc.proposedHr} hr; 100-yr ${r.preCfs.toFixed(1)} → ${r.postCfs.toFixed(1)} cfs (${r.postCfs >= r.preCfs ? '+' : ''}${(r.postCfs - r.preCfs).toFixed(1)} cfs), runoff ${fmt(r.preRunoffCf)} → ${fmt(r.postRunoffCf)} cf.`
+    return `${h.poi}: ${ac(h.areaSqFt)} ac${h.offsiteSqFt ? ` (incl. ${ac(h.offsiteSqFt)} ac off site)` : ''}, CN ${h.existing.cn} → ${h.proposed.cn}, Tc ${h.tc.existingHr} → ${h.tc.proposedHr} hr; 100-yr ${r.preCfs.toFixed(1)} → ${r.postCfs.toFixed(1)} cfs (${r.postCfs >= r.preCfs ? '+' : ''}${(r.postCfs - r.preCfs).toFixed(1)} cfs), runoff ${fmt(r.preRunoffCf)} → ${fmt(r.postRunoffCf)} cf.`
   })
   const outstanding = [
     `Downstream adequacy of ${input.receiving} for the 10- and 100-yr flows at each POI, using field survey and available County/SHA drainage records, at technical design. If inadequate, quantity control and/or conveyance improvements are required (checklist D-10).`,
@@ -185,7 +207,7 @@ export function swmConceptReport(input: {
       'ESC integration: practice footprints are kept out of the sediment-trapping sequence and are built last, after the contributing area is stabilized; sediment control is shown on C-500.',
     ],
     'D-3': pois.map(h => `${h.poi} lies where the Estates Court swales and overland flow leave the tract, discharging to ${input.receiving}. The outfall is not on a mapped stream or within a mapped 100-yr floodplain. Field survey and County acceptance are required; no direct discharge point to MD 210 is proposed.`),
-    'D-4': pois.map(h => `${h.poi}: ${h.outfall.protection} Normal depth at the 100-yr flow ${h.outfall.d100Ft} ft in the ${h.outfall.section} at ${(100 * h.outfall.slope).toFixed(1)}% slope. Upstream inflow from off site (${ac(input.poi.offsiteAreaSqFt)} ac) enters as sheet flow along the tract line and is carried by the swales; no concentrated inflow point needs stabilization.`),
+    'D-4': pois.map(h => `${h.poi}: ${h.outfall.protection} Normal depth at the 100-yr flow ${h.outfall.d100Ft} ft in the ${h.outfall.section} at ${(100 * h.outfall.slope).toFixed(1)}% slope. Upstream inflow from off site (${ac(input.poi.offsiteAreaSqFt)} ac) enters as sheet flow along the tract line, is carried by the swales and is included in the POI flows and the velocity check above; no concentrated inflow point needs stabilization.`),
     'D-10': [
       `ESDv required and provided per POI: BMP Summary Table (C-000). Rainfall: ${rainfall.citation}.`,
       ...lines100,

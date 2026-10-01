@@ -89,7 +89,11 @@ TREES_PX = [(1866, 530), (1960, 1126), (2236, 1330), (2510, 1540), (2820, 1670),
             (3256, 2150), (3576, 2196)]
 LIGHTS_PX = [(1733, 930), (3127, 1730), (4190, 1470), (4030, 2235), (2165, 1783)]
 trees = [{'point': list(W(*p)), 'species': 'ACER RUBRUM — RED MAPLE', 'size': '2 1/2"–3" CAL., B&B', 'source': '2009 street tree plan'} for p in TREES_PX]
-lights = [{'point': list(W(*p)), 'fixture': '100 W HPS COLONIAL POST-TOP, TYPE IV, BLACK FIBERGLASS, DIRECT BURIED', 'utility': 'SMECO', 'source': '2009 street light plan (permit 09.09399)'} for p in LIGHTS_PX]
+# Positions are the 2009 plan's; the fixture is LED (user, 2026-10-01), not the
+# 2009 high-pressure sodium. Wattage and lumen package follow SMECO's LED
+# post-top offering at the DPW&T Std. 500.10 spacing, set at technical design.
+LIGHT_FIXTURE = 'LED COLONIAL POST-TOP, TYPE IV, 3000 K, BLACK FIBERGLASS POLE, DIRECT BURIED'
+lights = [{'point': list(W(*p)), 'fixture': LIGHT_FIXTURE, 'utility': 'SMECO', 'source': '2009 street light plan (permit 09.09399) positions'} for p in LIGHTS_PX]
 
 # ── Roadside swales (2009 ditch line) and driveway culverts ───────────────────
 aprons = []
@@ -144,8 +148,14 @@ SPOTS_PX = [
     # lot 6
     (2570, 2025, 207.0), (2710, 1990, 204.5), (2500, 2125, 207.5), (2428, 2535, 203.0), (2758, 2600, 203.5),
 ]
-spots = [{'point': list(W(u_, v_)), 'elevationFt': z, 'label': f'{z:.2f}'.rstrip('0').rstrip('.') if z % 1 else f'{z:.1f}',
-          'datum': 'WSSC datum (2009 plan)', 'source': '2009 approved sheet DPW&T 9399-2009'} for u_, v_, z in SPOTS_PX]
+# ONE vertical datum on the plans: NAVD 88, the datum of the county 2-ft
+# contours and of the street profile. The 2009 grades are on WSSC datum, which
+# reads WSSC_ABOVE_NAVD88_FT above the county contours at these points, so they
+# are converted rather than printed beside NAVD figures under one symbol.
+WSSC_ABOVE_NAVD88_FT = 1.6
+spots = [{'point': list(W(u_, v_)), 'elevationFt': round(z - WSSC_ABOVE_NAVD88_FT, 2), 'label': f'{z - WSSC_ABOVE_NAVD88_FT:.2f}',
+          'datum': f'NAVD 88 (2009 plan grade on WSSC datum less {WSSC_ABOVE_NAVD88_FT} ft)', 'wsscDatumFt': z,
+          'source': '2009 approved sheet DPW&T 9399-2009'} for u_, v_, z in SPOTS_PX]
 
 # ── Entrance apron at MD 210 ─────────────────────────────────────────────────
 ent = st.get('entrance')
@@ -246,6 +256,22 @@ rec['environmental'] = {
     'approvals': 'New submittal: prior NRI-015-06 (with TCP1-018-06, TCP2-016-09) is base work only. Updated/revised NRI to be provided in draft with this submission; approved copy required before concept approval (Sec. 32-182(a)).',
     'nriCurrentForSubmittal': False,
 }
+# Map units whose NRCS slope phase reads 15% or steeper and that reach the
+# tract: state what they are and what a slope phase does and does not
+# establish, so a reviewer reading the soils table beside B-5 / B-11 has it.
+import re as _re
+_steep = []
+for p_, a_ in envpolys(14):
+    ar = p_.intersection(tract).area
+    m = _re.search(r'(\d+) to (\d+) percent slopes', a_.get('MUNAME') or '')
+    if ar >= 1 and m and int(m.group(2)) >= 15:
+        _steep.append(f"{a_['SOIL_NAME_MUSYM']} ({a_['MUNAME'].split(',')[0]}, {m.group(1)}–{m.group(2)}% slope phase, {ar:,.0f} sf on the tract)")
+if _steep:
+    rec['environmental']['soilPhaseNote'] = ('NRCS map units ' + ' and '.join(_steep) + ' reach the tract edge; an NRCS slope phase '
+        'classifies the map unit and is not a measured site slope. The updated NRI governs.')
+# The plat's own dedication figure; the drawn R/W is compared with it, not substituted for it.
+rec['dedicationOfRecordSqFt'] = 35173
+rec['verticalDatumStatement'] = 'NAVD 88 throughout (M-NCPPC 2-ft contours; base-plan grades and floors converted from WSSC datum, -1.6 ft)'
 lots_attrs = {f['attributes']['LOT']: f['attributes'] for f in J('source/pgatlas-parcels.json')['features']
               if f['attributes']['SUB_NAME'] == 'ESTATES AT INDIAN HEAD' and f['attributes']['LOT']}
 rec['recordedLotAreasSqFt'] = {str(k): J(f'estates-indian-head-lot{k}.plat.json')['recordedAreaSqFt'] for k in range(1, 7)}
@@ -259,7 +285,7 @@ rec['titleBlock'] = {
     'engineer': 'W.L. MEEKINS, INC. — BILL MEEKINS, JR., 3101 RITCHIE ROAD, FORESTVILLE, MD 20747 · 301-736-7115',
     'preparedWith': 'KEALEE SPATIAL ENGINE / CAD-PLOT',
     'status': 'CONCEPT SUBMISSION 1 — NOT SEALED',
-    'date': '2026-09-30',
+    'date': '2026-10-01',
     'jobNo': 'KEA-EIH-2026',
     'basisNote': 'New submittal to the DPIE Site Development Concept checklist (rev. 08/25/2021).',
 }
@@ -275,7 +301,7 @@ rec['siteData'] = [
     ['Water / sewer', 'W-3 / S-3 (WSSC) — mains from Henrietta Dr via 30\' WSSC esmt L.51799 F.399 and prop. Lot 4 esmt'],
     ['Watershed', 'Piscataway Creek, MD 021402030798; not Tier II; not CBCA; FEMA Zone X'],
     ['Master plan', '2013 Subregion 5 Master Plan & SMA; Planning Area 84; Council Dist. 9; Election Dist. 5'],
-    ['Datum', 'NAD 83 MD State Plane (US ft); NAVD 88 (M-NCPPC 2-ft); spot grades on WSSC datum'],
+    ['Datum', 'NAD 83 MD State Plane (US ft); vertical NAVD 88 throughout (M-NCPPC 2-ft contours; base-plan grades converted from WSSC datum, -1.6 ft)'],
 ]
 # NOAA Atlas 14 24-hr depths retrieved for THIS site (PFDS, partial duration
 # series, 2026-09-30) — the 100-yr comparison at each POI is computed on these.
@@ -290,7 +316,7 @@ rec['approvalsOfRecordTable'] = [
 ]
 rec['generalNotes'] = [
     'Boundary per recorded plat PM 228 @ 83; lot lines reproduce the plat to the second.',
-    'Horizontal datum: Maryland State Plane NAD 83 (US ft). Vertical datum: NAVD 88 (M-NCPPC 2-ft contours). Spot grades are on WSSC datum (≈ NAVD 88 + 1.6 ft). DPIE prefers NGVD 29.',
+    'Horizontal datum: Maryland State Plane NAD 83 (US ft). Vertical datum: NAVD 88 throughout (M-NCPPC 2-ft contours). Base-plan spot grades and finished floors were on WSSC datum and are shown converted to NAVD 88 (WSSC datum less 1.6 ft, the mean offset to the county contours at the spot locations). DPIE prefers NGVD 29.',
     'Six single-family dwellings with side-load garages and courts, street trees and street lights, laid out to current requirements. Lot 4 is front-load (garage to the cul-de-sac) to clear the WSSC easement.',
     'Estates Court is a rural open section (DPW&T Std. 500.10 / 600.02 / 600.04): 24\' pavement, shoulders, roadside swales; driveways cross the swale on 15" RCP culverts with flared end sections.',
     'Estates Court intersects Jennifer Drive with 50\' returns. Jennifer Drive lies between the entrance and MD 210; preserve the existing physical separation/barrier. No direct MD 210 access or auxiliary lanes are proposed. Field-verify Jennifer Drive sight distance for County review.',
@@ -303,7 +329,7 @@ rec['generalNotes'] = [
 ]
 rec['swmNotes'] = [
     'SWM by Environmental Site Design to the MEP (Md. Stormwater Management Act of 2007; MDE Design Manual Ch. 5; PGC Subtitle 32). Target rainfall P_E from MDE Table 5.3 for HSG C at each drainage area\'s imperviousness.',
-    'Each lot drains to one micro-bioretention cell (M-6): 12-in max. ponding, 2.5-ft filter media, underdrain to a stable outfall. Estates Court drains to roadside dry swales (M-8) with check dams.',
+    'Each lot\'s roof and rear yard drain to one micro-bioretention cell (M-6; drainage area held to the 20,000 sf M-6 limit, MDE Manual Sec. 5.4.3): 12-in max. ponding, 2.5-ft filter media, underdrain to a stable outfall. Front yards, driveways and lead walks drain with Estates Court to the roadside dry swales (M-8) with check dams.',
     'Rooftop and non-rooftop disconnection (N-1, N-2) to be credited at technical design. Infiltration credit only where Sec. 32-131 borings show ≥ 0.52 in/hr.',
     'Private ESD practices: maintenance agreement recorded before permit; public swales in the R/W maintained by DPIE.',
 ]
@@ -350,7 +376,7 @@ rec['streetTrees'] = trees
 rec['streetLights'] = lights
 rec['roadsideSwales'] = swales
 rec['culverts'] = culverts
-rec['spotElevationsFromPlan'] = {'datum': 'WSSC datum; reads about 1.6 ft above NAVD 88 county contours (scatter 1.2 ft)',
+rec['spotElevationsFromPlan'] = {'datum': f'NAVD 88 — converted from WSSC datum, which reads about {WSSC_ABOVE_NAVD88_FT} ft above the NAVD 88 county contours (scatter 1.2 ft)',
                                  'replaceGenerated': True, 'points': spots}
 if entrance: rec['entranceApron'] = entrance
 json.dump(rec, open(os.path.join(proj, 'estates-indian-head.plat-record.json'), 'w'), indent=1)

@@ -338,12 +338,13 @@ class Sheets:
                        ('C-ROAD-PVMT-N', 'Proposed pavement'), ('C-ROAD-SWAL-N', 'Roadside swale (flowline)'),
                        ('C-STRM-CULV-N', 'Driveway culvert, 15" RCP w/ end sections'), ('C-BLDG-FTPR-N', 'Proposed dwelling'),
                        ('V-PROP-BRL', 'Building restriction line'), ('C-TOPO-MAJR-N', 'Proposed contour'),
-                       ('C-TOPO-MINR-E', 'Existing contour'), ('C-TOPO-SPOT-N', 'Spot elevation (WSSC datum)'),
-                       ('C-ESC-LOD', 'Limit of disturbance'), ('C-ROAD-SIGHT-N', 'Jennifer Dr sight-distance line')],
+                       ('C-TOPO-MINR-E', 'Existing contour'), ('C-TOPO-SPOT-N', 'Spot elevation (NAVD 88)'),
+                       ('C-ESC-LOD', 'Limit of disturbance'), ('C-ROAD-SIGHT-N', 'Jennifer Dr sight-distance line'),
+                       ('E-LITE-N', 'Street light (LED)')],
             'utility': [('C-WATR-MAIN-N', 'Proposed 8" water main'), ('C-SSWR-MAIN-N', 'Proposed 8" sanitary sewer'),
                         ('C-WATR-SVCS-N', '1" water house connection (W.H.C.)'), ('C-SSWR-SVCS-N', '4" sewer house connection (S.H.C.)'),
                         ('V-ESMT', 'WSSC easement (recorded / proposed)'),
-                        ('L-PLNT-TREE-N', 'Street tree — Red Maple'), ('E-LITE-N', 'Street light')],
+                        ('L-PLNT-TREE-N', 'Street tree — Red Maple'), ('E-LITE-N', 'Street light (LED)')],
             'swm': [('C-SWM-ESD-N', 'ESD practice — micro-bioretention (M-6)'), ('C-ROAD-SWAL-N', 'Roadside dry swale (M-8)'),
                     ('C-SWM-DRAN-N', 'Drainage area to practice'), ('C-SWM-OFFS', 'Off-site area draining onto site'),
                     ('C-SWM-FLOW', '100-yr overflow path'), ('C-SWM-POI', 'Point of investigation'),
@@ -450,18 +451,22 @@ class Sheets:
     def sheet_utility(self, ps, sh):
         x, y0 = self.sheet_plan(ps, sh)
         trees = sum(1 for f in self.s['twin']['features'] if f.get('kind') == 'Tree' and (f.get('attributes') or {}).get('streetTree'))
-        lights = sum(1 for f in self.s['twin']['features'] if f.get('kind') == 'ProposedFeature' and (f.get('attributes') or {}).get('type') == 'street light')
+        light_feats = [f for f in self.s['twin']['features'] if f.get('kind') == 'ProposedFeature' and (f.get('attributes') or {}).get('type') == 'street light']
+        lights = len(light_feats)
+        # The fixture is the plan record's (LED), never a fixed string here.
+        fixture = next(((f.get('attributes') or {}).get('fixture') for f in light_feats if (f.get('attributes') or {}).get('fixture')), 'LED POST-TOP PER SMECO / DPW&T 500.10')
+        utility = next(((f.get('attributes') or {}).get('utility') for f in light_feats if (f.get('attributes') or {}).get('utility')), 'SMECO')
         yb, w = table(ps, x, y0, 'STREET TREE AND STREET LIGHT SCHEDULE',
                       ['SYMBOL', 'QTY', 'ITEM', 'SIZE / TYPE', 'STANDARD'],
                       [['TREE', trees, 'ACER RUBRUM — RED MAPLE', '2 1/2"–3" CAL., B&B', 'DPW&T 600.02 / 600.04'],
-                       ['LIGHT', lights, 'STREET LIGHT (SMECO)', '100 W HPS COLONIAL POST-TOP, TYPE IV, BLACK FIBERGLASS', 'DPW&T 500.10']],
+                       ['LIGHT', lights, f'STREET LIGHT ({utility})', fixture, 'DPW&T 500.10']],
                       h=0.095, wrap_cols={3: 3.0})
         x2 = x + w + 0.3
         paragraphs(ps, x2, y0, self.band_x1() - x2, 'UTILITY NOTES', [
             'Water and sewer by WSSC (W-3 / S-3). Mains from the existing WSSC mains in Henrietta Drive through the recorded 30\' WSSC easement (L.51799 F.399, Outlot A and Lot 20) and a 30\' WSSC easement to be granted across Lot 4 along the Lot 3/4 line.',
             'The 8" water and 8" sewer mains stop just past the Lot 1 east property line, at the Lot 6 tap (15 ft past the Lot 5 / Lot 6 front corner): water capped with a blow-off, sewer at a terminal manhole. No main runs on toward MD 210; Lot 1 connects at the end of the mains.',
             'Sizes and inverts of the Henrietta Drive mains per WSSC 200\' sheet 220SE01.',
-            'Street lights and street trees per DPW&T Std. 500.10, 600.02 and 600.04; electric service by SMECO.',
+            'Street lights and street trees per DPW&T Std. 500.10, 600.02 and 600.04; electric service by SMECO. Street lights are LED; wattage and lumen package per SMECO\'s LED post-top offering at technical design.',
             'Keep street trees 10 ft from water meters and storm structures and 15 ft from street lights (DPW&T 600.02).',
             *self._service_notes(),
             ], h=0.085)
@@ -827,6 +832,8 @@ class Sheets:
         _txt(ps, f"P_E from {s['bmp']['citation']}; HSG {s['bmp']['rows'][0]['hsg'] if s['bmp']['rows'] else 'C'} governing. Rv = 0.05 + 0.009·I; "
              'ESDv = P_E·Rv·A/12; Rev = S·Rv·A/12 (S = 0.13 in, HSG C), met within ESDv. M-8 provided = 6 cf per ft (4-ft bottom, 6" ponding, 2.5\' media at n 0.40).',
              DRAW_X0, yb - 0.06, 0.06)
+        if s['bmp'].get('note'):
+            _txt(ps, s['bmp']['note'], DRAW_X0, yb - 0.16, 0.06)
 
         # four columns below: lot tables | legend | index + notes + owner | certifications
         top = min(yb - 0.35, vy0 - 0.35)

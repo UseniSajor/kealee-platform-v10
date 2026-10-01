@@ -71,6 +71,9 @@ type PlatSpec = {
   siteLatLon?: [number, number]
   /** Finished floor above the street grade at the driveway, ft. */
   frontDoorAboveStreetFt?: number
+  /** Finished floor of record (e.g. an approved plan's), plan datum. Overrides street + frontDoorAboveStreetFt. */
+  finishedFloorElevFt?: number
+  finishedFloorBasis?: string
   /**
    * How the dwelling meets the ground.
    *
@@ -883,8 +886,12 @@ async function main(): Promise<void> {
         ...(() => {
           const frontEl = frontPointOf(plat.ring.coordinates as Position[])
           const street = frontEl ? groundElevationAt(frontEl) : null
-          if (street == null) return {}
-          const ff = street + (spec.frontDoorAboveStreetFt ?? 2)
+          // A finished floor of record (an approved plan's, on the plan datum)
+          // wins over the street-plus-offset estimate: the record's grading was
+          // designed around it.
+          const ffOfRecord = typeof spec.finishedFloorElevFt === 'number' ? spec.finishedFloorElevFt : null
+          if (street == null && ffOfRecord == null) return {}
+          const ff = ffOfRecord ?? street! + (spec.frontDoorAboveStreetFt ?? 2)
           // B is reported only where a basement is actually proposed. It was
           // previously computed for every dwelling regardless, so a slab or a
           // vented crawlspace still printed a basement slab elevation in the
@@ -2973,7 +2980,7 @@ async function main(): Promise<void> {
   for (const [k, sl] of (platRecord?.streetLights ?? []).entries()) {
     merged.push({
       kind: 'ProposedFeature', id: `street-light-${k}`, point: sl.point,
-      attributes: { type: 'street light', proposed: true, label: `PROP. STREET LIGHT — ${sl.fixture ?? ''} (${sl.utility ?? 'utility'})`, source: sl.source ?? '' },
+      attributes: { type: 'street light', proposed: true, fixture: sl.fixture ?? '', utility: sl.utility ?? '', label: `PROP. STREET LIGHT — ${sl.fixture ?? ''} (${sl.utility ?? 'utility'})`, source: sl.source ?? '' },
     } as never)
   }
   for (const [k, sw] of (platRecord?.roadsideSwales ?? []).entries()) {

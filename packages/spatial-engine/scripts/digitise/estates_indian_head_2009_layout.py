@@ -290,6 +290,13 @@ for n, d in L2009.items():
         ui = unit((qe.x, qe.y), (lot.centroid.x, lot.centroid.y))
         spec['swmPracticeNear'] = [qe.x + ui[0] * 25, qe.y + ui[1] * 25]
     spec['approvedLayout2009'] ={'finishedFloorElevFtWsscDatum': d['ff'], 'footprintSqFt': round(house.area)}
+    # The approved plan's finished floor, on the plans' one vertical datum
+    # (NAVD 88 = WSSC datum less 1.6 ft, as the spot grades). It is the floor the
+    # 2009 grading was designed around, so it sits above every adjacent 2009
+    # grade; the engine's street-plus-2-ft estimate did not and put Lots 2, 4
+    # and 5 below their own yards.
+    spec['finishedFloorElevFt'] = round(d['ff'] - 1.6, 2)
+    spec['finishedFloorBasis'] = '2009 approved plan FF (WSSC datum) less 1.6 ft to NAVD 88'
     json.dump(spec, open(lotp, 'w'), indent=1)
     inside = lot.buffer(0.5).contains(house)
     report[n] = {**report.get(n, {}), 'footprintSqFt': round(house.area), 'garageDoorFaces': f'{math.degrees(math.atan2(nrm[0], nrm[1])) % 360:.0f} deg',

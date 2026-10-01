@@ -101,18 +101,25 @@ export interface ChecklistFacts {
   culverts: number
   lodSqFt: number
   dedicationSqFt: number
+  /** The dedication area stated on the recorded plat, when it differs from the drawn R/W. The plat governs. */
+  dedicationOfRecordSqFt?: number
   /** The SWM concept narrative and 100-yr computations, when the engine produced them. */
   swmReport?: { sheet: string; narrative: Record<'D-1' | 'D-3' | 'D-4' | 'D-10', string[]>; outstanding: string[] }
   env: {
     streams: boolean; wetlands: boolean; floodplain: boolean; pma: boolean; cbca: boolean
     steep15SqFt: number; steep25SqFt: number; woodland: string; soils: string
-    tmdl: string; tierII: boolean; highlyErodible: string; marlboroClay: boolean; springs: boolean
+    tmdl: string; tierII: boolean; highlyErodible: string;
+    /** Soil map units whose NRCS slope phase reads steep, and what that phase does and does not establish. */
+    soilPhaseNote?: string; marlboroClay: boolean; springs: boolean
     wells: string; approvals: string
     /** True only when an NRI is approved and current FOR THIS SUBMITTAL. A
      *  prior approval reused as base work does not count: E-4 stays open. */
     nriCurrentForSubmittal?: boolean
   }
 }
+
+/** Desktop soils source, cited where field geotechnical work is still owed. */
+const SOIL_SURVEY_REF = 'USDA NRCS Web Soil Survey (websoilsurvey.nrcs.usda.gov), Prince George\'s County survey area MD033'
 
 export function evaluateChecklist(f: ChecklistFacts, overrides: Record<string, { status: ChecklistStatus; comment: string; sheet?: string }> = {}): ChecklistRow[] {
   const S = f.sheets.length
@@ -135,7 +142,9 @@ export function evaluateChecklist(f: ChecklistFacts, overrides: Record<string, {
     'A-11': r(f.planScaleFtPerIn <= 50 ? 'C' : 'O', `Entire property at 1" = ${f.planScaleFtPerIn}'.`, f.planSheet),
     'A-12': r('C', 'Existing structures, adjoining houses, fences, sheds, well, easements of record shown; no historic sites or ruins.', f.existingSheet),
     'A-13': r(f.contoursBeyondFt >= 100 ? 'C' : 'O', `M-NCPPC 2-ft contours, ${f.contoursBeyondFt} ft beyond the property.`, f.existingSheet),
-    'A-14': r('C', 'WSSC easement L.51799 F.399 and the proposed Lot 4 WSSC easement; public utility easements along the frontage; existing mains in Henrietta Dr noted (sizes to verify on WSSC 220SE01).', f.utilitySheet),
+    // OUTSTANDING until the main sizes and inverts are in hand: an existing
+    // main shown without its size is not "all existing utilities shown".
+    'A-14': r('O', 'WSSC easement L.51799 F.399, the proposed Lot 4 WSSC easement and the public utility easements are shown. Outstanding: size, material and inverts of the existing WSSC water and sewer mains in Henrietta Dr (WSSC 200\' sheet 220SE01 / as-builts).', f.utilitySheet),
     'A-15': r(f.bmpRows > 0 ? 'C' : 'O', `County BMP Summary Table, ${f.bmpRows} practices.`, f.coverSheet),
     'B-1': e.streams ? r('C', 'Stream banks shown.', f.existingSheet) : r('X', `No streams on site. ${e.approvals}`),
     'B-2': e.streams ? r('C', 'Stream buffers shown.', f.existingSheet) : r('X', 'No streams, no stream buffers.'),
@@ -143,14 +152,14 @@ export function evaluateChecklist(f: ChecklistFacts, overrides: Record<string, {
     'B-4': e.floodplain ? r('C', 'Floodplain delineated.', f.existingSheet) : r('X', 'FEMA Zone X; no 100-yr floodplain on or within 100 ft.'),
     'B-5': e.steep15SqFt + e.steep25SqFt > 0
       ? r('C', `Slopes 15–25%: ${Math.round(e.steep15SqFt).toLocaleString()} sf; >25%: ${Math.round(e.steep25SqFt).toLocaleString()} sf — shown and in the legend.`, f.existingSheet)
-      : r('X', 'No steep slopes (15% and greater) on the property.'),
+      : r('X', `No steep slopes (15% and greater) on the property.${e.soilPhaseNote ? ' ' + e.soilPhaseNote : ''}`),
     'B-6': e.pma ? r('C', 'PMA delineated.', f.existingSheet) : r('X', 'No PMA on the property.'),
     'B-7': e.woodland ? r('C', e.woodland, f.existingSheet) : r('X', 'No existing woodland on the property.'),
     'B-8': anyFeature ? r('C', 'Environmental layers drawn 100 ft beyond the property.', f.existingSheet)
       : r('X', 'No environmental features on or within 100 ft of the property.'),
     'B-9': r('C', e.soils, f.existingSheet),
     'B-10': r('C', `${e.tmdl} Tier II: ${e.tierII ? 'yes' : 'no'}.`, f.notesSheet ?? f.coverSheet),
-    'B-11': e.highlyErodible ? r('C', e.highlyErodible, f.coverSheet) : r('X', 'No highly erodible soils on the property.'),
+    'B-11': e.highlyErodible ? r('C', e.highlyErodible, f.coverSheet) : r('X', `No highly erodible soils on the property.${e.soilPhaseNote ? ' ' + e.soilPhaseNote : ''}`),
     'B-12': r(e.springs ? 'C' : 'X', e.springs ? 'Springs/seeps noted.' : 'None observed or mapped.'),
     'B-13': r(e.marlboroClay ? 'C' : 'X', e.marlboroClay ? 'Marlboro clay noted.' : 'No bedrock or Marlboro clay mapped (PGAtlas); geotechnical report per E-2.'),
     'B-14': r(e.cbca ? 'C' : 'X', e.cbca ? 'CBCA delineated.' : 'Not in the Chesapeake Bay Critical Area.'),
@@ -161,7 +170,11 @@ export function evaluateChecklist(f: ChecklistFacts, overrides: Record<string, {
     'C-5': r('C', 'Recorded WSSC easement (Outlot A, Lot 20) and proposed Lot 4 WSSC easement; private SWM easements over ESD practices.', f.utilitySheet),
     'C-6': r('C', 'Estates Ct (60\' public) terminates at Jennifer Dr; Jennifer lies between the entrance and separated MD 210. Henrietta Dr (50\' public) and the 30\' R/W in common L.10142 F.725 are shown.', f.planSheet),
     'C-7': r('C', e.wells, f.existingSheet),
-    'C-8': r('C', `Estates Court public dedication ${Math.round(f.dedicationSqFt).toLocaleString()} sf (plat PM 228 @ 83); no parkland.`, f.planSheet),
+    // The plat governs the dedication. Where the drawn R/W does not close to
+    // the recorded figure, both are stated and neither is moved.
+    'C-8': r('C', f.dedicationOfRecordSqFt && Math.abs(f.dedicationOfRecordSqFt - f.dedicationSqFt) >= 1
+      ? `Estates Court public dedication ${Math.round(f.dedicationOfRecordSqFt).toLocaleString()} sf of record (plat PM 228 @ 83). The R/W as drawn from the recorded lot lines closes to ${Math.round(f.dedicationSqFt).toLocaleString()} sf (${f.dedicationSqFt > f.dedicationOfRecordSqFt ? '+' : ''}${Math.round(f.dedicationSqFt - f.dedicationOfRecordSqFt).toLocaleString()} sf, at the Jennifer Drive mouth); the plat governs. No parkland.`
+      : `Estates Court public dedication ${Math.round(f.dedicationSqFt).toLocaleString()} sf (plat PM 228 @ 83); no parkland.`, f.planSheet),
     'C-9': r(f.pois > 0 ? 'C' : 'O', `${f.pois} POI(s); ESDv required vs. provided tabulated per POI.`, f.swmSheet),
     'C-10': r(f.overflowPaths > 0 ? 'C' : 'O', `100-yr overflow arrows from every practice to its POI (${f.overflowPaths}).`, f.swmSheet),
     'C-11': r('C', `Drainage area to each practice; off-site area onto the site ${(f.offsiteAreaSqFt / 43560).toFixed(2)} ac; no diversion between POIs.`, f.swmSheet),
@@ -171,7 +184,7 @@ export function evaluateChecklist(f: ChecklistFacts, overrides: Record<string, {
     'D-2': r('X', 'Not in the Chesapeake Bay Critical Area.'),
     'D-3': sw ? r('C', 'Outfall at each POI and the receiving area described.', sw.sheet)
       : r('O', 'Narrative: outfalls at the POIs; swales discharge to the Jennifer Drive frontage-road drainage system; describe receiving areas.'),
-    'D-4': sw ? r('C', 'Outfall velocity checked at the 10- and 100-yr flows; rock outlet protection at each POI; upstream inflow evaluated.', sw.sheet)
+    'D-4': sw ? r('C', 'Outfall velocity checked at the 10- and 100-yr flows at the swale grade; lining and rock outlet protection at each POI; off-site inflow included.', sw.sheet)
       : r('O', 'Narrative: outfall stabilization (level spreaders / riprap) at each POI.'),
     'D-5': r('X', 'No stream at the outfalls.'),
     'D-6': r('X', 'No existing SWM facility receives the site.'),
@@ -180,12 +193,12 @@ export function evaluateChecklist(f: ChecklistFacts, overrides: Record<string, {
     'D-9': r('X', 'No waiver requested.'),
     // D-10 stays open until the downstream analysis exists: the 100-yr
     // comparison alone does not show the receiving system is adequate.
-    'D-10': sw ? r(sw.outstanding.length ? 'O' : 'C', `ESDv per POI on the cover; 100-yr existing vs. proposed runoff at each POI on ${sw.sheet}.${sw.outstanding.length ? ' Outstanding: downstream adequacy analysis at technical design.' : ''}`, sw.sheet)
+    'D-10': sw ? r(sw.outstanding.length ? 'O' : 'C', `ESDv per POI on the cover; 100-yr existing vs. proposed runoff at each POI on ${sw.sheet}.${sw.outstanding.length ? ' OUTSTANDING: downstream drainage capacity — survey and capacity analysis of the receiving system for the 10- and 100-yr flows, with quantity control or conveyance improvements if inadequate.' : ''}`, sw.sheet)
       : r('O', 'ESDv computations are on the cover; 100-yr existing/proposed runoff at each POI and downstream analysis to follow in the report.'),
-    'E-1': r('O', 'Geotechnical report for SWM (borings and Sec. 32-131 infiltration tests at each practice) — to be submitted.'),
-    'E-2': r('O', 'Geotechnical report to address Marlboro/Christiana clays, sulfidic and diatomaceous soils.'),
-    'E-3': r('O', 'Affidavit of the adjacent-owner mailing (within 7 days of submittal) — with second submission.'),
-    'E-4': r(e.nriCurrentForSubmittal ? 'C' : 'O', e.approvals),
+    'E-1': r('O', `OUTSTANDING: geotechnical field work — borings/test pits, seasonal-high groundwater and infiltration tests at each ESD practice per MDE Stormwater Technical Memorandum No. 7, Soils Investigation (and Sec. 32-131). Desktop soils from ${SOIL_SURVEY_REF} only.`),
+    'E-2': r('O', `OUTSTANDING: problematic-soil confirmation — the geotechnical report to confirm or rule out Marlboro/Christiana clays, sulfidic and diatomaceous soils and uncontrolled fill (MDE TM No. 7; ${SOIL_SURVEY_REF}).`),
+    'E-3': r('O', 'OUTSTANDING: adjacent-owner notification affidavit (mailing within 7 days of submittal) — with second submission.'),
+    'E-4': r(e.nriCurrentForSubmittal ? 'C' : 'O', e.nriCurrentForSubmittal ? e.approvals : `OUTSTANDING: updated NRI/TCP. ${e.approvals}`),
   }
   return DPIE_CONCEPT_CHECKLIST.map(it => ({ ...it, ...(ans[it.id] ?? r('O', 'Not evaluated.')), ...(overrides[it.id] ?? {}) }))
 }

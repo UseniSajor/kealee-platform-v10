@@ -36,7 +36,7 @@ export interface SheetSet {
   sheetSizeIn: [number, number]
   approvalStripIn: number
   twin: SiteTwin
-  bmp: { rows: BmpRow[]; totals: Record<string, number>; byPoi: { poi: string; req: number; prov: number }[]; citation: string }
+  bmp: { rows: BmpRow[]; totals: Record<string, number>; byPoi: { poi: string; req: number; prov: number }[]; citation: string; note?: string }
   poi: PoiAnalysis
   /** SWM concept report (checklist D-1, D-3, D-4, D-10); null when the site's rainfall is not on record. */
   swm: SwmConceptReport | null
@@ -95,25 +95,81 @@ export function buildSheetSet(input: {
   const poi = analysePois({ tract, contours, practices: [...practicePts, ...swaleOut] })
   const poiFor = (id: string) => poi.overflow.find(o => o.from === id)?.poi ?? (poi.pois[0]?.id ?? '—')
 
+  // ── Concept drainage split, per lot ────────────────────────────────────────
+  //
+  // A rear-yard micro-bioretention cell cannot take a whole lot: the front
+  // yard, the driveway and the lead walk fall to the street, and MDE holds a
+  // micro-bioretention (M-6) drainage area to 20,000 sf (Design Manual Ch. 5,
+  // Sec. 5.4.3). Each lot is split at the house's setback from the R/W:
+  // everything nearer the street than the house is FRONT and drains to the
+  // roadside swales (ESD-S); the house and the yard behind it are REAR and
+  // drain to the lot's cell. A rear area over the limit is held to it around
+  // the house; the rest is pervious yard that sheet-flows to the POI and
+  // needs no treatment. Impervious cover is the lot's own roof and paving cut
+  // by each part, so the BMP table and LOT COVERAGE ANALYSIS add up.
+  const rowRing = rowFeat?.ring?.coordinates as Position[] | undefined
+  const shut = (r: Position[]) => (r[0][0] === r[r.length - 1][0] && r[0][1] === r[r.length - 1][1] ? r : [...r, r[0]]) as [number, number][]
+  const split = new Map<string, { rearSqFt: number; rearImpSqFt: number; frontSqFt: number; frontImpSqFt: number; untreatedPerviousSqFt: number }>()
+  if (rowRing) {
+    for (const da of das) {
+      const prefix = String(da.id).split('-')[0] + '-'
+      const roofs = feats.filter(f => f.kind === 'Building' && String(f.id).startsWith(prefix) && f.ring?.coordinates?.length).map(f => f.ring.coordinates as Position[])
+      const paving = feats.filter(f => f.kind === 'Pavement' && String(f.id).startsWith(prefix)
+        && ['Driveway', 'Walk', 'Stoop'].includes(String(f.attributes?.improvement ?? '')) && f.ring?.coordinates?.length).map(f => f.ring.coordinates as Position[])
+      if (!roofs.length) continue
+      const lot: MP = [[shut(da.ring.coordinates)]]
+      const frontBand = bufferRing(rowRing, Math.max(1, Math.min(...roofs.map(r => ringToRingDist(r, rowRing)))))
+      const front = safeOp('intersection', lot, frontBand)
+      let rear = safeOp('difference', lot, frontBand)
+      const roofSqFt = roofs.reduce((s, r) => s + ringArea(r), 0)
+      const pavingIn = (zone: MP) => paving.reduce((s, r) => s + areaMP(safeOp('intersection', [[shut(r)]], zone)), 0)
+      // Every rear impervious square foot goes to the cell, held area or not.
+      const rearImp = roofSqFt + pavingIn(rear)
+      let untreated = 0
+      if (areaMP(rear) > M6_MAX_DA_SQFT) {
+        const around = (d: number) => safeOp('union', ...(roofs.map(r => bufferRing(r, d)) as [MP, ...MP[]]))
+        let lo = 0, hi = 400
+        for (let k = 0; k < 24; k++) {
+          const mid = (lo + hi) / 2
+          if (areaMP(safeOp('intersection', rear, around(mid))) > M6_MAX_DA_SQFT) hi = mid; else lo = mid
+        }
+        const held = safeOp('intersection', rear, around(lo))
+        untreated = areaMP(rear) - areaMP(held)
+        rear = held
+      }
+      split.set(prefix, { rearSqFt: areaMP(rear), rearImpSqFt: rearImp, frontSqFt: areaMP(front), frontImpSqFt: pavingIn(front), untreatedPerviousSqFt: untreated })
+      // The drawn drainage area is the part that actually reaches the cell.
+      const biggest = rear.reduce((a, b) => (ringArea(b[0] as Position[]) > ringArea(a[0] as Position[]) ? b : a), rear[0])
+      if (biggest) {
+        da.ring = { ...da.ring, coordinates: (biggest[0] as Position[]).slice(0, -1) }
+        da.attributes = { ...da.attributes, conceptSplit: 'roof and rear yard to the lot cell; front yard, driveway and walk to the roadside swales', areaSqFt: Math.round(areaMP(rear)) }
+      }
+    }
+  }
+
   const rows: BmpRow[] = []
   for (const p of practices) {
     const prefix = String(p.id).split('-')[0]
     const da = das.find(d => String(d.id).startsWith(prefix + '-'))
-    const daArea = da ? ringArea(da.ring.coordinates) : 0
-    const I = Number(da?.attributes?.percentImpervious ?? 0)
-    const sz = sizeEsd(daArea, (daArea * I) / 100, hsg)
+    const sp = split.get(prefix + '-')
+    const daArea = sp ? sp.rearSqFt : da ? ringArea(da.ring.coordinates) : 0
+    const impArea = sp ? sp.rearImpSqFt : (daArea * Number(da?.attributes?.percentImpervious ?? 0)) / 100
+    const sz = sizeEsd(daArea, impArea, hsg)
     const lotNo = prefix.replace(/^l/, '')
     const prov = Math.max(sz.esdvCf, Number(p.attributes?.requiredVolumeCf ?? 0))
     rows.push({
       bmp: `ESD-${lotNo}`, practice: 'Micro-bioretention', mdeCode: 'M-6', location: `Lot ${lotNo}`, ownership: 'Private — lot owner (maintenance agreement)',
-      poi: poiFor(String(p.id)), daSqFt: Math.round(daArea), impSqFt: Math.round((daArea * I) / 100), percentImpervious: sz.percentImpervious,
+      poi: poiFor(String(p.id)), daSqFt: Math.round(daArea), impSqFt: Math.round(impArea), percentImpervious: sz.percentImpervious,
       hsg, peIn: sz.peIn, rv: sz.rv, esdvReqCf: sz.esdvCf, esdvProvCf: Math.round(prov), revReqCf: sz.revCf,
       surfaceSqFt: Math.round(Number(p.attributes?.footprintSqFt ?? ringArea(p.ring.coordinates))), at: centroid(p.ring.coordinates),
     })
   }
   if (swales.length && rowFeat) {
-    const rowArea = ringArea(rowFeat.ring.coordinates)
-    const imp = streetPave.reduce((s, f) => s + ringArea(f.ring.coordinates), 0)
+    // The street practice takes the R/W and every lot's front part.
+    const fronts = [...split.values()]
+    const rowArea = ringArea(rowFeat.ring.coordinates) + fronts.reduce((s, v) => s + v.frontSqFt, 0)
+    const imp = Math.min(ringArea(rowFeat.ring.coordinates), streetPave.reduce((s, f) => s + ringArea(f.ring.coordinates), 0))
+      + fronts.reduce((s, v) => s + v.frontImpSqFt, 0)
     const sz = sizeEsd(rowArea, Math.min(imp, rowArea), hsg)
     const totalLen = swales.reduce((s, f) => s + lenOf(f.line), 0)
     // ONE PRACTICE for the street: the runs are pieces of one roadside swale
@@ -123,7 +179,7 @@ export function buildSheetSet(input: {
     const prov = Math.round(totalLen * 6)
     const mid = swales.reduce((a, f) => (lenOf(f.line) > lenOf(a.line) ? f : a), swales[0])
     rows.push({
-      bmp: 'ESD-S', practice: `Roadside dry swales w/ check dams (${Math.round(totalLen)} LF)`, mdeCode: 'M-8', location: 'Estates Ct R/W, both sides',
+      bmp: 'ESD-S', practice: `Roadside dry swales w/ check dams (${Math.round(totalLen)} LF)`, mdeCode: 'M-8', location: 'Estates Ct R/W + lot front yards',
       ownership: 'Public — DPIE', poi: poiFor('swale-0'), daSqFt: Math.round(rowArea), impSqFt: Math.round(Math.min(imp, rowArea)),
       percentImpervious: sz.percentImpervious, hsg, peIn: sz.peIn, rv: sz.rv,
       esdvReqCf: sz.esdvCf, esdvProvCf: prov, revReqCf: sz.revCf,
@@ -177,6 +233,13 @@ export function buildSheetSet(input: {
     woodsSqFt: env.woodsSqFt ?? null, proposedImpSqFt: totals.impSqFt, lodOnSiteSqFt: lodOnSite,
     receiving: String(env.receiving ?? 'the existing roadside drainage'),
     esdvReqCf: totals.esdvReqCf, esdvProvCf: totals.esdvProvCf, practices: rows.length,
+    // Off-site land that drains onto the tract is in every POI's flow, and the
+    // proposed Tc follows the swale the street actually builds, at its grade.
+    offsiteSqFt: poi.offsiteAreaSqFt,
+    swale: profile ? {
+      lengthFt: profile.lengthFt,
+      slope: Math.max(0.005, Math.min(...profile.pvis.flatMap(v => [v.gradeInPct, v.gradeOutPct]).filter((g): g is number => g != null).map(g => Math.abs(g) / 100))),
+    } : undefined,
   }) : null
   if (swm && !input.sheets && !sheets.some(s => s.kind === 'swmreport')) {
     sheets.splice(sheets.findIndex(s => s.kind === 'swm') + 1, 0,
@@ -189,16 +252,17 @@ export function buildSheetSet(input: {
     sheetSizeIn: [36, 24], sheets: sheets.map(s => ({ id: s.id, title: s.title })),
     coverSheet: 'C-000', notesSheet: sheets.some(s => s.kind === 'notes') ? sheets.find(s => s.kind === 'notes')!.id : undefined, existingSheet: 'C-100', planSheet: 'C-200', utilitySheet: 'C-300', swmSheet: 'C-400', escSheet: 'C-500',
     planScaleFtPerIn: 30, approvalStripIn: 5,
-    datum: { horizontal: 'Maryland State Plane, NAD 83 (EPSG 2248), US ft', vertical: 'NAVD 88 (M-NCPPC 2-ft); spot grades WSSC datum as noted' },
+    datum: { horizontal: 'Maryland State Plane, NAD 83 (EPSG 2248), US ft', vertical: String(pr.verticalDatumStatement ?? 'NAVD 88 throughout (M-NCPPC 2-ft contours)') },
     contoursBeyondFt: 100, bmpRows: rows.length, pois: poi.pois.length, overflowPaths: poi.overflow.length,
     offsiteAreaSqFt: poi.offsiteAreaSqFt, esdPractices: rows.length, culverts, lodSqFt: siteLodSqFt || lod,
     dedicationSqFt: Number(pr.proposedStreets?.[0]?.rowSqFt ?? 0),
+    dedicationOfRecordSqFt: pr.dedicationOfRecordSqFt != null ? Number(pr.dedicationOfRecordSqFt) : undefined,
     swmReport: swm ? { sheet: 'C-410', narrative: swm.narrative, outstanding: swm.outstanding } : undefined,
     env: {
       streams: Boolean(env.streams), wetlands: Boolean(env.wetlands), floodplain: Boolean(env.floodplain), pma: Boolean(env.pma), cbca: Boolean(env.cbca),
       steep15SqFt: Number(env.steep15SqFt ?? 0), steep25SqFt: Number(env.steep25SqFt ?? 0),
       woodland: String(env.woodland ?? ''), soils: String(env.soils ?? 'NRCS soils shown.'),
-      tmdl: String(env.tmdl ?? ''), tierII: Boolean(env.tierII), highlyErodible: String(env.highlyErodible ?? ''),
+      tmdl: String(env.tmdl ?? ''), tierII: Boolean(env.tierII), highlyErodible: String(env.highlyErodible ?? ''), soilPhaseNote: env.soilPhaseNote ? String(env.soilPhaseNote) : undefined,
       marlboroClay: Boolean(env.marlboroClay), springs: Boolean(env.springs), wells: String(env.wells ?? ''), approvals: String(env.approvals ?? ''),
       nriCurrentForSubmittal: Boolean(env.nriCurrentForSubmittal),
     },
@@ -213,7 +277,7 @@ export function buildSheetSet(input: {
     buildings: {
       title: 'BUILDING DATA', columns: ['LOT', 'ADDRESS', 'FOOTPRINT SF', 'GARAGE', 'FF (NAVD 88)', 'B (NAVD 88)'],
       rows: buildings.map(b => [String(b.attributes?.lotLabel ?? ''), String(b.attributes?.address ?? ''),
-        Math.round(Number(b.attributes?.areaSqFt ?? 0)), String(b.attributes?.garageEntry ?? ''),
+        Math.round(Number(b.attributes?.areaSqFt ?? 0)), garageCell(b, feats),
         b.attributes?.finishedFloorElevFt != null ? Number(b.attributes.finishedFloorElevFt).toFixed(2) : '—',
         b.attributes?.basementElevFt != null ? Number(b.attributes.basementElevFt).toFixed(2) : '—']),
     },
@@ -279,7 +343,10 @@ export function buildSheetSet(input: {
     },
     project: (pr.titleBlock ?? {}) as Record<string, string>,
     sheets, sheetSizeIn: [36, 24], approvalStripIn: 5, twin,
-    bmp: { rows, totals, byPoi, citation: MDE_TABLE_5_3_CITATION },
+    bmp: {
+      rows, totals, byPoi, citation: MDE_TABLE_5_3_CITATION,
+      note: drainageSplitNote(split, ringArea(tract), totals.daSqFt),
+    },
     poi, swm, profile, checklist: { edition: DPIE_CONCEPT_CHECKLIST_EDITION, rows: checklist },
     tables, notes, details,
   }
@@ -487,4 +554,59 @@ function safeOp(op: 'union' | 'difference' | 'intersection', a: MP, ...bs: MP[])
     } catch { /* retry coarser */ }
   }
   return op === 'difference' || op === 'union' ? a : []
+}
+
+const M6_MAX_DA_SQFT = 20_000
+
+const areaMP = (m: MP) => m.reduce((s, poly) => s + ringArea(poly[0] as Position[]) - poly.slice(1).reduce((h, r) => h + ringArea(r as Position[]), 0), 0)
+
+/** Minkowski buffer of a ring by `d` ft: the ring, a rectangle on every edge and a 24-gon at every vertex. */
+function bufferRing(ring: Position[], d: number): MP {
+  const r = ring[0][0] === ring[ring.length - 1][0] && ring[0][1] === ring[ring.length - 1][1] ? ring.slice(0, -1) : ring
+  const parts: MP[] = [[[[...r, r[0]].map(q => [q[0], q[1]] as [number, number])]]]
+  for (let i = 0; i < r.length; i++) {
+    const a = r[i], b = r[(i + 1) % r.length], L = Math.hypot(b[0] - a[0], b[1] - a[1])
+    if (L < 1e-6) continue
+    const nx = (-(b[1] - a[1]) / L) * d, ny = ((b[0] - a[0]) / L) * d
+    parts.push([[[[a[0] + nx, a[1] + ny], [b[0] + nx, b[1] + ny], [b[0] - nx, b[1] - ny], [a[0] - nx, a[1] - ny], [a[0] + nx, a[1] + ny]]]])
+    const disc: [number, number][] = []
+    for (let k = 0; k <= 24; k++) { const t = (2 * Math.PI * (k % 24)) / 24; disc.push([a[0] + d * Math.cos(t), a[1] + d * Math.sin(t)]) }
+    parts.push([[disc]])
+  }
+  return safeOp('union', parts[0], ...parts.slice(1))
+}
+
+/** Least distance from any vertex of `a` to the edges of `b`, and of `b` to `a`. */
+function ringToRingDist(a: Position[], b: Position[]): number {
+  const seg = (p: Position, u: Position, v: Position) => {
+    const dx = v[0] - u[0], dy = v[1] - u[1], L2 = dx * dx + dy * dy
+    const t = L2 ? Math.max(0, Math.min(1, ((p[0] - u[0]) * dx + (p[1] - u[1]) * dy) / L2)) : 0
+    return Math.hypot(p[0] - u[0] - t * dx, p[1] - u[1] - t * dy)
+  }
+  const one = (pts: Position[], ring: Position[]) => {
+    let m = Infinity
+    for (const p of pts) for (let i = 0; i < ring.length; i++) m = Math.min(m, seg(p, ring[i], ring[(i + 1) % ring.length]))
+    return m
+  }
+  return Math.min(one(a, b), one(b, a))
+}
+
+/** BUILDING DATA garage cell: entry (front- or side-load, read off the lot's driveway) and garage slab elevation. */
+function garageCell(b: any, feats: any[]): string {
+  const prefix = String(b.id).split('-')[0] + '-'
+  const drive = feats.find(f => f.kind === 'Pavement' && String(f.id).startsWith(prefix) && f.attributes?.improvement === 'Driveway')
+  const label = String(drive?.attributes?.label ?? '')
+  const entry = /FRONT-LOAD/i.test(label) ? 'FRONT-LOAD' : /SIDE-LOAD/i.test(label) ? 'SIDE-LOAD' : ''
+  const g = b.attributes?.garageSlabElevFt
+  return [entry, g != null ? `G ${Number(g).toFixed(2)}` : ''].filter(Boolean).join(', ') || '—'
+}
+
+/** States what the BMP drainage areas cover, so their total reads against the tract. */
+function drainageSplitNote(split: Map<string, { untreatedPerviousSqFt: number }>, tractSqFt: number, daTotalSqFt: number): string | undefined {
+  if (!split.size) return undefined
+  const held = [...split.entries()].filter(([, v]) => v.untreatedPerviousSqFt >= 1)
+  const lots = held.map(([k, v]) => `Lot ${k.replace(/^l|-$/g, '')} ${Math.round(v.untreatedPerviousSqFt).toLocaleString()} sf`).join(', ')
+  return `Roof and rear yard of each lot drain to its M-6 cell (drainage area held to the 20,000 sf M-6 limit, MDE Manual Sec. 5.4.3); front yards, driveways and walks drain with the R/W to ESD-S. `
+    + (held.length ? `Rear yard beyond the M-6 limit (${lots}) is pervious with no impervious cover and sheet-flows to the POI untreated. ` : '')
+    + `Drainage areas total ${Math.round(daTotalSqFt).toLocaleString()} sf of the ${Math.round(tractSqFt).toLocaleString()} sf tract as drawn.`
 }

@@ -101,6 +101,32 @@ Reference sets that show the standard (read them before changing a sheet):
 - **No "survey to confirm" language** on finished plans (whether to survey is
   the engineer's call).
 
+## 8. Datum, floors, lighting, drainage areas (owner, 2026-10-01)
+
+- **One vertical datum on the plans: NAVD 88.** Grades read off an older plan on
+  another datum (WSSC) are converted, never printed beside NAVD figures under
+  one legend symbol. Estates at Indian Head: WSSC datum less 1.6 ft.
+- **A finished floor of record wins.** Where an approved plan gives the FF, use
+  it (converted to the plan datum); street grade + 2 ft is only the fallback.
+  The record's grading was designed around its floor.
+- **Street lights are LED.** Positions may come from an older plan; the fixture
+  does not. Wattage/lumen package per the utility's LED offering.
+- **A rear-yard M-6 cell does not take a whole lot.** Roof and rear yard to the
+  cell (drainage area held to the 20,000 sf M-6 limit, MDE Manual 5.4.3); front
+  yard, driveway and walk to the street practice. BMP-table impervious equals
+  the lot-coverage table.
+- **Outfall velocity is checked at the 10- AND 100-yr flows, at the swale
+  grade**, with off-site inflow in the flow; exceedance specifies lining.
+- **Outstanding DPIE items are labelled OUTSTANDING, not C:** downstream
+  drainage capacity, geotechnical field work (MDE Stormwater Technical
+  Memorandum No. 7, Soils Investigation), problematic-soil confirmation,
+  adjacent-owner affidavit, updated NRI/TCP; existing mains without sizes and
+  inverts (A-14). Desktop soils cite USDA Web Soil Survey.
+- **Grading stays preliminary** with explicit hold points (Lot 1, Lots 2–4)
+  until field topography and PE/geotechnical design resolve them.
+- **The plat's dedication figure is cited; a drawn R/W that closes differently
+  is reported beside it, not substituted** (Estates Court 35,173 sf of record).
+
 ## Training record
 
 These rules are also recorded as `kealee.drafting-rule/1` entries in

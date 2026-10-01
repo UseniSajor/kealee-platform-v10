@@ -24,6 +24,13 @@
     { "id": "sheets.da-extent", "rule": "Drainage area map covers the whole contributing area to the divide and outfall." },
     { "id": "sheets.cover-record-view", "rule": "Cover carries the subdivision as of record (no buildings) at the bottom." },
     { "id": "text.placement", "rule": "Every label clearly on its property or on a leader to what it describes; no overprint, duplicate or redundant labels.", "enforcedBy": "cad-plot Model._place" },
-    { "id": "text.no-survey-confirm", "rule": "No 'survey to confirm' language on finished plans." }
+    { "id": "text.no-survey-confirm", "rule": "No 'survey to confirm' language on finished plans." },
+    { "id": "datum.single-vertical", "rule": "One vertical datum on the plans (NAVD 88); convert grades from older datums (WSSC: less 1.6 ft at Estates at Indian Head), never mix them under one symbol." },
+    { "id": "grading.ff-of-record", "rule": "Use an approved plan's finished floor (converted to the plan datum) over the street-plus-2-ft estimate." },
+    { "id": "lighting.led", "rule": "Street lights are LED; older-plan positions may be reused, the fixture is not." },
+    { "id": "swm.m6-drainage-split", "rule": "Rear-yard M-6 cell takes roof and rear yard only, drainage area held to 20,000 sf (MDE 5.4.3); front yard, driveway and walk go to the street practice; BMP impervious equals lot coverage." },
+    { "id": "swm.outfall-velocity", "rule": "Check outfall velocity at the 10- and 100-yr flows at the swale grade, off-site inflow included; specify lining on exceedance." },
+    { "id": "checklist.outstanding-items", "rule": "Mark OUTSTANDING: downstream capacity, geotechnical field work (MDE TM No. 7), problematic-soil confirmation, adjacent-owner affidavit, updated NRI/TCP, and existing mains without sizes/inverts (A-14). Cite USDA Web Soil Survey for desktop soils." },
+    { "id": "record.dedication-area", "rule": "Cite the plat's dedication area; report a differently-closing drawn R/W beside it, do not substitute it." }
   ]
 }
