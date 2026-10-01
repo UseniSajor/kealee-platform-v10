@@ -235,9 +235,12 @@ export function subjectForFeature(f: SiteFeature): ContentSubject {
   // sheet whose subject it is. Kind alone cannot settle this: the same kind
   // carries the buildable envelope, the graded area and the swale.
   if (f.kind === 'ProposedFeature') {
-    if (attrs.swale === true || /swale|drainage/i.test(String(attrs.type ?? ''))) {
+    if (attrs.swale === true || /swale|drainage|culvert/i.test(String(attrs.type ?? ''))) {
       return 'stormwater_design'
     }
+    // A STREET LIGHT is a utility service (the power company's pole and feed),
+    // drawn on the utility sheet the way DPW&T approves a street light plan.
+    if (/street light/i.test(String(attrs.type ?? ''))) return 'utility_design'
     if (/grad/i.test(String(attrs.type ?? ''))) return 'grading_design'
     // THE GROUND COVER LIMIT IS A GRADING ITEM.
     //

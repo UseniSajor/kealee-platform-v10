@@ -91,6 +91,9 @@ type PlatSpec = {
   utilityMainLabel?: string
   omitSwmPractice?: boolean
   stormOutfall?: unknown
+  /** The dwelling and its paving as drawn on an approved plan — see lot-package. */
+  fixedFootprint?: Position[]
+  fixedPaving?: { kind: 'Driveway' | 'Apron' | 'Walk' | 'Stoop'; label: string; ring: Position[]; note?: string }[]
 }
 
 /** Even-odd point-in-ring. EPSG:2248 feet, no projection. */
@@ -296,6 +299,12 @@ async function main(): Promise<void> {
         water?: { sizeIn: number; offsetFt: number; label: string; connectsTo: string }
         sewer?: { sizeIn: number; offsetFt: number; label: string; connectsTo: string }
         note?: string
+        /**
+         * The main's alignment, connection end first, when the mains do NOT
+         * enter at the street's mouth — e.g. brought in through an easement
+         * from a different street. Water and sewer are offset from it.
+         */
+        route?: Position[]
       }
     }[]
     /** Stormwater management the concept reserves — a parcel for the ESD practice, with its sizing. */
@@ -304,6 +313,41 @@ async function main(): Promise<void> {
       parcels?: { name: string; ring: Position[]; sqFt: number; practice?: string; footprintSqFt?: number; requiredVolumeCf?: number }[]
     }
     dedicationWidthFt?: number
+    /**
+     * Easements of record (or proposed to be granted) as transcribed rings.
+     * Drawn on the set, and kept clear by the dwelling and the ESD practice on
+     * every lot they touch.
+     */
+    easementsOfRecord?: {
+      id: string; label: string; ring: Position[]; type: string; beneficiary: string
+      recordReference: string; status: 'recorded' | 'proposed'; widthFt?: number; note?: string
+    }[]
+    /**
+     * Ground nothing is built on — a stream buffer / PMA, a conservation area.
+     * Kept clear by the dwelling and the ESD practice; drawn by the caller's
+     * environmental sheet, not here.
+     */
+    keepOutAreas?: { label: string; ring: Position[] }[]
+    /**
+     * A rural open-section street: no curb, gutter, verge or walk along the
+     * frontage — shoulders and roadside swales instead, drawn by the caller.
+     */
+    openSection?: { shoulderFt: number; swaleFt: number; note: string }
+    /** Roads beyond the site, as an approved plan draws them (edges of road, lane lines, R/W). */
+    existingRoads?: { name: string; label: string; source?: string; lines: { type: string; line: Position[]; label?: string }[] }[]
+    /** Street trees and street lights of an approved street tree / lighting plan. */
+    streetTrees?: { point: Position; species: string; size?: string; source?: string }[]
+    streetLights?: { point: Position; fixture?: string; utility?: string; source?: string }[]
+    /** Open-section roadside swales (flowline) and the driveway culverts under them. */
+    roadsideSwales?: { line: Position[]; label?: string; sectionFt?: number }[]
+    culverts?: { lot?: number; line: Position[]; sizeIn: number; material: string; lengthFt?: number; label?: string }[]
+    /** Spot grades read off an approved plan; replaceGenerated drops the engine's own. */
+    spotElevationsFromPlan?: { datum: string; replaceGenerated?: boolean; points: { point: Position; elevationFt: number; label?: string; source?: string }[] }
+    /** The street entrance apron at the road the subdivision street meets. */
+    entranceApron?: { ring: Position[]; areaSqFt?: number; label: string; returnRadiusFt?: number }
+    /** Improvements to the road the entrance meets (auxiliary lanes, widening). */
+    roadImprovements?: { id: string; ring: Position[]; label: string; lengthFt?: number }[]
+    roadImprovementsNote?: string
     existingPavement?: { label: string; note: string }
     approvalsOfRecord?: { kind: string; number: string; confirmedBy: string; status: string }[]
     monuments?: { id: string; label: string; easting: number; northing: number; note: string }[]
@@ -494,10 +538,14 @@ async function main(): Promise<void> {
     return out
   }
 
-  const recordedKeepOut: Position[][] = trunk?.recordedEasement5455
-    ? [bufferConvexRing(trunk.recordedEasement5455.ring as Position[], EASEMENT_CLEARANCE_FT)]
-    : []
-  if (recordedKeepOut.length) {
+  const recordedKeepOut: Position[][] = [
+    ...(trunk?.recordedEasement5455
+      ? [bufferConvexRing(trunk.recordedEasement5455.ring as Position[], EASEMENT_CLEARANCE_FT)]
+      : []),
+    ...(platRecord?.easementsOfRecord ?? []).map(e => e.ring),
+    ...(platRecord?.keepOutAreas ?? []).map(k => k.ring),
+  ]
+  if (trunk?.recordedEasement5455) {
     console.log(`    easement standoff ${EASEMENT_CLEARANCE_FT} ft clear of the recorded 54/55 `
       + 'storm drain easement — a stated clearance, not a code requirement')
   }
@@ -873,6 +921,8 @@ async function main(): Promise<void> {
         // The subdivision easements, so the stormwater practice keeps clear of
         // them. They are created below, after every lot package, so the design
         // stage cannot find them on the twin.
+        fixedFootprint: spec.fixedFootprint ?? null,
+        fixedPaving: spec.fixedPaving ?? null,
         keepOutRings: [
           ...(corridor ? [corridor.privRing, corridor.wsscRing] : []),
           // ONLY THE LOTS THE EASEMENT ACTUALLY BURDENS.
@@ -2838,7 +2888,11 @@ async function main(): Promise<void> {
     // curb lines were drawn along the same frontage.
     !/(^|-)(sidewalk|verge|curb)$/.test(String(f.id)))
   merged.length = 0
-  merged.push(...withoutPerLot, ...frontageFeats)
+  merged.push(...withoutPerLot, ...(platRecord?.openSection
+    // An open section has no curb, verge or walk, and a proposed street has no
+    // existing centreline to letter.
+    ? frontageFeats.filter(f => !/^(frontage-|centreline-plat-|row-far-)/.test(String((f as { id?: string }).id ?? '')))
+    : frontageFeats))
 
   // A PROPOSED street, when the plat record carries one. Yocum's Joseph
   // Drive is lettered along its centreline with its R/W width; the R/W is a
@@ -2882,11 +2936,13 @@ async function main(): Promise<void> {
     for (const [j, cl] of (st.centrelines ?? [st.centreline]).entries()) {
       const d0x = cl[1][0] - cl[0][0], d0y = cl[1][1] - cl[0][1], l0 = Math.hypot(d0x, d0y) || 1
       const start: Position = [cl[0][0] - d0x / l0 * 30, cl[0][1] - d0y / l0 * 30]
+      const route = st.utilities?.route
+      if (route && j > 0) continue
       for (const [svc, spec] of [['Water main', st.utilities?.water], ['Sanitary sewer main', st.utilities?.sewer]] as const) {
         if (!spec) continue
         merged.push({
           kind: 'Utility', id: `prop-street-${k}-${svc.toLowerCase().replace(/\s+/g, '-')}-${j}`,
-          line: offsetLine([start, ...cl], spec.offsetFt),
+          line: offsetLine(route ?? [start, ...cl], spec.offsetFt),
           attributes: {
             type: svc, size: `${spec.sizeIn}" ${/water/i.test(svc) ? 'DIP' : 'PVC'}`, proposed: true,
             from: 'offsite', sizeAtMain: j === 0 ? `CONNECT TO ${spec.connectsTo}` : '', label: spec.label,
@@ -2895,6 +2951,83 @@ async function main(): Promise<void> {
       }
     }
     if (st.utilities?.note) console.log(`    street mains: ${st.utilities.note.slice(0, 110)}…`)
+  }
+  // ── The approved plan's street furniture and the roads around the site ───
+  for (const [k, rd] of (platRecord?.existingRoads ?? []).entries()) {
+    for (const [j, ln] of rd.lines.entries()) {
+      merged.push({
+        kind: 'ExistingFeature', id: `road-${k}-${j}`, line: ln.line,
+        attributes: { roadLine: ln.type, road: rd.name, roadLabel: rd.label, label: ln.label ?? '', source: rd.source ?? '' },
+      } as never)
+    }
+  }
+  for (const [k, tr] of (platRecord?.streetTrees ?? []).entries()) {
+    const R = 7.5
+    const ring: Position[] = Array.from({ length: 17 }, (_, i) => [
+      tr.point[0] + R * Math.cos((i / 16) * 2 * Math.PI), tr.point[1] + R * Math.sin((i / 16) * 2 * Math.PI)] as Position)
+    merged.push({
+      kind: 'Tree', id: `street-tree-${k}`, ring: { coordinates: ring },
+      attributes: { proposed: true, streetTree: true, species: tr.species, size: tr.size ?? '', source: tr.source ?? '' },
+    } as never)
+  }
+  for (const [k, sl] of (platRecord?.streetLights ?? []).entries()) {
+    merged.push({
+      kind: 'ProposedFeature', id: `street-light-${k}`, point: sl.point,
+      attributes: { type: 'street light', proposed: true, label: `PROP. STREET LIGHT — ${sl.fixture ?? ''} (${sl.utility ?? 'utility'})`, source: sl.source ?? '' },
+    } as never)
+  }
+  for (const [k, sw] of (platRecord?.roadsideSwales ?? []).entries()) {
+    merged.push({
+      kind: 'ProposedFeature', id: `roadside-swale-${k}`, line: sw.line,
+      attributes: { type: 'roadside swale', swale: true, proposed: true, label: sw.label ?? 'ROADSIDE SWALE',
+        note: `Roadside swale, section ${sw.sectionFt ?? 8} ft overall, flowline per the approved open section.` },
+    } as never)
+  }
+  for (const [k, cv] of (platRecord?.culverts ?? []).entries()) {
+    merged.push({
+      kind: 'ProposedFeature', id: `culvert-${k}`, line: cv.line,
+      attributes: { type: 'culvert', proposed: true, sizeIn: cv.sizeIn, material: cv.material, lengthFt: cv.lengthFt ?? null, label: cv.label ?? '', lot: cv.lot ?? null },
+    } as never)
+  }
+  if (platRecord?.spotElevationsFromPlan?.points?.length) {
+    const sp = platRecord.spotElevationsFromPlan
+    if (sp.replaceGenerated) {
+      // The approved plan's grades replace the engine's corner grades; the
+      // finished-floor marks stay with the dwelling.
+      for (let i = merged.length - 1; i >= 0; i--) {
+        const f = merged[i] as { kind?: string; attributes?: { label?: string } }
+        if (f.kind === 'SpotElevation' && !/^FF/i.test(String(f.attributes?.label ?? ''))) merged.splice(i, 1)
+      }
+    }
+    for (const [k, pt] of sp.points.entries()) {
+      merged.push({
+        kind: 'SpotElevation', id: `plan-spot-${k}`, point: pt.point,
+        attributes: { label: pt.label ?? pt.elevationFt.toFixed(1), elevationFt: pt.elevationFt, datum: sp.datum, source: pt.source ?? '', proposed: true },
+      } as never)
+    }
+  }
+  for (const ri of platRecord?.roadImprovements ?? []) {
+    merged.push({
+      kind: 'Pavement', id: `road-improvement-${ri.id}`, ring: { coordinates: [...ri.ring, ri.ring[0]] },
+      attributes: { label: ri.label, improvement: 'road-widening', proposed: true, lengthFt: ri.lengthFt ?? null },
+    } as never)
+  }
+  if (platRecord?.entranceApron) {
+    const ea = platRecord.entranceApron
+    merged.push({
+      kind: 'Pavement', id: 'entrance-apron', ring: { coordinates: [...ea.ring, ea.ring[0]] },
+      attributes: { label: ea.label, improvement: 'entrance', proposed: true, areaSqFt: ea.areaSqFt ?? null },
+    } as never)
+  }
+  for (const e of platRecord?.easementsOfRecord ?? []) {
+    merged.push({
+      kind: 'Easement', id: `esmt-${e.id}`,
+      ring: { coordinates: [...e.ring, e.ring[0]] },
+      easementType: e.type, widthFt: e.widthFt,
+      beneficiary: e.beneficiary, recordReference: e.recordReference,
+      attributes: { label: e.label, note: e.note ?? '', proposed: e.status === 'proposed' },
+    } as never)
+    console.log(`    easement        ${e.status} ${e.label} (${e.recordReference})`)
   }
   // A stormwater parcel the concept reserves: its outline lettered as a parcel,
   // and the practice inside it drawn the way a lot's SWMPractice is (hatched,
@@ -3083,6 +3216,29 @@ async function main(): Promise<void> {
   // eyeballed off the sheet.
   if (process.env.TWIN_JSON) {
     writeFileSync(process.env.TWIN_JSON, JSON.stringify(twin, null, 2))
+  }
+  // THE SHEET-SET SPECIFICATION for packages/cad-plot (docs/decisions/
+  // dxf-master-cad-plot.md): the twin plus the BMP Summary Table, points of
+  // investigation, the DPIE checklist answered line by line, and the tables
+  // and notes the sheets carry. With CAD_PLOT=1 the DXF is authored and
+  // plotted from it.
+  if (process.env.SHEETSET_JSON) {
+    const { buildSheetSet } = await import('../src/sheets/sheetset')
+    const { join } = await import('path')
+    const set = buildSheetSet({ twin, tract: outerRing, platRecord: (platRecord ?? {}) as Record<string, unknown>,
+      detailDir: join(__dirname, '..', 'assets', 'details') })
+    writeFileSync(process.env.SHEETSET_JSON, JSON.stringify(set))
+    console.log(`    sheet set       ${set.sheets.length} sheets · ${set.bmp.rows.length} BMPs · ${set.poi.pois.length} POI(s) · `
+      + `checklist ${set.checklist.rows.filter(r => r.status === 'C').length} C / ${set.checklist.rows.filter(r => r.status === 'X').length} X / `
+      + `${set.checklist.rows.filter(r => r.status === 'O').length} O -> ${process.env.SHEETSET_JSON}`)
+    if (process.env.CAD_PLOT) {
+      const { execFileSync } = await import('child_process')
+      const root = join(__dirname, '..', '..', 'cad-plot')
+      const py = join(root, '.venv', 'bin', 'python')
+      const outBase = process.env.SHEETSET_JSON.replace(/\.sheetset\.json$/, '')
+      execFileSync(py, ['-m', 'cad_plot', process.env.SHEETSET_JSON, `${outBase}.dxf`, `${outBase}.pdf`],
+        { cwd: root, stdio: 'inherit' })
+    }
   }
   if (process.env.PROPOSED_GRID && proposedGrids.length) {
     writeFileSync(process.env.PROPOSED_GRID, JSON.stringify({

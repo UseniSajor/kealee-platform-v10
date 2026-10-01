@@ -1,0 +1,222 @@
+{
+ "record": "ESTATES AT INDIAN HEAD \u2014 LOTS 1-6 \u2014 2026 SITE DEVELOPMENT CONCEPT SUBMISSION (DRAFT FOR PE REVIEW)",
+ "generatedAt": "2026-09-30T21:42:20-04:00",
+ "status": "DRAFT \u2014 not sealed; W.L. Meekins, Inc. (engineer of record per application) to review and seal",
+ "asked": [
+  "refer to existing site plans/Estates Subdivision for the 2009 approved plans",
+  "2026 requirements are more",
+  "refer to Site Development Concept App folder for submission requirements",
+  "refer to manuals for site design and plan inclusions",
+  "provide plans permit ready",
+  "use existing plans as base"
+ ],
+ "basis": {
+  "boundary": "plat PM 228 @ 83 via PGAtlas Address/15 lot geometry (bearings match plat to the second; lot closures <= 0.04 ft)",
+  "base": "2009 Street Tree & Lighting Plan, DPW&T 9399-2009-00 (Landesign), georeferenced to the plat: 1\"=29.80', rot -0.22 deg, median residual 0.44 ft (source/stl-2009-georef.json)",
+  "topography": "M-NCPPC 2-ft contours NAVD88 (PGAtlas Elevation/1); 2009 field topo (WSSC datum) as underlay only",
+  "esd": "MDE Design Manual Ch.5 Table 5.3 (docs/site-plan-reference/mde/), HSG C",
+  "easement": "WSSC 30-ft easement L.51799 F.399 (Utility Easement (3).pdf), Outlot A conveyed to Doyal L.51565 F.455",
+  "approvals": "NEW SUBMITTAL (user, 2026-09-30/10-01): prior NRI-015-06, TCP1-018-06, TCP2-016-09 and DPW&T 9399-2009-00 are base work only; additional work: updated/revised NRI (checklist E-4 = O), TCP2 revision or new TCP/exemption per M-NCPPC, street tree & lighting re-review to current standards."
+ },
+ "computations": {
+  "tractSqFt": 165901.8260713808,
+  "siteImpervPct": 18.7363044216244,
+  "lodSqFt": 84976.74775396724,
+  "offsiteDrainageSqFt": 116500.0,
+  "canopyOnSiteSqFt": 132705.36765662587
+ },
+ "bmps": [
+  {
+   "bmp": "ESD-1",
+   "type": "Micro-bioretention (M-6)",
+   "where": "Lot 1 (200 Estates Ct), private",
+   "A": 19998.566795903684,
+   "imp": 2340.339246245948,
+   "I": 11.702534837273042,
+   "pe": 1.0,
+   "rv": 0.15532281353545738,
+   "esdv": 258.8528051180447,
+   "prov": 347.0,
+   "rev": 33.65086466534582,
+   "area_sf": 434.0,
+   "xy": [
+    1311148.0318932307,
+    367415.04807664914
+   ],
+   "poi": "POI-1"
+  },
+  {
+   "bmp": "ESD-2",
+   "type": "Micro-bioretention (M-6)",
+   "where": "Lot 2 (202 Estates Ct), private",
+   "A": 20014.93108961084,
+   "imp": 2328.646704592212,
+   "I": 11.634547699247106,
+   "pe": 1.0,
+   "rv": 0.15471092929322394,
+   "esdv": 258.04404905112773,
+   "prov": 288.0,
+   "rev": 33.5457263766466,
+   "area_sf": 360.0,
+   "xy": [
+    1311251.8619422978,
+    367398.7221245564
+   ],
+   "poi": "POI-1"
+  },
+  {
+   "bmp": "ESD-3",
+   "type": "Micro-bioretention (M-6)",
+   "where": "Lot 3 (204 Estates Ct), private",
+   "A": 20051.41821242217,
+   "imp": 2287.525171714936,
+   "I": 11.408296148836884,
+   "pe": 1.0,
+   "rv": 0.15267466533953195,
+   "esdv": 255.11196376371254,
+   "prov": 255.11196376371254,
+   "rev": 33.16455528928263,
+   "area_sf": 299.0,
+   "xy": [
+    1311394.4663264486,
+    367379.4781486182
+   ],
+   "poi": "POI-1"
+  },
+  {
+   "bmp": "ESD-4",
+   "type": "Micro-bioretention (M-6)",
+   "where": "Lot 4 (205 Estates Ct), private",
+   "A": 20021.08310379667,
+   "imp": 2708.68648122997,
+   "I": 13.529170560789051,
+   "pe": 1.0,
+   "rv": 0.17176253504710146,
+   "esdv": 286.5726656914006,
+   "prov": 286.5726656914006,
+   "rev": 37.25444653988207,
+   "area_sf": 315.0,
+   "xy": [
+    1311300.8277339952,
+    367219.03270625486
+   ],
+   "poi": "POI-1"
+  },
+  {
+   "bmp": "ESD-5",
+   "type": "Micro-bioretention (M-6)",
+   "where": "Lot 5 (203 Estates Ct), private",
+   "A": 20234.59133770455,
+   "imp": 2332.3440119373063,
+   "I": 11.526518984306266,
+   "pe": 1.0,
+   "rv": 0.1537386708587564,
+   "esdv": 259.2365981357336,
+   "prov": 325.0,
+   "rev": 33.70075775764537,
+   "area_sf": 406.0,
+   "xy": [
+    1311173.141871766,
+    367176.7582519611
+   ],
+   "poi": "POI-1"
+  },
+  {
+   "bmp": "ESD-6",
+   "type": "Micro-bioretention (M-6)",
+   "where": "Lot 6 (201 Estates Ct), private",
+   "A": 29536.132129239384,
+   "imp": 2333.96278252087,
+   "I": 7.902059661394718,
+   "pe": 1.0,
+   "rv": 0.12111853695255247,
+   "esdv": 298.1144258942294,
+   "prov": 335.0,
+   "rev": 38.75487536624983,
+   "area_sf": 419.0,
+   "xy": [
+    1311000.5459307842,
+    367108.13404995686
+   ],
+   "poi": "POI-1"
+  },
+  {
+   "bmp": "ESD-S1",
+   "type": "Micro-bioretention (M-6) \u2014 street",
+   "where": "Lot 6, prop. private SWM esmt; curb inlet opposite",
+   "A": 18020.459714817935,
+   "imp": 8376.183387763253,
+   "I": 46.48151889752097,
+   "pe": 1.6,
+   "rv": 0.46833367007768867,
+   "esdv": 1125.2784046303764,
+   "prov": 1125.2784046303764,
+   "rev": 91.42887037621807,
+   "area_sf": 562.6392023151882,
+   "xy": [
+    1311056.2424748018,
+    367320.517092781
+   ],
+   "poi": "POI-1"
+  },
+  {
+   "bmp": "ESD-S2",
+   "type": "Micro-bioretention (M-6) \u2014 street",
+   "where": "Lot 6, prop. private SWM esmt; curb inlet opposite",
+   "A": 18020.459714817935,
+   "imp": 8376.183387763253,
+   "I": 46.48151889752097,
+   "pe": 1.6,
+   "rv": 0.46833367007768867,
+   "esdv": 1125.2784046303764,
+   "prov": 1125.2784046303764,
+   "rev": 91.42887037621807,
+   "area_sf": 562.6392023151882,
+   "xy": [
+    1311081.242474802,
+    367230.5170927811
+   ],
+   "poi": "POI-1"
+  }
+ ],
+ "pois": [
+  {
+   "id": "POI-1",
+   "xy": [
+    1311041.2509744873,
+    367258.8347113729
+   ],
+   "share": 0.8868832731648616
+  },
+  {
+   "id": "POI-2",
+   "xy": [
+    1311246.2509744873,
+    367498.8347113729
+   ],
+   "share": 0.10168471720818291
+  }
+ ],
+ "inputs": {
+  "estates-indian-head.plat.json": "00a34644e2d81ad95279686a66bb506e538c9dd0668d8a3b0149dae14f17e71e",
+  "estates-indian-head.plat-record.json": "8a761ff6bd93d898119e847b36b49bcdcb2a6aff2f6e4a4a076632f5b00ebc22",
+  "estates-indian-head-lot1.plat.json": "6c4eefe0e64282be986cc4e64649fdb2a4c71154474115219839a2f8cd83d95e",
+  "estates-indian-head-lot2.plat.json": "6bb4a763471a14e32c1dd9098e907ed188ba9b9a37efe911d07f708684131fc1",
+  "estates-indian-head-lot3.plat.json": "88b9249d6afe015acaa67d51bcacdeec2662b641905333d5393771a2ac521ddd",
+  "estates-indian-head-lot4.plat.json": "d57e8c4fc5f8e18cba58d0d69ee2a1ad4d55e9c7af76d39d78deac10728ecb2f",
+  "estates-indian-head-lot5.plat.json": "53f44182597f14e042be857c1524aaafc76f52bf7b3f29a48565d284b7608a6f",
+  "estates-indian-head-lot6.plat.json": "9c61394aeaba63f284d52f49f58e96a579213688c88da9139507f44f6383f1e4"
+ },
+ "outputs": {
+  "estates-indian-head-2026-concept-submission.pdf": "1f908fa96ccbafd370b3ac5273093ba77003247f4679ddd9003d776ef227aee8",
+  "estates-indian-head-concept-SDC.pdf": "1da3074fb942f837f0fff1f0231b670d1f6d6fe81babcc9da8b875590defab6e",
+  "estates-indian-head-permit-set.pdf": "9a93c97a587ee36e77e5f1f7640a2c9b3e901961145351addfeeb8ac0466e6ee",
+  "estates-indian-head-permit-set.dxf": "aef2edbe3155e31fbf9770fedaba7605f3765c59a1a4febde71849f0c56ced0f",
+  "estates-indian-head-DPIE-concept-application.pdf": "baedc2ff1eb6a6f9700c72d520840096d679e5b8eb5d6f4a91738ed18801fc8b"
+ },
+ "method": [
+  "python3 packages/spatial-engine/scripts/digitise/estates_indian_head_inputs.py source/pgatlas-parcels.json <dir>",
+  "FULL_SET=1 TWIN_JSON=... pnpm tsx scripts/generate-subdivision.ts <outer> <lot1..6> <permit-set.pdf>",
+  "python3 packages/spatial-engine/scripts/digitise/estates_indian_head_concept.py <dir> source/stl-2009-sheet1-200dpi.png <SDC.pdf>"
+ ]
+}
