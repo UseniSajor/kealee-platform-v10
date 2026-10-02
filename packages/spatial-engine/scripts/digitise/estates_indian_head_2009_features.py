@@ -97,11 +97,12 @@ trees = [{'point': list(W(*p)), 'species': 'ACER RUBRUM — RED MAPLE', 'size': 
 # 16 trunks against current aprons, driveways, culverts, lights and utilities.
 TREE_RELOCATIONS = {
     0: (1310911.43, 367454.39),   # remove obsolete/off-R/W entrance location
+    1: (1310986.42, 367466.45),   # restore 50 ft nominal spacing to south-side run
     2: (1310991.19, 367390.82),   # clear Lot 1 driveway and apron
     6: (1311032.13, 367362.20),   # 15.6 ft clear of streetlight
     8: (1311176.91, 367373.86),   # 15.3 ft clear of streetlight
     9: (1311225.67, 367369.03),   # clear water-service corridor
-    11: (1311360.87, 367402.93),  # 10.3 ft clear of Lot 3 driveway/apron
+    11: (1311360.97, 367402.55),  # 10 ft clear of Lot 3 driveway/apron; <=55 ft spacing
     14: (1311180.39, 367315.22),  # clear water-service corridor
 }
 for i, point in TREE_RELOCATIONS.items():
@@ -267,11 +268,20 @@ woods_sf = round(sum(g.area for g in woodland_geoms))
 SLOPE_RANGE = {25: '15-25%', 90: '>25%'}
 def _polys(g):
     return [g] if g.geom_type == 'Polygon' else [x for x in getattr(g, 'geoms', []) if x.geom_type == 'Polygon']
+# Owner check against the existing elevations (2026-10-02): the layer's
+# slivers on Lots 2, 4 and 5, the Lot 6 frontage and the street are not
+# slopes; on the property only the rear of Lot 6 is. So on the tract the layer
+# is kept only on Lot 6 more than 100 ft behind the R/W; off the property it is
+# shown as the County maps it (B-8).
+_lot6 = next(Polygon(f['geometry']['rings'][0]).buffer(0) for f in J('source/pgatlas-parcels.json')['features']
+             if f['attributes']['SUB_NAME'] == 'ESTATES AT INDIAN HEAD' and str(f['attributes']['LOT']) == '6')
+slope_keep = tract.buffer(100).difference(tract).union(_lot6.difference(row.buffer(100)))
 steep_on = {'15-25%': 0.0, '>25%': 0.0}
 steep_draw = []
 for p, a in envpolys(13):
     rng = SLOPE_RANGE.get(int(a.get('RANGE') or 0))
     if not rng: continue
+    p = p.intersection(slope_keep)
     steep_on[rng] += p.intersection(tract).area
     for gg in _polys(p.intersection(tract.buffer(100)).buffer(0)):
         if gg.area > 10:
@@ -357,7 +367,7 @@ rec['generalNotes'] = [
     'Water and sewer: WSSC mains from Henrietta Dr through the recorded 30\' WSSC easement (L.51799 F.399) and a 30\' WSSC easement to be granted across Lot 4. Record discrepancies in the easement description to be resolved with WSSC.',
     'NEW SUBMITTAL (2026). Prior approvals NRI-015-06, TCP1-018-06 and TCP2-016-09 are used as base work only and do not carry this submittal. Additional work: an updated/revised NRI (draft with this submission, approved copy before concept approval, Sec. 32-182(a)); a TCP2-016-09 revision or new TCP / letter of exemption as M-NCPPC Environmental Planning determines; street trees and lighting reviewed to current DPW&T/DPIE standards; SWM by ESD to the MEP under current Subtitle 32.',
     'No streams, stream buffers, wetlands, floodplain, PMA, woodland or Chesapeake Bay Critical Area on the property.',
-    f'Steep slopes per the County steep-slope layer (PGAtlas Environmental layer 13): {steep15_sf:,} sf at 15-25% and {steep25_sf:,} sf over 25% on the property, shown on C-100 with the slopes within 100 ft of the property.',
+    f'Steep slopes per the County slope layer (PGAtlas Environmental layer 13, 2023) and the existing elevations: on the property only at the rear of Lot 6 ({steep15_sf:,} sf at 15-25%, {steep25_sf:,} sf over 25%); slopes within 100 ft of the property shown on C-100.',
     'Grading: positive drainage away from every dwelling, 5% for the first 10 ft where practicable; driveways tie to the garage slab and the street at the grades shown; stepped grading at Lot 1; Lots 2-4 front yards drain to the roadside swales.',
     'RR ZONING CHECK: each lot exceeds 20,000 sf; proposed lot coverage is below the 25% maximum; building restriction lines depict 25-ft front, 8-ft side and 20-ft rear minimums. 40-ft height maximum.',
     'Contact Miss Utility (811) at least 48 hours before any excavation.',

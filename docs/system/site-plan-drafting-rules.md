@@ -129,6 +129,9 @@ Reference sets that show the standard (read them before changing a sheet):
   the existing-conditions sheet with 100 ft beyond the property, areas in B-5.
   This SUPERSEDES the 2026-09-30 Estates direction "no steep slopes" (owner,
   2026-10-01: "use county slopes"). Woodland stays out per 9/30.
+  On the property the layer is kept only at the REAR OF LOT 6: the owner
+  checked it against the existing elevations (2026-10-02) — the layer's
+  slivers on Lots 2, 4, 5, the Lot 6 frontage and the street are not slopes.
 - **The plat's dedication figure is cited; a drawn R/W that closes differently
   is reported beside it, not substituted** (Estates Court 35,173 sf of record).
 
