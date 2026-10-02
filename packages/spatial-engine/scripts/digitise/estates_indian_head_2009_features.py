@@ -251,10 +251,10 @@ TREE_RELOCATIONS = {
     1: (1310986.42, 367466.45),   # restore 50 ft nominal spacing to south-side run
     2: (1310991.19, 367390.82),   # clear Lot 1 driveway and apron
     6: (1311032.13, 367362.20),   # 15.6 ft clear of streetlight
-    8: (1311168.91, 367379.86),   # 15 ft clear of streetlight; 5.5 ft clear of Lot 2 utility route
-    9: (1311225.67, 367369.03),   # clear water-service corridor
-    11: (1311360.97, 367402.55),  # 10 ft clear of Lot 3 driveway/apron; <=55 ft spacing
-    14: (1311180.39, 367315.22),  # clear water-service corridor
+    8: (1311175.91, 367386.86),   # 15.0 ft clear of streetlight; 6.7 ft clear of utility route
+    9: (1311226.67, 367371.03),   # 5.2 ft clear of water-service corridor
+    11: (1311361.97, 367401.55),  # 10.6 ft clear of Lot 3 driveway/apron; <=55 ft spacing
+    14: (1311181.89, 367315.22),  # 5.2 ft clear of the Lot 5 service route after the 2026-10-02 court resize
 }
 for i, point in TREE_RELOCATIONS.items():
     trees[i]['point'] = list(point)

@@ -342,6 +342,8 @@ async function main(): Promise<void> {
     existingRoads?: { name: string; label: string; source?: string; lines: { type: string; line: Position[]; label?: string }[] }[]
     /** Street trees and street lights of an approved street tree / lighting plan. */
     streetTrees?: { point: Position; species: string; size?: string; source?: string }[]
+    /** Existing individual tree symbols on the approved-plan base; field verification remains required. */
+    existingTrees?: { point: Position; canopyRadiusFt?: number; source?: string }[]
     streetLights?: { point: Position; fixture?: string; utility?: string; source?: string }[]
     /** Open-section roadside swales (flowline) and the driveway culverts under them. */
     roadsideSwales?: { line: Position[]; label?: string; sectionFt?: number }[]
@@ -1002,6 +1004,12 @@ async function main(): Promise<void> {
   const merged: SiteFeature[] = [outerParcel]
   lots.forEach((l, i) => {
     for (const f of l.pkg.twin.features) {
+      // A transcribed planting plan supersedes ALL heuristic tree placement.
+      // Keeping both invents an unscheduled second planting scheme, inflates
+      // the quantity, and can put a generated shade-tree symbol on an approved
+      // driveway, apron or utility. Existing wooded preservation is carried by
+      // its own feature; the explicit tree list below is the proposed planting.
+      if (platRecord?.streetTrees?.length && f.kind === 'Tree') continue
       // Contours and RECORDED easements are identical across lots — those
       // layers are fetched once for the whole subdivision — so only the first
       // lot contributes them. Drawing them twice thickens every line.
@@ -2974,6 +2982,16 @@ async function main(): Promise<void> {
     merged.push({
       kind: 'Tree', id: `street-tree-${k}`, ring: { coordinates: ring },
       attributes: { proposed: true, streetTree: true, species: tr.species, size: tr.size ?? '', source: tr.source ?? '' },
+    } as never)
+  }
+  for (const [k, tr] of (platRecord?.existingTrees ?? []).entries()) {
+    const R = tr.canopyRadiusFt ?? 6
+    const ring: Position[] = Array.from({ length: 17 }, (_, i) => [
+      tr.point[0] + R * Math.cos((i / 16) * 2 * Math.PI), tr.point[1] + R * Math.sin((i / 16) * 2 * Math.PI)] as Position)
+    merged.push({
+      kind: 'Tree', id: `existing-tree-2009-${k}`, ring: { coordinates: ring },
+      attributes: { existing: true, proposed: false, fieldVerify: true,
+        label: 'EX. TREE — 2009 BASE; VERIFY', source: tr.source ?? '2009 approved-plan base' },
     } as never)
   }
   for (const [k, sl] of (platRecord?.streetLights ?? []).entries()) {
