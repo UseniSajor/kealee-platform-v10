@@ -193,10 +193,10 @@ export function evaluateChecklist(f: ChecklistFacts, overrides: Record<string, {
     'D-9': r('X', 'No waiver requested.'),
     // D-10 stays open until the downstream analysis exists: the 100-yr
     // comparison alone does not show the receiving system is adequate.
-    'D-10': sw ? r(sw.outstanding.length ? 'O' : 'C', `ESDv per POI on the cover; 100-yr existing vs. proposed runoff at each POI on ${sw.sheet}.${sw.outstanding.length ? ' OUTSTANDING: downstream drainage capacity — survey and capacity analysis of the receiving system for the 10- and 100-yr flows, with quantity control or conveyance improvements if inadequate.' : ''}`, sw.sheet)
+    'D-10': sw ? r(sw.outstanding.length ? 'O' : 'C', `ESDv per POI on the cover; 100-yr existing vs. proposed runoff at each POI on ${sw.sheet}.${sw.outstanding.length ? ' OUTSTANDING: downstream drainage capacity — capacity analysis of the receiving system for the 10- and 100-yr flows, with quantity control or conveyance improvements if inadequate.' : ''}`, sw.sheet)
       : r('O', 'ESDv computations are on the cover; 100-yr existing/proposed runoff at each POI and downstream analysis to follow in the report.'),
     'E-1': r('O', `OUTSTANDING: geotechnical field work — borings/test pits, seasonal-high groundwater and infiltration tests at each ESD practice per MDE Stormwater Technical Memorandum No. 7, Soils Investigation (and Sec. 32-131). Desktop soils from ${SOIL_SURVEY_REF} only.`),
-    'E-2': r('O', `OUTSTANDING: problematic-soil confirmation — the geotechnical report to confirm or rule out Marlboro/Christiana clays, sulfidic and diatomaceous soils and uncontrolled fill (MDE TM No. 7; ${SOIL_SURVEY_REF}).`),
+    'E-2': r('O', `OUTSTANDING: problematic soils — the geotechnical report to address Marlboro/Christiana clays, sulfidic and diatomaceous soils and uncontrolled fill (MDE TM No. 7; ${SOIL_SURVEY_REF}).`),
     'E-3': r('O', 'OUTSTANDING: adjacent-owner notification affidavit (mailing within 7 days of submittal) — with second submission.'),
     'E-4': r(e.nriCurrentForSubmittal ? 'C' : 'O', e.nriCurrentForSubmittal ? e.approvals : `OUTSTANDING: updated NRI/TCP. ${e.approvals}`),
   }

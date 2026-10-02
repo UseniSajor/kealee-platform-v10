@@ -89,6 +89,24 @@ TREES_PX = [(1866, 530), (1960, 1126), (2236, 1330), (2510, 1540), (2820, 1670),
             (3256, 2150), (3576, 2196)]
 LIGHTS_PX = [(1733, 930), (3127, 1730), (4190, 1470), (4030, 2235), (2165, 1783)]
 trees = [{'point': list(W(*p)), 'species': 'ACER RUBRUM — RED MAPLE', 'size': '2 1/2"–3" CAL., B&B', 'source': '2009 street tree plan'} for p in TREES_PX]
+# The house/driveway layout and WSSC services changed after the base street-tree
+# approval. Relocate conflicts to the 1-ft-inside-R/W planting corridor using
+# DPW&T Std. 600.02: shade-tree spacing 50 ft (+/-5 ft), 10 ft minimum from a
+# residential driveway entrance/culvert, and 15 ft from a streetlight/utility
+# pole. The coordinates below are the nearest feasible points after testing all
+# 16 trunks against current aprons, driveways, culverts, lights and utilities.
+TREE_RELOCATIONS = {
+    0: (1310911.43, 367454.39),   # remove obsolete/off-R/W entrance location
+    2: (1310991.19, 367390.82),   # clear Lot 1 driveway and apron
+    6: (1311032.13, 367362.20),   # 15.6 ft clear of streetlight
+    8: (1311176.91, 367373.86),   # 15.3 ft clear of streetlight
+    9: (1311225.67, 367369.03),   # clear water-service corridor
+    11: (1311360.87, 367402.93),  # 10.3 ft clear of Lot 3 driveway/apron
+    14: (1311180.39, 367315.22),  # clear water-service corridor
+}
+for i, point in TREE_RELOCATIONS.items():
+    trees[i]['point'] = list(point)
+    trees[i]['source'] += '; relocated for current paving/utility clearance per DPW&T Std. 600.02'
 # Positions are the 2009 plan's; the fixture is LED (user, 2026-10-01), not the
 # 2009 high-pressure sodium. Wattage and lumen package follow SMECO's LED
 # post-top offering at the DPW&T Std. 500.10 spacing, set at technical design.
@@ -243,11 +261,27 @@ for p, a in []:
         if gg.geom_type == 'Polygon' and gg.area > 50:
             woodland_geoms.append(gg)
 woods_sf = round(sum(g.area for g in woodland_geoms))
+# Steep slopes: the county's own steep-slope layer (PGAtlas layer 13; RANGE 25 =
+# 15-25 %, RANGE 90 = over 25 %), owner 2026-10-01 "use county slopes". On-tract
+# areas go to checklist B-5; the polygons are drawn 100 ft beyond (B-8).
+SLOPE_RANGE = {25: '15-25%', 90: '>25%'}
+def _polys(g):
+    return [g] if g.geom_type == 'Polygon' else [x for x in getattr(g, 'geoms', []) if x.geom_type == 'Polygon']
+steep_on = {'15-25%': 0.0, '>25%': 0.0}
+steep_draw = []
+for p, a in envpolys(13):
+    rng = SLOPE_RANGE.get(int(a.get('RANGE') or 0))
+    if not rng: continue
+    steep_on[rng] += p.intersection(tract).area
+    for gg in _polys(p.intersection(tract.buffer(100)).buffer(0)):
+        if gg.area > 10:
+            steep_draw.append({'range': rng, 'ring': [list(q) for q in list(gg.exterior.coords)[:-1]]})
+steep15_sf, steep25_sf = round(steep_on['15-25%']), round(steep_on['>25%'])
 rec['environmental'] = {
     'woodsSqFt': woods_sf,
     'receiving': 'the existing Jennifer Drive frontage-road drainage system',
     'streams': False, 'wetlands': False, 'floodplain': False, 'pma': False, 'cbca': False, 'springs': False, 'marlboroClay': False, 'tierII': False,
-    'hsg': 'C', 'steep15SqFt': 0, 'steep25SqFt': 0, 'soilRows': soil_rows,
+    'hsg': 'C', 'steep15SqFt': steep15_sf, 'steep25SqFt': steep25_sf, 'soilRows': soil_rows,
     'woodland': '',
     'soils': 'Soil types and boundaries from USDA NRCS (PGAtlas Soil layer): ' + '; '.join(f'{r[0]} (HSG {r[2]})' for r in soil_rows) + '.',
     'tmdl': 'Chesapeake Bay TMDL (nitrogen, phosphorus, sediment) applies; MD 12-digit watershed 021402030798, Piscataway Creek (02140203).',
@@ -322,7 +356,8 @@ rec['generalNotes'] = [
     'Estates Court intersects Jennifer Drive with 50\' returns. Jennifer Drive lies between the entrance and MD 210; preserve the existing physical separation/barrier. No direct MD 210 access or auxiliary lanes are proposed. Intersection sight distance at Jennifer Drive per the table on this sheet.',
     'Water and sewer: WSSC mains from Henrietta Dr through the recorded 30\' WSSC easement (L.51799 F.399) and a 30\' WSSC easement to be granted across Lot 4. Record discrepancies in the easement description to be resolved with WSSC.',
     'NEW SUBMITTAL (2026). Prior approvals NRI-015-06, TCP1-018-06 and TCP2-016-09 are used as base work only and do not carry this submittal. Additional work: an updated/revised NRI (draft with this submission, approved copy before concept approval, Sec. 32-182(a)); a TCP2-016-09 revision or new TCP / letter of exemption as M-NCPPC Environmental Planning determines; street trees and lighting reviewed to current DPW&T/DPIE standards; SWM by ESD to the MEP under current Subtitle 32.',
-    'No environmental features on the property: no streams, stream buffers, wetlands, floodplain, PMA, steep slopes, woodland, highly erodible soils or Chesapeake Bay Critical Area.',
+    'No streams, stream buffers, wetlands, floodplain, PMA, woodland or Chesapeake Bay Critical Area on the property.',
+    f'Steep slopes per the County steep-slope layer (PGAtlas Environmental layer 13): {steep15_sf:,} sf at 15-25% and {steep25_sf:,} sf over 25% on the property, shown on C-100 with the slopes within 100 ft of the property.',
     'Grading: positive drainage away from every dwelling, 5% for the first 10 ft where practicable; driveways tie to the garage slab and the street at the grades shown; stepped grading at Lot 1; Lots 2-4 front yards drain to the roadside swales.',
     'RR ZONING CHECK: each lot exceeds 20,000 sf; proposed lot coverage is below the 25% maximum; building restriction lines depict 25-ft front, 8-ft side and 20-ft rear minimums. 40-ft height maximum.',
     'Contact Miss Utility (811) at least 48 hours before any excavation.',
@@ -350,7 +385,7 @@ rec['sequenceOfConstruction'] = [
 ]
 buf = tract.buffer(100)
 rec['environmentalGeometry'] = {
-    'steepSlopes': [],
+    'steepSlopes': steep_draw,
     'woodland': [],          # owner 2026-09-30: no environmental features on this site (no woodland)
     'soils': [{'label': a['SOIL_NAME_MUSYM'], 'ring': [list(q) for q in list(gg.exterior.coords)[:-1]]}
               for p, a in envpolys(14) for gg in ([p.intersection(buf)] if p.intersection(buf).geom_type == 'Polygon' else list(getattr(p.intersection(buf), 'geoms', [])))
@@ -379,42 +414,52 @@ rec['spotElevationsFromPlan'] = {'datum': f'NAVD 88 — converted from WSSC datu
                                  'replaceGenerated': True, 'points': spots}
 if entrance: rec['entranceApron'] = entrance
 # ── Site L.O.D. (owner 2026-10-01) ──────────────────────────────────────────
-# One smooth line around the whole development: 10 ft inside the rear line of
-# every lot and the outer sides of Lots 1 and 6 (tree-save strip, 8-15 ft), with
-# rounded corners — not a stepped union of per-lot grading. Only the street
-# R/W at its connection, the entrance, the off-site road work and the WSSC
-# easement corridor cross the strip.
-LOD_SETBACK_FT, LOD_ROUND_FT = 10.0, 25.0
+# Straight runs parallel to the property lines, 10 ft inside the rear lot lines
+# and the outer sides of Lots 1 and 6 (tree-save strip, 8-15 ft), with only an
+# 8-ft fillet at the corners — no swerves or bulges. Where a dwelling stands
+# closer than 15 ft to a line, that line's offset is reduced to keep a 5-ft
+# working margin around the house (Lot 6 west line: house at 8.0 ft -> 3 ft).
+# Crossings: the street grading limit (pavement + 14 ft, through the swale side
+# slopes), one straight-sided entrance zone at Jennifer Drive, and the WSSC
+# easement corridor to Henrietta Drive.
+from shapely.geometry import LineString as _LS
+LOD_SETBACK_FT, LOD_FILLET_FT, LOD_HOUSE_MARGIN_FT = 10.0, 8.0, 5.0
 _geo = J('estates-indian-head.geometry.json')
 _tract = Polygon(_geo['tract']).buffer(0)
-_inset = _tract.buffer(-LOD_SETBACK_FT, join_style=1)
-_inset = _inset.buffer(-LOD_ROUND_FT, join_style=1).buffer(LOD_ROUND_FT, join_style=1)      # round the corners
-_cross = []
-for _r in st.get('rowRings') or []:
-    _cross.append(Polygon(_r).buffer(0))
-for _r in st.get('pavementRings') or []:
-    _cross.append(Polygon(_r).buffer(0))
+_houses = [Polygon(J(f'estates-indian-head-lot{_k}.plat.json')['fixedFootprint']).buffer(0)
+           for _k in range(1, 7) if J(f'estates-indian-head-lot{_k}.plat.json').get('fixedFootprint')]
+_tc = list(_tract.exterior.coords)
+_strips, _edge_offsets = [], []
+for _i in range(len(_tc) - 1):
+    _e = _LS([_tc[_i], _tc[_i + 1]])
+    if _e.length < 0.5: continue
+    _d = LOD_SETBACK_FT
+    for _h in _houses:
+        _hd = _h.distance(_e)
+        if _hd < LOD_SETBACK_FT + LOD_HOUSE_MARGIN_FT:
+            _d = min(_d, max(2.0, _hd - LOD_HOUSE_MARGIN_FT))
+    _edge_offsets.append(round(_d, 1))
+    _strips.append(_e.buffer(_d, cap_style=1))
+_inset = _tract.difference(unary_union(_strips)).buffer(0)
+if _inset.geom_type == 'MultiPolygon':
+    _inset = max(_inset.geoms, key=lambda g: g.area)
+_inset = _inset.buffer(-LOD_FILLET_FT, join_style=1).buffer(LOD_FILLET_FT, join_style=1)   # 8-ft corner fillets only
+_pave = unary_union([Polygon(_r).buffer(0) for _r in st.get('pavementRings') or []])
+_cross = [_pave.buffer(14.0, join_style=2).intersection(_tract.buffer(0.5))]
 if rec.get('entranceApron'):
-    _cross.append(Polygon(rec['entranceApron']['ring']).buffer(0))
-for _ri in rec.get('roadImprovements') or []:
-    _cross.append(Polygon(_ri['ring']).buffer(0))
+    _ap = Polygon(rec['entranceApron']['ring']).buffer(0)
+    _cross.append(_ap.buffer(3.0, join_style=2))      # the entrance apron as built, 3-ft edge
 for _e in rec.get('easementsOfRecord') or []:
     if _e.get('ring') and 'WSSC' in (_e.get('type', '') + _e.get('label', '')):
         _cross.append(Polygon(_e['ring']).buffer(0))
-# every dwelling (and a 5-ft working margin) must sit inside the L.O.D.; where a
-# house stands closer than the tree-save strip, the line bulges around it there only
-for _k in range(1, 7):
-    _fp = J(f'estates-indian-head-lot{_k}.plat.json').get('fixedFootprint')
-    if _fp:
-        _cross.append(Polygon(_fp).buffer(5.0, join_style=1))
-_lod = unary_union([_inset] + [c.buffer(2.0, join_style=1) for c in _cross])
-_lod = _lod.buffer(6.0, join_style=1).buffer(-6.0, join_style=1)                            # smooth the joins
+_lod = unary_union([_inset] + _cross).buffer(1.0, join_style=2).buffer(-1.0, join_style=2)
 if _lod.geom_type == 'MultiPolygon':
     _lod = max(_lod.geoms, key=lambda g: g.area)
-_lod = Polygon(_lod.exterior).simplify(0.25)
+_lod = Polygon(_lod.exterior).simplify(0.3)
+assert all(_lod.buffer(0.1).contains(_h) for _h in _houses), 'a dwelling falls outside the L.O.D.'
 rec['siteLod'] = {'ring': [list(p) for p in list(_lod.exterior.coords)[:-1]], 'areaSqFt': round(_lod.area),
-                  'setbackFt': LOD_SETBACK_FT, 'cornerRadiusFt': LOD_ROUND_FT,
-                  'note': "Limit of disturbance held 10 ft inside the rear lot lines and the outer sides of Lots 1 and 6 (existing tree line preserved); crossed only by the street, entrance and WSSC easement."}
+                  'setbackFt': LOD_SETBACK_FT, 'edgeOffsetsFt': _edge_offsets,
+                  'note': "Limit of disturbance 10 ft inside the rear lot lines and the outer sides of Lots 1 and 6 (existing tree line preserved; 3 ft along the Lot 6 west line, where the dwelling stands 8 ft from the line); crossed only by the street, the Jennifer Drive entrance and the WSSC easement."}
 
 json.dump(rec, open(os.path.join(proj, 'estates-indian-head.plat-record.json'), 'w'), indent=1)
 print(f'roads {len(roads)} · trees {len(trees)} · lights {len(lights)} · swale runs {len(swales)} '
