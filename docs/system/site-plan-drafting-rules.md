@@ -124,6 +124,11 @@ Reference sets that show the standard (read them before changing a sheet):
   inverts (A-14). Desktop soils cite USDA Web Soil Survey.
 - **Grading stays preliminary** with explicit hold points (Lot 1, Lots 2–4)
   until field topography and PE/geotechnical design resolve them.
+- **Steep slopes come from the County steep-slope layer** (PGAtlas
+  Environmental layer 13: RANGE 25 = 15-25 %, RANGE 90 = over 25 %), drawn on
+  the existing-conditions sheet with 100 ft beyond the property, areas in B-5.
+  This SUPERSEDES the 2026-09-30 Estates direction "no steep slopes" (owner,
+  2026-10-01: "use county slopes"). Woodland stays out per 9/30.
 - **The plat's dedication figure is cited; a drawn R/W that closes differently
   is reported beside it, not substituted** (Estates Court 35,173 sf of record).
 

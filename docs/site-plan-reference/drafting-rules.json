@@ -31,6 +31,7 @@
     { "id": "swm.m6-drainage-split", "rule": "Rear-yard M-6 cell takes roof and rear yard only, drainage area held to 20,000 sf (MDE 5.4.3); front yard, driveway and walk go to the street practice; BMP impervious equals lot coverage." },
     { "id": "swm.outfall-velocity", "rule": "Check outfall velocity at the 10- and 100-yr flows at the swale grade, off-site inflow included; specify lining on exceedance." },
     { "id": "checklist.outstanding-items", "rule": "Mark OUTSTANDING: downstream capacity, geotechnical field work (MDE TM No. 7), problematic-soil confirmation, adjacent-owner affidavit, updated NRI/TCP, and existing mains without sizes/inverts (A-14). Cite USDA Web Soil Survey for desktop soils." },
+    { "id": "env.county-steep-slopes", "rule": "Steep slopes from the County steep-slope layer (PGAtlas L13), drawn with 100 ft beyond the property; supersedes the 9/30 Estates no-steep-slopes direction (owner 2026-10-01)." },
     { "id": "record.dedication-area", "rule": "Cite the plat's dedication area; report a differently-closing drawn R/W beside it, do not substitute it." }
   ]
 }

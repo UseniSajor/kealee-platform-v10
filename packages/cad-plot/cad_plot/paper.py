@@ -334,7 +334,7 @@ class Sheets:
                          ('V-PROP-ADJN', 'Adjoining property'), ('V-BLDG-E', 'Existing building (county 2023 footprint)'), ('C-TOPO-MAJR-E', 'Existing contour, 10-ft (NAVD 88)'),
                          ('C-TOPO-MINR-E', 'Existing contour, 2-ft'), ('C-ROAD-EDGE-E', 'Existing edge of road'),
                          ('C-ROAD-ROWL-E', 'Existing right-of-way'),
-                         ('C-ENVR-SOIL-E', 'Soil boundary (USDA NRCS)'), ('C-ENVR-WOOD-E', 'Mapped woody vegetation (field verify)'), ('V-ESMT', 'Easement')],
+                         ('C-ENVR-SLOP-E', 'Steep slopes (County layer): dots 15-25%, hatch >25%'), ('C-ENVR-SOIL-E', 'Soil boundary (USDA NRCS)'), ('V-ESMT', 'Easement')],
             'layout': [('V-PROP-BNDY', 'Boundary of record'), ('C-ROAD-ROWL-N', 'Estates Ct right-of-way'),
                        ('C-ROAD-PVMT-N', 'Proposed pavement'), ('C-ROAD-SWAL-N', 'Roadside swale (flowline)'),
                        ('C-STRM-CULV-N', 'Driveway culvert, 15" RCP w/ end sections'), ('C-BLDG-FTPR-N', 'Proposed dwelling'),
