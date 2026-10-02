@@ -100,13 +100,96 @@ south_pts = [q for q in path if (L5p.contains(Point(q)) or L6p.contains(Point(q)
              and math.hypot(q[0] - C[0], q[1] - C[1]) > 64]
 south = LineString([P] + south_pts) if math.dist(P, south_pts[0]) < math.dist(P, south_pts[-1]) \
     else LineString([P] + south_pts[::-1])
+# The plat records the curve along Lots 6/5 as a run of equal chords. Offset as
+# chords, the centreline kinks where the street curves (owner 2026-10-02: "C/L
+# not inline with the curve of the street"). Fit the circle through the chord
+# vertices and put the true arc back, so the centreline is concentric with the
+# street.
+def _true_arc(line, max_chord=40.0, min_run=3, max_resid=0.2):
+    q = []
+    for p_ in line.coords:
+        if not q or math.dist(q[-1], p_) > 0.01: q.append(tuple(p_))
+    L = [math.dist(q[i], q[i + 1]) for i in range(len(q) - 1)]
+    best, i = None, 0
+    while i < len(L):
+        j = i
+        while j < len(L) and L[j] < max_chord: j += 1
+        if j - i >= min_run and (best is None or j - i > best[1] - best[0]): best = (i, j)
+        i = j + 1
+    if best is None: return line
+    i, j = best                      # chords i .. j-1, vertices i .. j
+    pts = q[i:j + 1]
+    import numpy as _np
+    A_ = _np.array([[2 * x, 2 * y, 1.0] for x, y in pts]); b_ = _np.array([x * x + y * y for x, y in pts])
+    cx, cy, c0 = _np.linalg.lstsq(A_, b_, rcond=None)[0]
+    R = math.sqrt(c0 + cx * cx + cy * cy)
+    resid = max(abs(math.dist(p_, (cx, cy)) - R) for p_ in pts)
+    if resid > max_resid:
+        print(f'Estates Court south R/W: chord run does not fit one circle (resid {resid:.2f} ft); chords kept')
+        return LineString(q)
+    a0 = math.atan2(pts[0][1] - cy, pts[0][0] - cx); a1 = math.atan2(pts[-1][1] - cy, pts[-1][0] - cx)
+    da = (a1 - a0 + math.pi) % (2 * math.pi) - math.pi
+    n = max(8, int(abs(da) * R / 2.0))
+    arc = [(cx + R * math.cos(a0 + da * k / n), cy + R * math.sin(a0 + da * k / n)) for k in range(n + 1)]
+    print(f'Estates Court south R/W: {j - i} chords -> arc R = {R:.2f} ft, delta {math.degrees(abs(da)):.2f} deg, max resid {resid:.3f} ft')
+    return LineString(q[:i] + arc + q[j + 1:])
+south = _true_arc(south)
 off = south.offset_curve(30.0)
 if not row.buffer(-5).intersects(off.interpolate(0.5, normalized=True)):
     off = south.offset_curve(-30.0)
 oc = list(off.coords)
 if math.dist(oc[0], C) < math.dist(oc[-1], C): oc = oc[::-1]
 oc = [q for q in oc if math.hypot(q[0] - C[0], q[1] - C[1]) > 20]
-cl = [tuple(q) for q in LineString(oc + [C]).simplify(0.5).coords]
+cl = [tuple(q) for q in LineString(oc + [C]).simplify(0.05).coords]
+# Round any remaining angle point (where the arc meets the run into the bulb)
+# with a tangent curve, so the centreline has no kinks.
+def _fillet(pts, R=150.0, min_deg=2.0):
+    out = [pts[0]]
+    for k in range(1, len(pts) - 1):
+        a, b, c = out[-1], pts[k], pts[k + 1]
+        u1 = ((b[0] - a[0]) / math.dist(a, b), (b[1] - a[1]) / math.dist(a, b))
+        u2 = ((c[0] - b[0]) / math.dist(b, c), (c[1] - b[1]) / math.dist(b, c))
+        th = math.acos(max(-1.0, min(1.0, u1[0] * u2[0] + u1[1] * u2[1])))
+        if math.degrees(th) < min_deg:
+            out.append(b); continue
+        r = min(R, 0.45 * min(math.dist(a, b), math.dist(b, c)) / math.tan(th / 2))
+        t = r * math.tan(th / 2)
+        p1 = (b[0] - u1[0] * t, b[1] - u1[1] * t); p2 = (b[0] + u2[0] * t, b[1] + u2[1] * t)
+        cross = u1[0] * u2[1] - u1[1] * u2[0]
+        nrm = (-u1[1], u1[0]) if cross > 0 else (u1[1], -u1[0])
+        cc = (p1[0] + nrm[0] * r, p1[1] + nrm[1] * r)
+        a1 = math.atan2(p1[1] - cc[1], p1[0] - cc[0]); a2 = math.atan2(p2[1] - cc[1], p2[0] - cc[0])
+        da = (a2 - a1 + math.pi) % (2 * math.pi) - math.pi
+        n = max(4, int(abs(da) * r / 2.0))
+        out += [(cc[0] + r * math.cos(a1 + da * i / n), cc[1] + r * math.sin(a1 + da * i / n)) for i in range(n + 1)]
+    return out + [pts[-1]]
+def _blend(pts, t=45.0, min_deg=4.0):
+    # angle points between a run and a long straight: replace +-t ft either side
+    # of the joint with a cubic matching both directions (no corner)
+    line = LineString(pts)
+    for k in range(1, len(pts) - 1):
+        a, b, c = pts[k - 1], pts[k], pts[k + 1]
+        if math.dist(b, c) < 2 * t: continue                      # only where a long straight starts
+        t1 = math.atan2(b[1] - a[1], b[0] - a[0]); t2 = math.atan2(c[1] - b[1], c[0] - b[0])
+        if abs(math.degrees((t2 - t1 + math.pi) % (2 * math.pi) - math.pi)) < min_deg: continue
+        sb = line.project(Point(b))
+        s0, s1 = max(0.0, sb - t), min(line.length, sb + t)
+        p0 = line.interpolate(s0); p1 = line.interpolate(s1)
+        q0 = line.interpolate(max(0.0, s0 - 1)); q1 = line.interpolate(min(line.length, s1 + 1))
+        d0 = ((p0.x - q0.x), (p0.y - q0.y)); d1 = ((q1.x - p1.x), (q1.y - p1.y))
+        n0 = math.hypot(*d0) or 1; n1 = math.hypot(*d1) or 1
+        m = math.dist((p0.x, p0.y), (p1.x, p1.y))
+        T0 = (d0[0] / n0 * m, d0[1] / n0 * m); T1 = (d1[0] / n1 * m, d1[1] / n1 * m)
+        curve = []
+        for i in range(31):
+            u = i / 30
+            h00, h10, h01, h11 = 2*u**3 - 3*u**2 + 1, u**3 - 2*u**2 + u, -2*u**3 + 3*u**2, u**3 - u**2
+            curve.append((h00 * p0.x + h10 * T0[0] + h01 * p1.x + h11 * T1[0], h00 * p0.y + h10 * T0[1] + h01 * p1.y + h11 * T1[1]))
+        before = [q for q in pts if line.project(Point(q)) < s0 - 0.01]
+        after = [q for q in pts if line.project(Point(q)) > s1 + 0.01]
+        return before + curve + after
+    return pts
+cl = _blend(cl)
 # Start the centreline at the recorded mouth on Jennifer Drive. Jennifer is
 # the frontage road between this subdivision and MD 210.
 mouth = LineString([lot1_nw, P])

@@ -26,12 +26,12 @@ LAYERS = {
     'V-VICN': (8, 'CONTINUOUS', 25),
     # existing roads
     'C-ROAD-EDGE-E': (8, 'CONTINUOUS', 25),
-    'C-ROAD-CNTR-E': (7, 'CENTER', 25),
+    'C-ROAD-CNTR-E': (7, 'CL', 25),
     'C-ROAD-ROWL-E': (8, 'PHANTOM', 25),
     'C-ROAD-ANNO-E': (8, 'CONTINUOUS', 18),
     # proposed street
     'C-ROAD-ROWL-N': (7, 'PHANTOM', 35),
-    'C-ROAD-CNTR-N': (7, 'CENTER', 18),
+    'C-ROAD-CNTR-N': (7, 'CL', 25),
     'C-ROAD-PVMT-N': (7, 'CONTINUOUS', 35),
     'C-ROAD-IMPR-N': (7, 'CONTINUOUS', 35),
     'C-ROAD-SWAL-N': (4, 'DASHDOT', 30),      # storm: cyan (never water blue / sewer green)
@@ -42,7 +42,7 @@ LAYERS = {
     # site
     'C-BLDG-FTPR-N': (7, 'CONTINUOUS', 50),
     'C-BLDG-ANNO-N': (7, 'CONTINUOUS', 18),
-    'V-BLDG-E': (8, 'CONTINUOUS', 35),      # existing building (county 2023 footprint)
+    'V-BLDG-E': (8, 'DASHED', 25),          # existing building: grey dashed, dot screen (proposed is solid + diagonal hatch)
     'V-BLDG-ANNO-E': (8, 'CONTINUOUS', 18),
     'C-PVMT-DRWY-N': (7, 'CONTINUOUS', 25),
     'C-PVMT-ANNO-N': (7, 'CONTINUOUS', 18),

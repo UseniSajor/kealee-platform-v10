@@ -179,6 +179,9 @@ def bar_scale(ps, x, y, ft_per_in, total_ft):
     _txt(ps, f'GRAPHIC SCALE  1" = {ft_per_in:,.0f}\'', x, y + 0.13, 0.09, bold=True, align=TextEntityAlignment.BOTTOM_LEFT)
 
 
+from .symbols import SYMBOLS as _SYMBOLS
+_SYMBOL_BLOCKS = set(_SYMBOLS)
+
 class Sheets:
     def __init__(self, doc, sheetset, model):
         self.doc = doc
@@ -339,7 +342,7 @@ class Sheets:
                          ('C-ENVR-SLOP-E', 'Steep slopes (County layer): dots 15-25%, hatch >25%'), ('C-ENVR-SOIL-E', 'Soil boundary (USDA NRCS)'), ('V-ESMT', 'Easement')],
             'layout': [('V-PROP-BNDY', 'Boundary of record'), ('C-ROAD-ROWL-N', 'Estates Ct right-of-way'),
                        ('C-ROAD-PVMT-N', 'Proposed pavement'), ('C-ROAD-SWAL-N', 'Roadside swale (flowline)'),
-                       ('C-STRM-CULV-N', 'Driveway culvert, 15" RCP w/ end sections'), ('C-BLDG-FTPR-N', 'Proposed dwelling'),
+                       ('C-STRM-CULV-N', 'Driveway culvert, 15" RCP w/ end sections'), ('C-BLDG-FTPR-N', 'Proposed dwelling'), ('V-BLDG-E', 'Existing building (dashed, dot screen)'),
                        ('V-PROP-BRL', 'Building restriction line'), ('C-TOPO-MAJR-N', 'Proposed contour'),
                        ('C-TOPO-MINR-E', 'Existing contour'), ('C-TOPO-SPOT-N', 'Spot elevation (NAVD 88)'),
                        ('C-ESC-LOD', 'Limit of disturbance'), ('C-ROAD-SIGHT-N', 'Jennifer Dr sight-distance line'),
@@ -555,8 +558,26 @@ class Sheets:
 
     def sheet_esc(self, ps, sh):
         x, y0 = self.sheet_plan(ps, sh)
-        yb = paragraphs(ps, x, y0, 7.5, 'SEDIMENT AND EROSION CONTROL NOTES', self.s['notes'].get('esc') or [], h=0.09)
-        paragraphs(ps, x + 7.8, y0, self.band_x1() - x - 7.8, 'SEQUENCE OF CONSTRUCTION', self.s['notes'].get('sequence') or [], h=0.09)
+        band = self.band_x1() - x
+        col = (band - 0.6) / 3
+        paragraphs(ps, x, y0, col, 'SEDIMENT AND EROSION CONTROL NOTES', self.s['notes'].get('esc') or [], h=0.075)
+        paragraphs(ps, x + col + 0.3, y0, col, 'SEQUENCE OF CONSTRUCTION', self.s['notes'].get('sequence') or [], h=0.075)
+        required = [
+            ('GRADING CERTIFICATE — I HEREBY CERTIFY THAT THIS PLAN CONFORMS TO THE REQUIREMENTS OF SUBTITLE 32, '
+             "DIVISION 2 OF THE CODE OF PRINCE GEORGE'S COUNTY WATER RESOURCES PROTECTION AND GRADING CODE; AND "
+             'THAT I OR MY STAFF HAVE INSPECTED THIS SITE AND THAT DRAINAGE FLOWS FROM UPHILL PROPERTIES ONTO THIS '
+             'SITE, AND FROM THIS SITE ONTO DOWNHILL PROPERTIES, HAVE BEEN ADDRESSED IN SUBSTANTIAL ACCORDANCE WITH '
+             'APPLICABLE CODES. SIGNED, SEALED AND DATED BY A PROFESSIONAL ENGINEER LICENSED IN THE STATE OF MARYLAND.'),
+            ('STABILIZATION COMPLIANCE — Stabilization practices on all projects must be in compliance with the '
+             'requirements of COMAR 26.17.01 by January 9, 2013, regardless of when an erosion and sediment control '
+             'plan was approved.'),
+            ('STANDARD STABILIZATION NOTE — Following initial soil disturbance or re-disturbance, permanent or '
+             'temporary stabilization must be completed within: a.) Three (3) calendar days as to the surface of all '
+             'perimeter dikes, swales, ditches, perimeter slopes, and all slopes steeper than 3 horizontal to 1 vertical '
+             '(3:1); and b.) Seven (7) calendar days as to all other disturbed or graded areas on the project site not '
+             'under active grading.'),
+        ]
+        paragraphs(ps, x + 2 * (col + 0.3), y0, col, 'REQUIRED COUNTY / STATE NOTES', required, h=0.067)
 
     def sheet_details(self, ps, sh):
         self.plan_title(ps, sh)
@@ -914,7 +935,9 @@ class Sheets:
                 ('ESD PRACTICE (M-6)', 'C-SWM-ESD-N', None), ('DRAINAGE AREA', 'C-SWM-DRAN-N', None),
                 ('LIMITS OF DISTURBANCE', 'C-ESC-LOD', None), ('SILT FENCE', 'C-ESC-SILT', None),
                 ('SOIL BOUNDARY', None, 'C-ENVR-SOIL-E'),
-                ('STREET TREE', 'TREE', None), ('STREET LIGHT', 'LIGHT', None), ('SPOT ELEVATION', 'SPOT', None)]
+                ('STREET TREE', 'TREE', None), ('STREET LIGHT', 'LIGHT', None), ('SPOT ELEVATION', 'SPOT', None),
+                ('SANITARY MANHOLE', 'SAN_MH', None), ('WATER BLOW-OFF', 'BLOWOFF', None), ('CULVERT END SECTION', 'ENDWALL', None),
+                ('UTILITY POLE', None, 'UTIL_POLE')]
         c0, c1, c2 = 2.6, 1.4, 1.4
         rh = 0.28
         _txt(ps, 'LEGEND', x + (c0 + c1 + c2) / 2, y, 0.15, bold=True, align=TextEntityAlignment.TOP_CENTER)
@@ -929,7 +952,7 @@ class Sheets:
             _txt(ps, item, x + 0.08, ym, 0.085, align=TextEntityAlignment.MIDDLE_LEFT)
             for lay, cxx in ((new, x + c0), (ex, x + c0 + c1)):
                 if not lay: continue
-                if lay in ('TREE', 'LIGHT', 'SPOT'):
+                if lay in _SYMBOL_BLOCKS:
                     blk = ps.add_blockref(lay, (cxx + c1 / 2, ym), dxfattribs={'layer': 'G-ANNO-TEXT'})
                     blk.dxf.xscale = blk.dxf.yscale = (1.0 / 90.0 if lay == 'TREE' else 1.0 / 30.0)
                     continue
