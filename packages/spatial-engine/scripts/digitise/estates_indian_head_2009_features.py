@@ -14,6 +14,8 @@ estates-indian-head.plat-record.json for generate-subdivision.ts:
                      the entrance returns are tangent to); Jennifer Drive and
                      Henrietta Drive from the PGAtlas centreline, 50-ft R/W.
   streetTrees        the 2009 street tree plan's red maples, located on the scan.
+  existingTrees      retained-tree symbols read from the same 2009 base plan;
+                     these are existing conditions, not proposed plantings.
   streetLights       the 2009 street light plan's 5 lights (SMECO).
   roadsideSwales     the 2009 rural section's ditch line: +/-20 ft off the
                      centreline on the run, R 52 ft round the cul-de-sac.
@@ -123,11 +125,11 @@ _bx = _tract_fp.bounds
 _cx, _cy = (_bx[0] + _bx[2]) / 2, (_bx[1] + _bx[3]) / 2
 VISIBLE = Polygon([(_cx - 436.5 + 5, _cy - 267.75 + 5), (_cx + 436.5 - 5, _cy - 267.75 + 5),
                    (_cx + 436.5 - 5, _cy + 267.75 - 5), (_cx - 436.5 + 5, _cy + 267.75 - 5)])
-def band_label(off):
+def band_label(off, t0=0.15, t1=0.85):
     seen = LineString(along(off, -1500, 1500)).intersection(VISIBLE)
     seg = max(getattr(seen, 'geoms', [seen]), key=lambda g: g.length) if not seen.is_empty else None
     if seg is None or seg.length < 30: return None
-    return [list(seg.interpolate(0.15, normalized=True).coords[0]), list(seg.interpolate(0.85, normalized=True).coords[0])]
+    return [list(seg.interpolate(t0, normalized=True).coords[0]), list(seg.interpolate(t1, normalized=True).coords[0])]
 _sep, _mdmed = (_gaps + [None, None])[:2]
 md210 = {'name': 'INDIAN HEAD HIGHWAY (MD 210)',
          'label': 'INDIAN HEAD HWY — MD 210 — MASTER PLAN FREEWAY F-11 (SHA)',
@@ -138,7 +140,7 @@ md210 = {'name': 'INDIAN HEAD HIGHWAY (MD 210)',
 }
 # Same road name as md210, so the plan letters the highway once, on this band.
 md210_nb = {'name': 'INDIAN HEAD HIGHWAY (MD 210)', 'label': 'MD 210 NORTHBOUND', 'source': md210['source'],
-            'lines': [{'type': 'label', 'line': band_label(_mid[1]), 'label': 'INDIAN HEAD HWY (MD 210) NORTHBOUND — FREEWAY F-11'}] if len(_mid) > 1 and band_label(_mid[1]) else []}
+            'lines': [{'type': 'label', 'line': band_label(_mid[1]), 'label': 'C/L INDIAN HEAD HWY (MD 210) NORTHBOUND — FREEWAY F-11'}] if len(_mid) > 1 and band_label(_mid[1]) else []}
 md210_sb = {'name': 'MD 210 SOUTHBOUND', 'label': 'MD 210 SOUTHBOUND', 'source': md210['source'],
             'lines': []}
 _medians = []
@@ -154,6 +156,8 @@ jennifer_frontage = {
     'source': 'PGAtlas Transportation/8 pavement (2023) and Transportation/2 centreline',
     'lines': [{'type': 'edge-of-road', 'line': l} for l in _edges(jen_polys)]
              + [{'type': 'centerline', 'line': l} for l in _clip_lines(_named('JENNIFER DR'))]
+             # named on its centreline inside the plan window (the auto-placed name fell outside it)
+             + ([{'type': 'label', 'line': band_label(_mid[0], 0.05, 0.45), 'label': 'C/L JENNIFER DRIVE — FRONTAGE ROAD'}] if _mid and band_label(_mid[0], 0.05, 0.45) else [])
              + [{'type': 'barrier', 'line': along(49.5), 'label': 'EX. PHYSICAL SEPARATION / BARRIER — NO DIRECT ESTATES CT ACCESS TO MD 210'}]
              + _medians,
 }
@@ -209,8 +213,33 @@ existing_mains = [
 TREES_PX = [(1866, 530), (1960, 1126), (2236, 1330), (2510, 1540), (2820, 1670), (1710, 1426), (2240, 1816),
             (2930, 2090), (3220, 1750), (3570, 1794), (3870, 1624), (4410, 1540), (4556, 1936), (4356, 2210),
             (3256, 2150), (3576, 2196)]
+# Light-line canopy symbols with a solid trunk dot on the 2009 base.  Keep
+# these separate from TREES_PX: the heavy, centre-cross symbol above is the
+# proposed Red Maple.  The scan does not report species, trunk diameter or a
+# current disposition, so those fields must come from the updated NRI/field
+# survey.  Pixel locations are intentionally retained here as auditable source
+# data and transformed with the same 0.44-ft-residual georeference as the plan.
+EXISTING_TREES_PX = [
+    # Lots 1-3 / north side
+    (2740, 1395), (2885, 1405),
+    (3075, 1040), (3095, 1260), (3505, 1485), (3670, 1530),
+    (3940, 955), (3955, 1160), (4200, 735), (4385, 775),
+    (4435, 1515), (4585, 1540), (4780, 1480),
+    # Lots 4-5 / south and east side
+    (4190, 1635), (4380, 1660), (4560, 1625),
+    (3980, 2080), (4005, 2260), (4580, 2700), (4750, 2690), (5000, 2635),
+    (2865, 1930), (2960, 2070), (3050, 2240), (3170, 2470),
+    (3250, 2680), (3410, 2760), (3665, 2590), (3780, 2390),
+    # Lot 6 / west tree line and yard
+    (2425, 2050), (2445, 2220), (2470, 2390), (2490, 2550),
+    (2520, 2730), (2550, 2900), (2900, 2070), (3020, 2200),
+    (3120, 2400), (3150, 2590), (3010, 2790),
+]
 LIGHTS_PX = [(1733, 930), (3127, 1730), (4190, 1470), (4030, 2235), (2165, 1783)]
 trees = [{'point': list(W(*p)), 'species': 'ACER RUBRUM — RED MAPLE', 'size': '2 1/2"–3" CAL., B&B', 'source': '2009 street tree plan'} for p in TREES_PX]
+existing_trees = [{'point': list(W(*p)), 'canopyRadiusFt': 6.0,
+                   'source': '2009 Street Tree & Lighting Plan base tree symbol; verify by updated NRI and field survey'}
+                  for p in EXISTING_TREES_PX]
 # The house/driveway layout and WSSC services changed after the base street-tree
 # approval. Relocate conflicts to the 1-ft-inside-R/W planting corridor using
 # DPW&T Std. 600.02: shade-tree spacing 50 ft (+/-5 ft), 10 ft minimum from a
@@ -222,7 +251,7 @@ TREE_RELOCATIONS = {
     1: (1310986.42, 367466.45),   # restore 50 ft nominal spacing to south-side run
     2: (1310991.19, 367390.82),   # clear Lot 1 driveway and apron
     6: (1311032.13, 367362.20),   # 15.6 ft clear of streetlight
-    8: (1311176.91, 367373.86),   # 15.3 ft clear of streetlight
+    8: (1311168.91, 367379.86),   # 15 ft clear of streetlight; 5.5 ft clear of Lot 2 utility route
     9: (1311225.67, 367369.03),   # clear water-service corridor
     11: (1311360.97, 367402.55),  # 10 ft clear of Lot 3 driveway/apron; <=55 ft spacing
     14: (1311180.39, 367315.22),  # clear water-service corridor
@@ -542,15 +571,38 @@ if os.path.exists(bfile):
 # Existing driveway and walk at the 15608 Indian Head Hwy house (owner 2026-10-02),
 # from the County's 2023 planimetrics (pavement driveway / walk features within
 # 150 ft of the house). Surface as the County records it.
+# Owner 2026-10-02: show the existing house at 15603 Henrietta Dr (Treeview
+# Estates Lot 20, Doyal; L.51799 F.399 WSSC easement) for easement reference.
+# Buildings from the 2023 building layer archived in source/doyal/, kept where
+# they lie on that parcel (account 2744829).
+_doyal_par = next((Polygon(f['geometry']['rings'][0]).buffer(0) for f in J('source/pgatlas-parcels.json')['features']
+                   if f['attributes'].get('ACCOUNT') == '2744829'), None)
+_doyal_bldgs = []
+if _doyal_par is not None and os.path.exists(os.path.join(proj, 'source', 'doyal', 'pgatlas-buildings-2023.json')):
+    for f in J('source/doyal/pgatlas-buildings-2023.json')['features']:
+        if f['attributes']['FEATURE_CODE'] != 2201: continue
+        g = Polygon(f['geometry']['rings'][0]).buffer(0)
+        if g.intersection(_doyal_par).area / g.area < 0.5: continue
+        _doyal_bldgs.append(g)
+        rec.setdefault('existingStructures', []).append({
+            'ring': [list(q) for q in list(g.exterior.coords)[:-1]], 'areaSqFt': round(g.area),
+            'label': 'EXISTING DWELLING\\P15603 HENRIETTA DR' if g.area > 600 else 'EX. SHED',
+            'source': 'PGAtlas Administrative/MapServer/2 (Building 2023), archived source/doyal/'})
 existing_paving = []
+_paving_for = []
 if os.path.exists(bfile):
-    _house = unary_union([Polygon(b['ring']).buffer(0) for b in B['buildings']])
+    _paving_for.append((unary_union([Polygon(b['ring']).buffer(0) for b in B['buildings']]), addr, 150, None))
+_dh = [g for g in _doyal_bldgs if g.area > 600]
+if _dh:
+    _paving_for.append((_dh[0], '15603 HENRIETTA DR', 100, _doyal_par))
+for _house, addr, _reach, _par in _paving_for:
     for f in J('source/pgatlas-pavement-2023.json')['features']:
         a_ = f['attributes']
         kind = {1205: 'DRIVEWAY', 1208: 'WALK'}.get(a_['FEATURE_CODE'])
         if not kind: continue
         for g in _pave_polys(f):
-            if g.distance(_house) > 150 or g.area < 20: continue
+            if g.distance(_house) > _reach or g.area < 20: continue
+            if _par is not None and not g.intersects(_par.buffer(5)): continue
             surf = {'Unpaved': 'GRAVEL', 'Paved': 'PAVED', 'Concrete': 'CONCRETE', 'Asphalt': 'ASPHALT'}.get(a_['SURFACE'], '')
             for gg in ([g] if g.geom_type == 'Polygon' else list(g.geoms)):
                 existing_paving.append({'ring': [list(q) for q in list(gg.exterior.coords)[:-1]], 'kind': kind, 'surface': a_['SURFACE'],
@@ -558,6 +610,7 @@ if os.path.exists(bfile):
                                         'source': 'PGAtlas Transportation/8 pavement, captured 2023' if a_['SOURCE_CODE'] == 9 else 'PGAtlas Transportation/8 pavement'})
 rec['existingPaving'] = existing_paving
 rec['streetTrees'] = trees
+rec['existingTrees'] = existing_trees
 rec['streetLights'] = lights
 rec['roadsideSwales'] = swales
 rec['culverts'] = culverts

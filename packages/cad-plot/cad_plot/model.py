@@ -97,6 +97,16 @@ def _blocks(doc):
         pts = [(7.5 * math.cos(2 * math.pi * k / n) * (1 if k % 2 else 0.82), 7.5 * math.sin(2 * math.pi * k / n) * (1 if k % 2 else 0.82)) for k in range(n)]
         b.add_lwpolyline(pts, close=True, dxfattribs=L)
         b.add_line((-1.5, 0), (1.5, 0), dxfattribs=L); b.add_line((0, -1.5), (0, 1.5), dxfattribs=L)
+    if 'TREE_EXIST' not in doc.blocks:
+        b = doc.blocks.new('TREE_EXIST')
+        L = {'layer': 'V-VEGT-TREE-E'}
+        n = 16
+        pts = [(6.0 * math.cos(2 * math.pi * k / n) * (0.88 if k % 2 == 0 else 1.0),
+                6.0 * math.sin(2 * math.pi * k / n) * (0.88 if k % 2 == 0 else 1.0)) for k in range(n)]
+        b.add_lwpolyline(pts, close=True, dxfattribs=L)
+        b.add_circle((0, 0), 0.65, dxfattribs=L)
+        h = b.add_hatch(color=8, dxfattribs=L)
+        h.paths.add_polyline_path([(0.65 * math.cos(t / 12 * 2 * math.pi), 0.65 * math.sin(t / 12 * 2 * math.pi)) for t in range(12)], is_closed=True)
     if 'LIGHT' not in doc.blocks:
         b = doc.blocks.new('LIGHT')
         L = {'layer': 'E-LITE-N'}
@@ -376,7 +386,7 @@ class Model:
     def roads(self):
         named = set()
         labelled = {f['attributes'].get('road', '') for f in self.of('ExistingFeature', roadLine=lambda v: v == 'label')
-                    if f['attributes'].get('label', '').upper().startswith(('INDIAN HEAD', 'JENNIFER'))}
+                    if f['attributes'].get('label', '').upper().replace('C/L ', '').startswith(('INDIAN HEAD', 'JENNIFER'))}
         for f in self.of('ExistingFeature', roadLine=lambda v: bool(v)):
             a = f['attributes']
             ln = _line(f)
@@ -447,8 +457,6 @@ class Model:
         ps = self.s['extras'].get('proposedStreet') or {}
         for f in self.of('ProposedFeature', type='right-of-way'):
             self.pl(_ring(f), 'C-ROAD-ROWL-N', close=True)
-        for f in self.of('ProposedFeature', type='centerline'):
-            self.pl(_line(f), 'C-ROAD-CNTR-N')
         for f in self.of('Pavement'):
             a = f.get('attributes') or {}
             r = _ring(f)
@@ -535,6 +543,15 @@ class Model:
 
     def street_geometry(self):
         """Stationing, tangent bearings, curve labels and EOP spot grades on Estates Court."""
+        # Centreline AFTER the pavement fill, so it reads on top of it, and named.
+        for f in self.of('ProposedFeature', type='centerline'):
+            ln = _line(f)
+            self.pl(ln, 'C-ROAD-CNTR-N')
+            if len(ln) >= 2:
+                i = max(1, int(len(ln) * 0.62))
+                p, q = ln[i - 1], ln[i]
+                nx, ny = -(q[1] - p[1]), (q[0] - p[0]); L = math.hypot(nx, ny) or 1
+                self.text('C/L ESTATES COURT', (p[0] + nx / L * 3.5, p[1] + ny / L * 3.5), 0.07, 'C-ROAD-ANNO-N', angle=_text_angle(p, q), bold=True)
         pr = self.s.get('profile')
         if not pr: return
         lay, ann = 'C-ROAD-STA-N', 'C-ROAD-STA-N'
@@ -706,7 +723,12 @@ class Model:
             r = _ring(f)
             if not r: continue
             c = _centroid(r)
-            self.msp.add_blockref('TREE', c, dxfattribs={'layer': 'L-PLNT-TREE-N'})
+            existing = bool((f.get('attributes') or {}).get('existing'))
+            self.msp.add_blockref('TREE_EXIST' if existing else 'TREE', c,
+                                  dxfattribs={'layer': 'V-VEGT-TREE-E' if existing else 'L-PLNT-TREE-N'})
+        # proposed shade trees in the yards (owner 2026-10-02)
+        for t in (self.s.get('extras') or {}).get('yardTrees') or []:
+            self.msp.add_blockref('TREE', (t['point'][0], t['point'][1]), dxfattribs={'layer': 'L-PLNT-TREE-N'})
         for f in self.of('ProposedFeature', type='street light'):
             p = f.get('point')
             if p: self.msp.add_blockref('LIGHT', (p[0], p[1]), dxfattribs={'layer': 'E-LITE-N'})

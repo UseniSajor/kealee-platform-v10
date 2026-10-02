@@ -52,13 +52,20 @@ L2009 = {
     5: dict(house=[(3208, 2365), (3608, 2388), (3597, 2540), (3515, 2532), (3500, 2702), (3472, 2717), (3263, 2698), (3260, 2598), (3207, 2593)],
             garage=[(3472, 2375), (3608, 2388), (3597, 2540), (3463, 2525)], door=1, stoop=(3351, 2368), ff=212.17),
     6: dict(house=[(2410, 2320), (2452, 2172), (2808, 2300), (2747, 2518), (2683, 2505), (2655, 2595), (2438, 2530), (2485, 2340)],
-            garage=[(2452, 2172), (2578, 2205), (2540, 2355), (2410, 2320)], door=3, stoop=(2695, 2257), ff=209.42),
+            garage=[(2452, 2172), (2578, 2205), (2540, 2355), (2410, 2320)], door=3, stoop=(2695, 2257), ff=209.42,
+            alignToStreet=True),   # owner 2026-10-02: square Lot 6's house to the street; narrow it if needed
 }
 
 st = rec['proposedStreets'][0]
 row = Polygon(st['rowRings'][0])
 pave = unary_union([Polygon(r) for r in st['pavementRings']])
-DRIVE_W, COURT_D, FLARE = 12.0, 24.0, 5.0
+DRIVE_W, COURT_D, FLARE = 12.0, 26.0, 5.0
+# Owner 2026-10-02: driveways "like the 2009 plan with proper turn around space".
+# The 2009 side-load courts run past both ends of the garage door face; a car
+# backing out of either bay needs the full court depth and room beside the door
+# to swing. Court = door face + COURT_EXT each side, COURT_D deep from the door.
+COURT_EXT = 6.0
+TURN_PAD = (10.0, 20.0)   # front-load turnaround pad beside the drive: width x length, ft
 FRONT_DOOR_FACES = (2, 3)   # exterior faces of the 2009 Lot 4 garage (0 is the house wall)
 LOT_TOWARD = {}          # lot -> neighbouring lot polygon to move toward (filled below)
 EASEMENT_CLEAR = 5.0   # ft, dwelling to WSSC easement line (confirm with WSSC)
@@ -80,7 +87,7 @@ def court_of(gq, door_idx):
     ue_ = unit(A_, B_); nm = (-ue_[1], ue_[0])
     mid_ = ((A_[0] + B_[0]) / 2, (A_[1] + B_[1]) / 2)
     if nm[0] * (mid_[0] - gc_.x) + nm[1] * (mid_[1] - gc_.y) < 0: nm = (-nm[0], -nm[1])
-    A2_ = (A_[0] - ue_[0], A_[1] - ue_[1]); B2_ = (B_[0] + ue_[0], B_[1] + ue_[1])
+    A2_ = (A_[0] - ue_[0] * COURT_EXT, A_[1] - ue_[1] * COURT_EXT); B2_ = (B_[0] + ue_[0] * COURT_EXT, B_[1] + ue_[1] * COURT_EXT)
     return Polygon([A2_, B2_, (B2_[0] + nm[0] * COURT_D, B2_[1] + nm[1] * COURT_D), (A2_[0] + nm[0] * COURT_D, A2_[1] + nm[1] * COURT_D)])
 
 
@@ -130,6 +137,48 @@ for n, d in L2009.items():
         keep = esm.buffer(EASEMENT_CLEAR)
         hc = house.centroid
         angles = list(range(0, 360, 5)) if d.get('frontLoad') else [0] + [a for k in range(5, 95, 5) for a in (k, -k)]
+        if d.get('alignToStreet'):
+            # Rotate so the FRONT WALL (the wall the door is in) is parallel to
+            # the lot's frontage on the R/W where it faces the house; if that
+            # will not fit the setbacks, narrow the footprint along the front
+            # (about the garage, which keeps its 2-car size) in 5 % steps.
+            from shapely.affinity import scale as _scale
+            sp0 = W(*d['stoop'])
+            hr0 = list(house.exterior.coords)
+            fw = min(((hr0[i], hr0[i + 1]) for i in range(len(hr0) - 1) if math.dist(hr0[i], hr0[i + 1]) > 3),
+                     key=lambda e: LineString(e).distance(Point(sp0)))
+            front = lot.boundary.intersection(row.buffer(0.5))
+            fsegs = [LineString([q0, q1]) for g_ in getattr(front, 'geoms', [front]) if g_.geom_type == 'LineString'
+                     for q0, q1 in zip(list(g_.coords)[:-1], list(g_.coords)[1:]) if math.dist(q0, q1) > 2]
+            near = min(fsegs, key=lambda l: l.distance(house))
+            q0, q1 = near.coords[0], near.coords[-1]
+            a_wall = math.degrees(math.atan2(fw[1][1] - fw[0][1], fw[1][0] - fw[0][0]))
+            a_front = math.degrees(math.atan2(q1[1] - q0[1], q1[0] - q0[0]))
+            ang_t = (a_front - a_wall + 90) % 180 - 90
+            gcen = Polygon(gar).centroid
+            def narrowed(fsc):
+                if fsc == 1.0: return house
+                hz = rotate(house, -a_wall, origin=gcen)
+                hz = _scale(hz, fsc, 1.0, origin=gcen)
+                return rotate(hz, a_wall, origin=gcen).union(Polygon(gar)).buffer(0)
+            for fsc in (1.0, 0.95, 0.9, 0.85, 0.8, 0.75):
+                hs = narrowed(fsc)
+                hcs = hs.centroid
+                hr_ = rotate(hs, ang_t, origin=hcs)
+                gr_ = [rotate(Point(q), ang_t, origin=hcs) for q in gar]
+                inner = lot.buffer(-COURT_EDGE_FT)
+                def _fits(dx_, dy_):
+                    h_ = translate(hr_, dx_, dy_)
+                    if not allowed.contains(h_) or h_.intersects(keep): return False
+                    gq_ = [(q.x + dx_, q.y + dy_) for q in gr_]
+                    return inner.contains(court_of(gq_, d['door']))
+                if any(_fits(dx_, dy_) for dx_ in range(-120, 121, 3) for dy_ in range(-120, 121, 3)):
+                    house, hc = hs, hcs
+                    break
+            report[n] = {**report.get(n, {}), 'alignedToStreetDeg': round(ang_t, 1), 'widthFactor': fsc}
+            if os.environ.get('LAYOUT_DEBUG'):
+                print(f'lot {n}: wall {a_wall:.1f} front {a_front:.1f} -> rotate {ang_t:.1f}, width x{fsc}', file=sys.stderr)
+            angles = [ang_t]
         for ang in angles:
             hr = rotate(house, ang, origin=hc)
             for dx in range(-120, 121, 3):
@@ -156,6 +205,7 @@ for n, d in L2009.items():
                         # the side-load COURT must fit too, COURT_EDGE_FT inside the lot
                         gq = [(lambda r: (r.x + dx, r.y + dy))(rotate(Point(q), ang, origin=hc)) for q in gar]
                         if not lot.buffer(-COURT_EDGE_FT).contains(court_of(gq, d['door'])):
+                            if os.environ.get('LAYOUT_DEBUG'): _dbg_court = True
                             continue
                     if best is None or cost < best[0]: best = (cost, dx, dy, ang)
             if best and ang == 0: break
@@ -179,7 +229,7 @@ for n, d in L2009.items():
     # outward normal of the door edge
     ue = unit(A, B); nrm = (-ue[1], ue[0])
     if nrm[0] * out[0] + nrm[1] * out[1] < 0: nrm = (-nrm[0], -nrm[1])
-    ext = 1.0
+    ext = COURT_EXT
     A2 = (A[0] - ue[0] * ext, A[1] - ue[1] * ext); B2 = (B[0] + ue[0] * ext, B[1] + ue[1] * ext)
     court = Polygon([A2, B2, (B2[0] + nrm[0] * COURT_D, B2[1] + nrm[1] * COURT_D), (A2[0] + nrm[0] * COURT_D, A2[1] + nrm[1] * COURT_D)])
     # drive: from the court edge nearest the street to the nearest point of the pavement,
@@ -229,6 +279,16 @@ for n, d in L2009.items():
         court = Polygon()
         drive = strip((dm[0] + uf[0] * 0.2, dm[1] + uf[1] * 0.2), (ppf.x + uf[0], ppf.y + uf[1]), min(math.dist(A, B), 20.0))
         pp = ppf
+        # Turnaround pad beside the drive at the garage, on the side away from the
+        # house, so a car backs into it and leaves forward (no backing onto the court).
+        _w2 = min(math.dist(A, B), 20.0) / 2
+        _ns = (-uf[1], uf[0])
+        _hc2 = house.centroid
+        if _ns[0] * (_hc2.x - dm[0]) + _ns[1] * (_hc2.y - dm[1]) > 0: _ns = (-_ns[0], -_ns[1])
+        _pw, _pl = TURN_PAD
+        _P = lambda t, o: (dm[0] + uf[0] * t + _ns[0] * o, dm[1] + uf[1] * t + _ns[1] * o)
+        _pad = Polygon([_P(2, _w2 - 0.5), _P(2 + _pl, _w2 - 0.5), _P(2 + _pl, _w2 + _pw), _P(2, _w2 + _pw)])
+        drive = unary_union([drive, _pad]).buffer(0)
     if drive.intersects(house.buffer(-0.5)):
         report[n] = {'warning': 'drive crosses the dwelling'}
     # paving stops at the wall: nothing drawn inside the footprint

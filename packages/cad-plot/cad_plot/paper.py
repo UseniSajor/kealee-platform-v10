@@ -343,11 +343,13 @@ class Sheets:
                        ('V-PROP-BRL', 'Building restriction line'), ('C-TOPO-MAJR-N', 'Proposed contour'),
                        ('C-TOPO-MINR-E', 'Existing contour'), ('C-TOPO-SPOT-N', 'Spot elevation (NAVD 88)'),
                        ('C-ESC-LOD', 'Limit of disturbance'), ('C-ROAD-SIGHT-N', 'Jennifer Dr sight-distance line'),
+                       ('L-PLNT-TREE-N', 'Proposed street / yard shade tree'), ('C-ROAD-CNTR-N', 'Centerline (C/L)'),
                        ('E-LITE-N', 'Street light (LED)'), ('C-WATR-MAIN-E', 'Existing water main (WSSC)'),
                        ('C-SSWR-MAIN-E', 'Existing sewer main (WSSC)'), ('V-UTIL-POLE', 'Existing telephone pole'), ('V-UTIL-OVHD', 'Existing overhead wires')],
             'utility': [('C-WATR-MAIN-N', 'Proposed 8" water main'), ('C-SSWR-MAIN-N', 'Proposed 8" sanitary sewer'),
                         ('C-WATR-SVCS-N', '1" water house connection (W.H.C.)'), ('C-SSWR-SVCS-N', '4" sewer house connection (S.H.C.)'),
                         ('V-ESMT', 'WSSC easement (recorded / proposed)'),
+                        ('V-VEGT-TREE-E', 'Existing tree — 2009 base; verify NRI/field'),
                         ('L-PLNT-TREE-N', 'Street tree — Red Maple'), ('E-LITE-N', 'Street light (LED)'),
                         ('C-WATR-MAIN-E', 'Existing water main (WSSC)'), ('C-SSWR-MAIN-E', 'Existing sewer main (WSSC)'),
                         ('V-UTIL-POLE', 'Existing telephone pole'), ('V-UTIL-OVHD', 'Existing overhead wires')],
@@ -474,6 +476,7 @@ class Sheets:
         yb, w = table(ps, x, y0, 'STREET TREE AND STREET LIGHT SCHEDULE',
                       ['SYMBOL', 'QTY', 'ITEM', 'SIZE / TYPE', 'STANDARD'],
                       [['TREE', trees, 'ACER RUBRUM — RED MAPLE', '2 1/2"–3" CAL., B&B', 'DPW&T 600.02 / 600.04'],
+                       ['TREE', len((self.s.get('extras') or {}).get('yardTrees') or []), 'SHADE TREE — NATIVE SPECIES (LOT YARDS)', '2 1/2"–3" CAL., B&B', 'PG LANDSCAPE MANUAL'],
                        ['LIGHT', lights, f'STREET LIGHT ({utility})', fixture, 'DPW&T 500.10']],
                       h=0.095, wrap_cols={3: 3.0})
         x2 = x + w + 0.3

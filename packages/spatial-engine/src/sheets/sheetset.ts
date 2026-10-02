@@ -342,6 +342,7 @@ export function buildSheetSet(input: {
       easementsOfRecord: pr.easementsOfRecord ?? [],
       existingStructures: pr.existingStructures ?? [],
       existingPaving: pr.existingPaving ?? [],
+      yardTrees: yardTrees(feats, rowFeat?.ring?.coordinates as Position[] | undefined),
     },
     project: (pr.titleBlock ?? {}) as Record<string, string>,
     sheets, sheetSizeIn: [36, 24], approvalStripIn: 5, twin,
@@ -616,3 +617,81 @@ function drainageSplitNote(split: Map<string, { untreatedPerviousSqFt: number }>
     + (held.length ? `Rear yard beyond the M-6 limit (${lots}) is pervious with no impervious cover and sheet-flows to the POI untreated. ` : '')
     + `Drainage areas total ${Math.round(daTotalSqFt).toLocaleString()} sf of the ${Math.round(tractSqFt).toLocaleString()} sf tract as drawn.`
 }
+
+/**
+ * Proposed shade trees in the yards (owner 2026-10-02: "add trees in yards"):
+ * one in the front yard and two in the rear yard of each lot, each where it has
+ * the most room -- clear of the dwelling (12 ft), paving (6 ft), water/sewer
+ * lines (8 ft), ESD cells (8 ft), easements (3 ft), the lot lines (6 ft), the
+ * street trees (25 ft) and each other (30 ft). Front = nearer the R/W than the
+ * house is.
+ */
+function yardTrees(feats: any[], rowRing: Position[] | undefined): { point: Position; lot: string; yard: 'front' | 'rear' }[] {
+  if (!rowRing) return []
+  const ringOf = (f: any): Position[] => (f?.ring?.coordinates ?? []) as Position[]
+  const inside = (p: Position, r: Position[]) => {
+    let c = false
+    for (let i = 0, j = r.length - 1; i < r.length; j = i++) {
+      if ((r[i][1] > p[1]) !== (r[j][1] > p[1]) && p[0] < ((r[j][0] - r[i][0]) * (p[1] - r[i][1])) / (r[j][1] - r[i][1]) + r[i][0]) c = !c
+    }
+    return c
+  }
+  const segD = (p: Position, a: Position, b: Position) => {
+    const dx = b[0] - a[0], dy = b[1] - a[1], L2 = dx * dx + dy * dy
+    const t = L2 ? Math.max(0, Math.min(1, ((p[0] - a[0]) * dx + (p[1] - a[1]) * dy) / L2)) : 0
+    return Math.hypot(p[0] - a[0] - t * dx, p[1] - a[1] - t * dy)
+  }
+  const lineD = (p: Position, l: Position[], closed: boolean) => {
+    let m = Infinity
+    const n = closed ? l.length : l.length - 1
+    for (let i = 0; i < n; i++) m = Math.min(m, segD(p, l[i], l[(i + 1) % l.length]))
+    return m
+  }
+  const areaD = (p: Position, r: Position[]) => (inside(p, r) ? 0 : lineD(p, r, true))
+  type Ob = { d: (p: Position) => number; clear: number }
+  const obs: Ob[] = []
+  for (const f of feats) {
+    const r = ringOf(f)
+    if (f.kind === 'Building' && r.length > 2) obs.push({ d: p => areaD(p, r), clear: 12 })
+    if (f.kind === 'Pavement' && r.length > 2) obs.push({ d: p => areaD(p, r), clear: 6 })
+    if (f.kind === 'SWMPractice' && r.length > 2) obs.push({ d: p => areaD(p, r), clear: 8 })
+    if (f.kind === 'Easement' && r.length > 2) obs.push({ d: p => areaD(p, r), clear: 3 })
+    if (f.kind === 'Utility' && Array.isArray(f.line) && f.line.length > 1) { const l = f.line as Position[]; obs.push({ d: p => lineD(p, l, false), clear: 8 }) }
+    if (f.kind === 'Tree' && r.length > 2) { const c = centroidOf(r); obs.push({ d: p => Math.hypot(p[0] - c[0], p[1] - c[1]), clear: 25 }) }
+  }
+  const out: { point: Position; lot: string; yard: 'front' | 'rear' }[] = []
+  for (const parcel of feats.filter(f => f.kind === 'Parcel' && f.parcelId && ringOf(f).length > 2)) {
+    const lotRing = ringOf(parcel)
+    const n = String(parcel.parcelId).replace(/\D/g, '')
+    const house = feats.find(f => f.kind === 'Building' && String(f.id).startsWith(`l${n}-`))
+    if (!house) continue
+    const setback = Math.min(...ringOf(house).map(q => lineD(q, rowRing, true)))
+    const xs = lotRing.map(q => q[0]), ys = lotRing.map(q => q[1])
+    const cands: { p: Position; room: number; front: boolean }[] = []
+    for (let x = Math.min(...xs); x <= Math.max(...xs); x += 4) {
+      for (let y = Math.min(...ys); y <= Math.max(...ys); y += 4) {
+        const p: Position = [x, y]
+        if (!inside(p, lotRing) || lineD(p, lotRing, true) < 6) continue
+        let room = Infinity, ok = true
+        for (const o of obs) { const dd = o.d(p) - o.clear; if (dd < 0) { ok = false; break } room = Math.min(room, dd) }
+        if (!ok) continue
+        cands.push({ p, room: Math.min(room, lineD(p, lotRing, true) - 6), front: lineD(p, rowRing, true) < setback })
+      }
+    }
+    const chosen: Position[] = []
+    const pick = (front: boolean) => {
+      let best: { p: Position; s: number } | null = null
+      for (const c of cands) {
+        if (c.front !== front) continue
+        const sep = chosen.length ? Math.min(...chosen.map(q => Math.hypot(q[0] - c.p[0], q[1] - c.p[1]))) : Infinity
+        if (sep < 30) continue
+        const sc = Math.min(c.room, 20) + Math.min(sep, 60) * 0.2
+        if (!best || sc > best.s) best = { p: c.p, s: sc }
+      }
+      if (best) { chosen.push(best.p); out.push({ point: best.p, lot: `LOT ${n}`, yard: front ? 'front' : 'rear' }) }
+    }
+    pick(true); pick(false); pick(false)
+  }
+  return out
+}
+const centroidOf = (r: Position[]): Position => r.reduce((a, q) => [a[0] + q[0] / r.length, a[1] + q[1] / r.length], [0, 0] as Position)

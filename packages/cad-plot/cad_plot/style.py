@@ -26,7 +26,7 @@ LAYERS = {
     'V-VICN': (8, 'CONTINUOUS', 25),
     # existing roads
     'C-ROAD-EDGE-E': (8, 'CONTINUOUS', 25),
-    'C-ROAD-CNTR-E': (8, 'CENTER', 18),
+    'C-ROAD-CNTR-E': (7, 'CENTER', 25),
     'C-ROAD-ROWL-E': (8, 'PHANTOM', 25),
     'C-ROAD-ANNO-E': (8, 'CONTINUOUS', 18),
     # proposed street
@@ -75,6 +75,7 @@ LAYERS = {
     'V-PVMT-E': (8, 'CONTINUOUS', 18),           # existing driveways / walks off site
     'E-LITE-N': (7, 'CONTINUOUS', 25),
     'L-PLNT-TREE-N': (7, 'CONTINUOUS', 25),
+    'V-VEGT-TREE-E': (8, 'CONTINUOUS', 13),
     # stormwater
     'C-SWM-ESD-N': (6, 'CONTINUOUS', 35),      # ESD cells: magenta
     'C-SWM-DRAN-N': (7, 'DASHDOT', 25),
@@ -98,7 +99,17 @@ LAYERS = {
 BASE = ['V-PROP-BNDY', 'V-PROP-LOTS', 'V-PROP-ADJN', 'V-PROP-ANNO', 'V-GRID',
         'C-ROAD-EDGE-E', 'C-ROAD-CNTR-E', 'C-ROAD-ROWL-E', 'C-ROAD-ANNO-E',
         'C-ROAD-ROWL-N', 'C-ROAD-PVMT-N', 'C-ROAD-ANNO-N', 'C-BLDG-FTPR-N', 'C-PVMT-DRWY-N', 'C-PVMT-WALK-N', 'V-ESMT',
-        'V-BLDG-E', 'V-BLDG-ANNO-E', 'C-WATR-MAIN-E', 'C-SSWR-MAIN-E', 'V-UTIL-POLE', 'V-UTIL-OVHD', 'V-UTIL-ANNO-E', 'V-PVMT-E']
+        'V-BLDG-E', 'V-BLDG-ANNO-E', 'C-WATR-MAIN-E', 'C-SSWR-MAIN-E', 'V-UTIL-POLE', 'V-UTIL-OVHD', 'V-UTIL-ANNO-E', 'V-PVMT-E',
+        'V-VEGT-TREE-E']
+# Existing-conditions sheets must not imply that the six proposed dwellings,
+# Estates Court pavement, drives, walks, utilities or construction limits are
+# already present.  Off-site surveyed/County-mapped structures remain on
+# V-BLDG-E (including the Henrietta Drive and Indian Head Highway houses).
+EXISTING_BASE = ['V-PROP-BNDY', 'V-PROP-LOTS', 'V-PROP-ADJN', 'V-PROP-ANNO', 'V-GRID',
+                 'C-ROAD-EDGE-E', 'C-ROAD-CNTR-E', 'C-ROAD-ROWL-E', 'C-ROAD-ANNO-E',
+                 'V-ESMT', 'V-ESMT-ANNO', 'V-BLDG-E', 'V-BLDG-ANNO-E',
+                 'C-WATR-MAIN-E', 'C-SSWR-MAIN-E', 'V-UTIL-POLE', 'V-UTIL-OVHD',
+                 'V-UTIL-ANNO-E', 'V-PVMT-E', 'V-VEGT-TREE-E']
 # Every plan sheet carries the same construction base (user, 2026-10-01: existing
 # and proposed contours on all sheets; L.O.D. around the full site; nothing a
 # contractor needs on one sheet missing from another). Each sheet then adds its
@@ -110,8 +121,9 @@ SHEET_LAYERS = {
     # the subdivision as it is of record (cover): boundary, lots, R/W, easements, adjoiners only
     'record': ['V-PROP-BNDY', 'V-PROP-LOTS', 'V-PROP-ADJN', 'V-PROP-ANNO', 'C-ROAD-EDGE-E', 'C-ROAD-CNTR-E', 'C-ROAD-ROWL-E',
                'C-ROAD-ANNO-E', 'C-ROAD-ROWL-N', 'V-ESMT', 'V-ESMT-ANNO', 'C-TOPO-MAJR-E', 'C-TOPO-ANNO'],
-    'existing': BASE + TOPO + ['C-ENVR-SLOP-E', 'C-ENVR-SOIL-E', 'C-ENVR-WOOD-E', 'C-ENVR-ANNO', 'V-ESMT-ANNO', 'C-ESC-LOD'],
-    'layout': CONSTRUCTION + ['C-ROAD-IMPR-N', 'V-PROP-BRL', 'C-PVMT-ANNO-N', 'C-TOPO-SPOT-N', 'C-ROAD-STA-N', 'C-ROAD-SIGHT-N'],
+    'existing': EXISTING_BASE + ['C-TOPO-MAJR-E', 'C-TOPO-MINR-E', 'C-TOPO-ANNO',
+                                 'C-ENVR-SLOP-E', 'C-ENVR-SOIL-E', 'C-ENVR-WOOD-E', 'C-ENVR-ANNO'],
+    'layout': CONSTRUCTION + ['C-ROAD-IMPR-N', 'V-PROP-BRL', 'C-PVMT-ANNO-N', 'C-TOPO-SPOT-N', 'C-ROAD-STA-N', 'C-ROAD-SIGHT-N', 'L-PLNT-TREE-N'],
     'profile': BASE + TOPO + ['C-ROAD-CNTR-N', 'C-ROAD-SWAL-N', 'C-STRM-CULV-N', 'C-ROAD-STA-N', 'C-TOPO-SPOT-N', 'C-ESC-LOD', 'C-ROAD-IMPR-N', 'C-ROAD-SIGHT-N'],
     'utility': CONSTRUCTION + ['C-UTIL-SVCS-N', 'C-UTIL-ANNO-N', 'E-LITE-N', 'L-PLNT-TREE-N'],
     'swm': [l for l in CONSTRUCTION if l not in ('C-WATR-MAIN-N', 'C-SSWR-MAIN-N', 'C-WATR-SVCS-N', 'C-SSWR-SVCS-N')] + ['C-SWM-ESD-N', 'C-SWM-DRAN-N', 'C-SWM-POI', 'C-SWM-FLOW', 'C-SWM-OFFS', 'C-SWM-ANNO'],
