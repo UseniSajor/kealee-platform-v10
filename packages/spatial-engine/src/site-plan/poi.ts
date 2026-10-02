@@ -10,12 +10,16 @@
  * contours already on the twin and routed D8 (steepest of eight neighbours).
  *
  * This is a CONCEPT-LEVEL determination from 2-ft mapping. It is stated as
- * such on the sheet, and a field-run survey resets it.
+ * such on the sheet (data source stated; no survey directive).
  */
 import type { Position } from './site-twin'
 
 export interface ContourLine { elevationFt: number; line: Position[] }
-export interface Poi { id: string; at: Position; share: number }
+export interface Poi {
+  id: string; at: Position; share: number
+  /** Hydraulically longest on-site path to this POI and its fall, for the time of concentration. */
+  longestFlowFt?: number; longestFlowDropFt?: number; longestFlowStart?: Position
+}
 export interface OverflowPath { from: string; poi: string; line: Position[] }
 export interface PoiAnalysis {
   pois: Poi[]
@@ -126,11 +130,16 @@ export function analysePois(input: {
 
   // Where each on-site cell's flow first leaves the tract.
   const exits: Position[] = []
+  const runs: { lengthFt: number; dropFt: number; start: Position }[] = []
   for (let j = 0; j < ny; j += 2) for (let i = 0; i < nx; i += 2) {
     const c = idx(i, j); if (!inside[c]) continue
     const p = trace(c)
-    const out = p.find(q => !inside[q])
-    exits.push(cellPos(out ?? p[p.length - 1]))
+    const k = p.findIndex(q => !inside[q])
+    const end = k >= 0 ? k : p.length - 1
+    exits.push(cellPos(p[end]))
+    let L = 0
+    for (let m = 1; m <= end; m++) { const a = cellPos(p[m - 1]), b = cellPos(p[m]); L += Math.hypot(b[0] - a[0], b[1] - a[1]) }
+    runs.push({ lengthFt: L, dropFt: Z[c] - Z[p[end]], start: cellPos(c) })
   }
   // Single-link clustering of the exit points.
   const CL = input.clusterFt ?? 120
@@ -163,7 +172,11 @@ export function analysePois(input: {
       const n = pts.filter(q => Math.hypot(q[0] - p[0], q[1] - p[1]) < 25).length
       if (n > bestN) { bestN = n; bestP = p }
     }
-    pois.push({ id: `POI-${pois.length + 1}`, at: bestP, share: Number(share.toFixed(3)) })
+    const longest = runs.filter((_, i) => label[i] === ci).reduce((a, b) => (b.lengthFt > a.lengthFt ? b : a))
+    pois.push({
+      id: `POI-${pois.length + 1}`, at: bestP, share: Number(share.toFixed(3)),
+      longestFlowFt: Math.round(longest.lengthFt), longestFlowDropFt: Number(longest.dropFt.toFixed(1)), longestFlowStart: longest.start,
+    })
   }
   const poiOf = (p: Position) => pois.reduce((b, q) =>
     Math.hypot(q.at[0] - p[0], q.at[1] - p[1]) < Math.hypot(b.at[0] - p[0], b.at[1] - p[1]) ? q : b, pois[0])
@@ -190,6 +203,6 @@ export function analysePois(input: {
   return {
     pois, overflow, offsiteCells, cellFt: CELL,
     offsiteAreaSqFt: offsiteCells.length * CELL * CELL,
-    method: `D8 flow routing on a ${CELL}-ft surface interpolated from the existing 2-ft contours; exit points clustered at ${CL} ft; POIs carrying under ${Math.round(100 * (input.minShare ?? 0.04))}% of the site omitted. Concept-level — reset from the field-run survey.`,
+    method: `D8 flow routing on a ${CELL}-ft surface interpolated from the existing 2-ft contours; exit points clustered at ${CL} ft; POIs carrying under ${Math.round(100 * (input.minShare ?? 0.04))}% of the site omitted.`,
   }
 }

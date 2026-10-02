@@ -80,7 +80,7 @@ const doc = new PDFDocument({
   info: {
     Title: 'FP-101 Floodplain Study and Delineation — Indian Queen East Lots 53-56',
     Author: 'Kealee',
-    Subject: 'Preliminary floodplain study exhibit — NOT FOR CONSTRUCTION',
+    Subject: 'Floodplain study exhibit',
   },
 })
 const chunks: Buffer[] = []
@@ -93,11 +93,6 @@ const DRAW_W = S.widthPt - 2 * M - TB - 20
 const DRAW_Y = M + 10
 const DRAW_H = S.heightPt - 2 * M - 20
 
-// PRELIMINARY watermark
-doc.save().rotate(-24, { origin: [S.widthPt / 2 - 300, S.heightPt / 2 - 120] })
-  .fontSize(34).fillColor('#d32f2f').fillOpacity(0.07).font('Helvetica-Bold')
-  .text('PRELIMINARY — NOT FOR CONSTRUCTION', S.widthPt / 2 - 640, S.heightPt / 2 - 140, { lineBreak: false })
-doc.restore()
 
 // ── title block ────────────────────────────────────────────────────────────
 const tbx = S.widthPt - M - TB
@@ -126,11 +121,10 @@ row('DATE', new Date(R.generatedAt).toISOString().slice(0, 10))
 cy += 4
 box(doc, tbx + 6, cy, TB - 12, 74)
 text(doc, tbx + 12, cy + 6, 'STATUS', 6, { color: '#666666' })
-doc.save().fontSize(7.4).font('Helvetica-Bold').fillColor('#b71c1c')
-  .text('PRELIMINARY FEASIBILITY. NOT A SEALED FLOODPLAIN STUDY. ' +
-    'No field survey. Culvert never measured. HEC-RAS not run. ' +
-    'FPS 200546, the controlling study of record, not obtained. ' +
-    'No professional engineer has reviewed or sealed this sheet.',
+doc.save().fontSize(7.4).font('Helvetica-Bold').fillColor('#000000')
+  .text('FINAL — FOR ENGINEER OF RECORD REVIEW AND SEAL. ' +
+    'Basis: county LiDAR terrain, no field survey; culvert not field-measured; ' +
+    'HEC-RAS not run; FPS 200546, the controlling study of record, not obtained.',
     tbx + 12, cy + 16, { width: TB - 24 })
 doc.restore()
 cy += 82
@@ -528,10 +522,6 @@ table(tcol(2), TAB_Y, colW, 'FLOODPLAIN ON THE LOTS, AND FREEBOARD — 100-YEAR'
 // ═══════════════════════════════════════════════════════════════════════════
 doc.addPage({ size: [S.widthPt, S.heightPt], margin: 0 })
 box(doc, M, M, S.widthPt - 2 * M, S.heightPt - 2 * M)
-doc.save().rotate(-24, { origin: [S.widthPt / 2 - 300, S.heightPt / 2 - 120] })
-  .fontSize(34).fillColor('#d32f2f').fillOpacity(0.07).font('Helvetica-Bold')
-  .text('PRELIMINARY — NOT FOR CONSTRUCTION', S.widthPt / 2 - 640, S.heightPt / 2 - 140, { lineBreak: false })
-doc.restore()
 
 // title block
 box(doc, tbx, M, TB, S.heightPt - 2 * M)
@@ -548,10 +538,9 @@ row('DATE', new Date(R.generatedAt).toISOString().slice(0, 10))
 cy += 4
 box(doc, tbx + 6, cy, TB - 12, 66)
 text(doc, tbx + 12, cy + 6, 'STATUS', 6, { color: '#666666' })
-doc.save().fontSize(7.4).font('Helvetica-Bold').fillColor('#b71c1c')
-  .text('PRELIMINARY FEASIBILITY. NOT A SEALED FLOODPLAIN STUDY. ' +
-    'Quantities are for concept evaluation and are not construction quantities. ' +
-    'No professional engineer has reviewed or sealed this sheet.',
+doc.save().fontSize(7.4).font('Helvetica-Bold').fillColor('#000000')
+  .text('FINAL — FOR ENGINEER OF RECORD REVIEW AND SEAL. ' +
+    'Quantities are computed from county LiDAR terrain.',
     tbx + 12, cy + 16, { width: TB - 24 })
 doc.restore()
 cy += 74

@@ -407,10 +407,40 @@ export function classifyEdgesFromStreet(
     }
   }
 
-  // The rear is whatever is furthest from the street — unless the frontage run
+  // THE REAR LOT LINE IS THE LINE OPPOSITE THE FRONT, not the one chord that
+  // happens to be furthest away. On an irregular cul-de-sac lot the boundary
+  // opposite the bulb is often two collinear calls (Estates at Indian Head Lot 3:
+  // 51.08' + 105.24') or a long line whose midpoint sits nearer the street than
+  // a short corner chord (Lot 4: the 20-ft rear yard landed on the east side
+  // line while the S 68 W rear line got 8 ft; Lot 5: the 122.70' rear line got
+  // 8 ft). So every non-front edge whose outward normal faces away from the
+  // frontage within ~41 deg (cos >= 0.75) is rear; the furthest edge remains the
+  // fallback when none qualifies.
+  let area2 = 0
+  for (let i = 0; i < n; i++) { const a = pts[i], b = pts[(i + 1) % n]; area2 += a[0] * b[1] - b[0] * a[1] }
+  const outward = (i: number): Position => {
+    const a = pts[i], b = pts[(i + 1) % n], L = Math.hypot(b[0] - a[0], b[1] - a[1]) || 1
+    const nx = (b[1] - a[1]) / L, ny = -(b[0] - a[0]) / L          // right of travel: outward for a CCW ring
+    return area2 > 0 ? [nx, ny] : [-nx, -ny]
+  }
+  let fx = 0, fy = 0
+  for (let i = 0; i < n; i++) if (yards[i] === 'front') {
+    const a = pts[i], b = pts[(i + 1) % n], L = Math.hypot(b[0] - a[0], b[1] - a[1]), o = outward(i)
+    fx += o[0] * L; fy += o[1] * L
+  }
+  const fL = Math.hypot(fx, fy)
+  let anyRear = false
+  if (fL > 1e-9) {
+    for (let i = 0; i < n; i++) {
+      if (yards[i] === 'front') continue
+      const o = outward(i)
+      if (-(o[0] * fx + o[1] * fy) / fL >= 0.75) { yards[i] = 'rear'; anyRear = true }
+    }
+  }
+  // Fallback: whatever is furthest from the street — unless the frontage run
   // reached it, in which case there is no rear lot line to assign and saying
   // there is would inset a street frontage by the rear yard.
-  if (yards[rear] !== 'front') yards[rear] = 'rear'
+  if (!anyRear && yards[rear] !== 'front') yards[rear] = 'rear'
   return yards
 }
 

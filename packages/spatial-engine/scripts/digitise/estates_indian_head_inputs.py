@@ -13,7 +13,7 @@ rings are used as the boundary of record and every call is compared to the
 Outlot A is NOT in the tract: it was conveyed to M. & K. Doyal (L.51565
 F.455, 2025-12-29) in exchange for the 30' WSSC easement (L.51799 F.399).
 """
-import json, math, sys
+import json, math, os, sys
 from shapely.geometry import Polygon, LineString, Point
 from shapely.ops import unary_union
 
@@ -100,14 +100,98 @@ south_pts = [q for q in path if (L5p.contains(Point(q)) or L6p.contains(Point(q)
              and math.hypot(q[0] - C[0], q[1] - C[1]) > 64]
 south = LineString([P] + south_pts) if math.dist(P, south_pts[0]) < math.dist(P, south_pts[-1]) \
     else LineString([P] + south_pts[::-1])
+# The plat records the curve along Lots 6/5 as a run of equal chords. Offset as
+# chords, the centreline kinks where the street curves (owner 2026-10-02: "C/L
+# not inline with the curve of the street"). Fit the circle through the chord
+# vertices and put the true arc back, so the centreline is concentric with the
+# street.
+def _true_arc(line, max_chord=40.0, min_run=3, max_resid=0.2):
+    q = []
+    for p_ in line.coords:
+        if not q or math.dist(q[-1], p_) > 0.01: q.append(tuple(p_))
+    L = [math.dist(q[i], q[i + 1]) for i in range(len(q) - 1)]
+    best, i = None, 0
+    while i < len(L):
+        j = i
+        while j < len(L) and L[j] < max_chord: j += 1
+        if j - i >= min_run and (best is None or j - i > best[1] - best[0]): best = (i, j)
+        i = j + 1
+    if best is None: return line
+    i, j = best                      # chords i .. j-1, vertices i .. j
+    pts = q[i:j + 1]
+    import numpy as _np
+    A_ = _np.array([[2 * x, 2 * y, 1.0] for x, y in pts]); b_ = _np.array([x * x + y * y for x, y in pts])
+    cx, cy, c0 = _np.linalg.lstsq(A_, b_, rcond=None)[0]
+    R = math.sqrt(c0 + cx * cx + cy * cy)
+    resid = max(abs(math.dist(p_, (cx, cy)) - R) for p_ in pts)
+    if resid > max_resid:
+        print(f'Estates Court south R/W: chord run does not fit one circle (resid {resid:.2f} ft); chords kept')
+        return LineString(q)
+    a0 = math.atan2(pts[0][1] - cy, pts[0][0] - cx); a1 = math.atan2(pts[-1][1] - cy, pts[-1][0] - cx)
+    da = (a1 - a0 + math.pi) % (2 * math.pi) - math.pi
+    n = max(8, int(abs(da) * R / 2.0))
+    arc = [(cx + R * math.cos(a0 + da * k / n), cy + R * math.sin(a0 + da * k / n)) for k in range(n + 1)]
+    print(f'Estates Court south R/W: {j - i} chords -> arc R = {R:.2f} ft, delta {math.degrees(abs(da)):.2f} deg, max resid {resid:.3f} ft')
+    return LineString(q[:i] + arc + q[j + 1:])
+south = _true_arc(south)
 off = south.offset_curve(30.0)
 if not row.buffer(-5).intersects(off.interpolate(0.5, normalized=True)):
     off = south.offset_curve(-30.0)
 oc = list(off.coords)
 if math.dist(oc[0], C) < math.dist(oc[-1], C): oc = oc[::-1]
 oc = [q for q in oc if math.hypot(q[0] - C[0], q[1] - C[1]) > 20]
-cl = [tuple(q) for q in LineString(oc + [C]).simplify(0.5).coords]
-# start the centreline at the R/W mouth (highway right-of-way line)
+cl = [tuple(q) for q in LineString(oc + [C]).simplify(0.05).coords]
+# Round any remaining angle point (where the arc meets the run into the bulb)
+# with a tangent curve, so the centreline has no kinks.
+def _fillet(pts, R=150.0, min_deg=2.0):
+    out = [pts[0]]
+    for k in range(1, len(pts) - 1):
+        a, b, c = out[-1], pts[k], pts[k + 1]
+        u1 = ((b[0] - a[0]) / math.dist(a, b), (b[1] - a[1]) / math.dist(a, b))
+        u2 = ((c[0] - b[0]) / math.dist(b, c), (c[1] - b[1]) / math.dist(b, c))
+        th = math.acos(max(-1.0, min(1.0, u1[0] * u2[0] + u1[1] * u2[1])))
+        if math.degrees(th) < min_deg:
+            out.append(b); continue
+        r = min(R, 0.45 * min(math.dist(a, b), math.dist(b, c)) / math.tan(th / 2))
+        t = r * math.tan(th / 2)
+        p1 = (b[0] - u1[0] * t, b[1] - u1[1] * t); p2 = (b[0] + u2[0] * t, b[1] + u2[1] * t)
+        cross = u1[0] * u2[1] - u1[1] * u2[0]
+        nrm = (-u1[1], u1[0]) if cross > 0 else (u1[1], -u1[0])
+        cc = (p1[0] + nrm[0] * r, p1[1] + nrm[1] * r)
+        a1 = math.atan2(p1[1] - cc[1], p1[0] - cc[0]); a2 = math.atan2(p2[1] - cc[1], p2[0] - cc[0])
+        da = (a2 - a1 + math.pi) % (2 * math.pi) - math.pi
+        n = max(4, int(abs(da) * r / 2.0))
+        out += [(cc[0] + r * math.cos(a1 + da * i / n), cc[1] + r * math.sin(a1 + da * i / n)) for i in range(n + 1)]
+    return out + [pts[-1]]
+def _blend(pts, t=45.0, min_deg=4.0):
+    # angle points between a run and a long straight: replace +-t ft either side
+    # of the joint with a cubic matching both directions (no corner)
+    line = LineString(pts)
+    for k in range(1, len(pts) - 1):
+        a, b, c = pts[k - 1], pts[k], pts[k + 1]
+        if math.dist(b, c) < 2 * t: continue                      # only where a long straight starts
+        t1 = math.atan2(b[1] - a[1], b[0] - a[0]); t2 = math.atan2(c[1] - b[1], c[0] - b[0])
+        if abs(math.degrees((t2 - t1 + math.pi) % (2 * math.pi) - math.pi)) < min_deg: continue
+        sb = line.project(Point(b))
+        s0, s1 = max(0.0, sb - t), min(line.length, sb + t)
+        p0 = line.interpolate(s0); p1 = line.interpolate(s1)
+        q0 = line.interpolate(max(0.0, s0 - 1)); q1 = line.interpolate(min(line.length, s1 + 1))
+        d0 = ((p0.x - q0.x), (p0.y - q0.y)); d1 = ((q1.x - p1.x), (q1.y - p1.y))
+        n0 = math.hypot(*d0) or 1; n1 = math.hypot(*d1) or 1
+        m = math.dist((p0.x, p0.y), (p1.x, p1.y))
+        T0 = (d0[0] / n0 * m, d0[1] / n0 * m); T1 = (d1[0] / n1 * m, d1[1] / n1 * m)
+        curve = []
+        for i in range(31):
+            u = i / 30
+            h00, h10, h01, h11 = 2*u**3 - 3*u**2 + 1, u**3 - 2*u**2 + u, -2*u**3 + 3*u**2, u**3 - u**2
+            curve.append((h00 * p0.x + h10 * T0[0] + h01 * p1.x + h11 * T1[0], h00 * p0.y + h10 * T0[1] + h01 * p1.y + h11 * T1[1]))
+        before = [q for q in pts if line.project(Point(q)) < s0 - 0.01]
+        after = [q for q in pts if line.project(Point(q)) > s1 + 0.01]
+        return before + curve + after
+    return pts
+cl = _blend(cl)
+# Start the centreline at the recorded mouth on Jennifer Drive. Jennifer is
+# the frontage road between this subdivision and MD 210.
 mouth = LineString([lot1_nw, P])
 cl_line = LineString(cl)
 # MEASURED OFF THE 2009 APPROVED SHEET (source/stl-2009-georef.json):
@@ -115,11 +199,31 @@ cl_line = LineString(cl)
 #   shoulder/ditch line at +/-20 ft, cul-de-sac edge of pavement R = 42 ft
 #   (R/W R = 60.5 ft as scaled, 60 ft of record), entrance returns R = 50 ft
 #   (fitted 48.9 / 52.2 ft; both centres 62.4 / 62.9 ft off the centreline =
-#   12 + 50, i.e. tangent to the pavement edges), meeting MD 210's edge of road
-#   on a line S 38-29 W, found as the common tangent of the two returns.
+#   12 + 50, i.e. tangent to the pavement edges), meeting Jennifer Drive's
+#   near edge of pavement on a line S 38-29 W.
 PAVE_W, BULB_PAVE_R, RETURN_R = 24.0, 42.0, 50.0
-EOR_A, EOR_B = (1310943.8, 367545.4), (1310865.8, 367447.3)     # MD 210 edge of road (2009 sheet)
+EOR_A, EOR_B = (1310943.8, 367545.4), (1310865.8, 367447.3)     # Jennifer Drive near edge of pavement
 pavement = unary_union([cl_line.buffer(PAVE_W / 2, cap_style=2), Point(C).buffer(BULB_PAVE_R, 64)]).intersection(row.buffer(-1))
+# The cul-de-sac end is the approved layout's, not a circle (user, 2026-10-01:
+# "use the 2009 plan exactly except the utility layout"). Its edge of pavement
+# was traced off the approved sheet (source/estates-court-eop-trace.json): an
+# offset bulb, the south edge running straight into it and the north edge
+# sweeping in on a reverse curve. West of the trace's cut line the generated
+# 24-ft section already matches the approved edges to within 0.3 ft.
+_eop_file = os.path.join(out, 'source', 'estates-court-eop-trace.json')
+if os.path.exists(_eop_file):
+    _eop = json.load(open(_eop_file))
+    _bulb_end = Polygon(_eop['ring']).buffer(0)
+    _g = json.load(open(os.path.join(out, 'source', 'stl-2009-georef.json')))
+    def _W(u, v):
+        _c, _s = math.cos(_g['th']), math.sin(_g['th'])
+        return (_g['X0'] + (_c * (u - _g['tx']) + _s * (_g['ty'] - v)) / _g['s'],
+                _g['Y0'] + (-_s * (u - _g['tx']) + _c * (_g['ty'] - v)) / _g['s'])
+    _cu = _eop['cutU']
+    _west = Polygon([_W(_cu, 0), _W(0, 0), _W(0, 6000), _W(_cu, 6000)])        # sheet west of the cut
+    pavement = unary_union([pavement.intersection(_west), _bulb_end]).buffer(0.01).buffer(-0.01).intersection(row.buffer(-1))
+    pavement = max(pavement.geoms, key=lambda g: g.area) if hasattr(pavement, 'geoms') else pavement
+    print(f'cul-de-sac end from the traced approved layout: {_bulb_end.area:,.0f} sf')
 # the entrance: returns tangent to the pavement edges and to the edge of road
 _p0, _p1 = cl[0], cl[1]
 _u = ((_p1[0] - _p0[0]) / math.dist(_p0, _p1), (_p1[1] - _p0[1]) / math.dist(_p0, _p1)); _n = (-_u[1], _u[0])
@@ -183,9 +287,21 @@ lot4_esmt = list(lot4_poly.exterior.coords)[:-1]
 print(f'proposed Lot 4 WSSC easement {lot4_poly.area:,.0f} sf along the Lot 3/4 line')
 Hm = add(add(Wm, e, 30.23), e, 104.95)                                        # Henrietta Dr R/W
 route = [add(Hm, e, 10), add(Wm, e, 30.23), Wm, A_, B_, C] + cl[::-1][1:]
-# stop the main 20 ft past the Lot 1 / Lot 6 frontage (no service beyond it)
+# Stop the mains 15 ft past the Lot 1 east property line (user, 2026-10-01:
+# "do not extend water and sewer too far past the Lot 1 east property line").
+# Lots 1 and 6 take their services from the end of the main.
 r_line = LineString(route)
-end_s = r_line.project(Point(lot6_tip)) + 20
+L2r = ring_of(lots[2])
+l12 = [q for q in L1 if min(math.dist(q, w) for w in L2r) < 0.5]          # the Lot 1 / Lot 2 line
+l12_front = min(l12, key=lambda q: r_line.distance(Point(q)))               # its street end
+# Lot 6 cannot reach a main that stops short of its frontage without running
+# under its own driveway or across Lot 5, so the mains run on only as far as
+# Lot 6's first clear tap: 15 ft past the Lot 5 / Lot 6 front corner.
+L5r = ring_of(lots[5])
+l56 = [q for q in L6 if min(math.dist(q, w) for w in L5r) < 0.5]
+l56_front = min(l56, key=lambda q: r_line.distance(Point(q)))
+end_s = max(r_line.project(Point(l12_front)), r_line.project(Point(l56_front))) + 15
+print(f'mains end {end_s - r_line.project(Point(l12_front)):.0f} ft past the Lot 1 east line, {end_s:.0f} ft from Henrietta Dr')
 cut = []
 acc = 0
 for i, p in enumerate(route):
@@ -215,10 +331,8 @@ print(f'{len(adjoiners)} adjoiners')
 
 SRC = ("Boundary of record: plat 'LOTS 1-6 AND OUTLOT A, ESTATES AT INDIAN HEAD', Plat Book PM 228 "
        "Plat 83. Lot geometry from the county parcel layer (PGAtlas Address/MapServer/15), which "
-       "reproduces the plat's bearings to the second and its distances to 0.02 ft (checked against "
-       "the 2009 approved sheet, DPW&T permit 9399-2009). Estates Court dedication = the tract less "
-       "the lots, closed at the Indian Head Hwy R/W on the plat's N 51-26-53 W 147.04' call. "
-       "A Maryland licensed surveyor must confirm before technical plans are sealed.")
+       "reproduces the plat's bearings to the second and its distances to 0.02 ft. Estates Court dedication = the tract less "
+       "the lots, closed at Jennifer Drive on the plat's N 51-26-53 W 147.04' call. Jennifer Drive lies between the tract and MD 210.")
 common = {
     '_source': SRC, 'basisOfBearings': 'Maryland State Plane Coordinate System (NAD 83), per plat PM 228/83',
     'programme': {'totalFloorAreaSqFt': 2800, 'storeys': 2, 'hasBasement': True,
@@ -257,19 +371,19 @@ rec = {
         'Tract 165,019 sf (3.788 ac) = plat 171,505 sf less Outlot A (6,486 sf), which was conveyed to M. & K. Doyal (L.51565 F.455) and is no longer part of this site.',
         'Estates Court: 60-ft public right-of-way dedicated on the plat (35,173 sf) with a cul-de-sac; to be constructed with this development.',
         'Water and sewer: WSSC. The mains in Estates Court connect to the existing mains in Henrietta Drive through the 30-ft WSSC easement recorded at L.51799 F.399 (Outlot A 906 sf, Lot 20 3,154 sf) and a 30-ft WSSC easement to be granted across Lot 4.',
-        'New submittal. Prior approvals NRI-015-06, TCP1-018-06, TCP2-016-09 and the Street Tree and Lighting Plan, DPW&T permit 9399-2009-00 (approved 05/06/2009), are base work only and do not carry this submittal; an updated NRI, a TCP2 revision or new TCP as M-NCPPC determines, and re-review of the street tree and lighting plan are required. The 2009 layout is the base, prepared to the current DPIE Site Development Concept checklist (rev. 08/25/2021).',
+        'New submittal. Prior approvals NRI-015-06, TCP1-018-06 and TCP2-016-09 are base work only and do not carry this submittal; an updated NRI, a TCP2 revision or new TCP as M-NCPPC determines, and review of street trees and lighting to current DPW&T/DPIE standards are required. Prepared to the current DPIE Site Development Concept checklist (rev. 08/25/2021).',
     ],
     'adjoiners': adjoiners,
     'dedicationWidthFt': 0,
     'proposedStreets': [{
         'name': 'ESTATES COURT', 'rightOfWayFt': 60, 'pavementFt': PAVE_W,
         'bulbRightOfWayRadiusFt': 60.0, 'bulbPavementRadiusFt': BULB_PAVE_R,
-        'entrance': {**ENTRANCE, 'basis': '2009 approved sheet (DPW&T 9399-2009), measured: 50-ft returns tangent to +/-12-ft pavement edges and the MD 210 edge of road'},
+        'entrance': {**ENTRANCE, 'basis': '2009 approved sheet (DPW&T 9399-2009), measured: 50-ft returns tangent to +/-12-ft pavement edges and the Jennifer Drive edge of road'},
         'centreline': [list(p) for p in cl], 'bulbCentre': list(C),
         'rowRings': [[list(p) for p in list(row.exterior.coords)[:-1]]],
         'pavementRings': [[list(p) for p in list(g.exterior.coords)[:-1]] for g in (pavement.geoms if hasattr(pavement, 'geoms') else [pavement])],
         'rowSqFt': round(row.area),
-        'basis': "60' R/W per plat PM 228/83; measured on the 2009 approved sheet: 24' pavement centred (EOP +/-12'), shoulder/ditch line +/-20', cul-de-sac EOP R 42', entrance returns R 50' to MD 210 (rural open section, DPW&T Std. 500.10/600.02/600.04)",
+        'basis': "60' R/W per plat PM 228/83; measured on the 2009 approved sheet: 24' pavement centred (EOP +/-12'), shoulder/ditch line +/-20', cul-de-sac EOP R 42', entrance returns R 50' to Jennifer Drive (rural open section, DPW&T Std. 500.10/600.02/600.04)",
         'note': "Section to be confirmed against the current DPW&T/DPIE road standard for a rural residential cul-de-sac at technical review.",
         'utilities': {
             'water': {'sizeIn': 8, 'offsetFt': 6, 'label': 'PROP. 8" W', 'connectsTo': 'EX. WSSC WATER IN HENRIETTA DR'},

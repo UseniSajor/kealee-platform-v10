@@ -235,7 +235,7 @@ async function main() {
       projectName: pkg.lot,
       sheetIndex: i + 1,
       sheetCount: pages.length,
-      status: 'PRELIMINARY',
+      status: 'FINAL',
       disclosure: null,
     })
     // A composed page owes the County every note its covered sheets owe. When

@@ -180,6 +180,8 @@ export interface LotInput {
   utilityMainLabel?: string | null
   /** A piped system in a recorded easement serves the lot: no on-lot ESD cell. */
   omitSwmPractice?: boolean | null
+  /** Where the lot's ESD cell should go; the nearest position that fits is taken. */
+  swmPracticeNear?: Position | null
   /** Elevations from the architectural plan, if established. */
   garageSlabElevFt?: number | null
   basementElevFt?: number | null
@@ -907,6 +909,7 @@ export function buildLotPackage(lot: LotInput, resolved?: ResolvedBoundary | nul
       omitWaterAndSewer: lot.omitWaterAndSewer ?? null,
       utilityMainLabel: lot.utilityMainLabel ?? null,
       omitSwmPractice: lot.omitSwmPractice ?? null,
+      swmPracticeNear: lot.swmPracticeNear ?? null,
       // Walk, strip and curb occupy the first 7 ft; a practice keeps out of it.
       frontageKeepOutFt: 14,
       // The frontage axis, so street trees land in the planting strip rather

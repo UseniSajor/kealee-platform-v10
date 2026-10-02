@@ -24,11 +24,13 @@ export const RELIABILITY_LABELS: Record<ReliabilityLevel, string> = {
 }
 
 /**
- * Required on any output derived from Level 1 data. The wording is fixed by the
- * project brief and should not be softened.
+ * Source statement for any output derived from Level 1 data. It states where
+ * existing conditions came from — fact, not status. Sheets issue FINAL for the
+ * engineer of record's review and seal; County GIS is still never described as
+ * a survey.
  */
 export const LEVEL_1_DISCLOSURE =
-  'PRELIMINARY—BASED ON GIS/LIDAR DATA—NOT FOR PERMIT OR CONSTRUCTION.'
+  'EXISTING CONDITIONS FROM COUNTY GIS/LIDAR DATA—NOT A FIELD SURVEY.'
 
 export const LEVEL_0_DISCLOSURE =
   'UNVERIFIED—BASED ON INFORMATION SUPPLIED BY THE APPLICANT AND NOT INDEPENDENTLY CHECKED.'

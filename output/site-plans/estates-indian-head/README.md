@@ -1,99 +1,55 @@
-# Estates at Indian Head, Lots 1–6: 2026 Site Development Concept submission
+# Estates at Indian Head — Site Development Concept package
 
-**Status:** Draft for PE review. Not sealed. The engineer named on the application is W.L. Meekins, Inc. (Bill Meekins, Jr.).
+Status: coordinated draft for licensed PE/LS review; not sealed and not ready for construction or filing until the outstanding professional and agency items below are resolved.
 
-## What is in this folder
+## Authoritative deliverables
 
-| File | What it is |
+| Deliverable | Purpose |
 |---|---|
-| `estates-indian-head-2026-concept-submission.pdf` | **The plan set, 7 sheets.** SDC-1 and SDC-2 (DPIE concept sheets), then C-100, C-400, C-500, C-700 and L-100 from the engine. The duplicate sheets were dropped. |
-| `estates-indian-head-concept-SDC.pdf` | SDC-1: cover, County BMP Summary Table, site data, environmental features, POIs, notes. SDC-2: plan view and drainage area map at 1" = 40', drawn over the georeferenced 2009 plan. |
-| `estates-indian-head-permit-set.pdf` / `.dxf` / `.landxml.xml` | Engine sheets: existing conditions, grading, utility, sediment control, landscape (ARCH D). |
-| `estates-indian-head-DPIE-concept-application.pdf` | DPIE Concept Plan Application (rev. 07/28/2021) with the fields filled in. The owner's phone, email and signature are left blank. |
-| `estates-indian-head.concept-computations.json` | ESD, POI, LOD and environmental quantities behind SDC-1. |
-| `*.plat.json`, `*.plat-record.json` | Engine inputs: six recorded lots with the 2009 house footprints and paving, tract, Estates Court as measured from the 2009 sheet, WSSC easements. |
-| `source/` | Archived PGAtlas layers, the 2009 sheet at 200 dpi, and its georeference. |
+| `estates-indian-head.pdf` / `.dxf` | Current CAD-authored concept plan set. The DXF is the drawing master. |
+| `estates-indian-head.sheetset.json` | Generated sheet, quantity, checklist, drainage, and geometry data used by CAD plot. |
+| `estates-indian-head.twin.json` | Named site features used for geometric verification. |
+| `estates-indian-head-DPIE-concept-application.pdf` | Filled DPIE application synchronized to generated impervious and LOD quantities. |
+| `eplan-drawings/` | One PDF per sheet, short filenames, plus hashes and geometry-validation results in `manifest.json`. |
+| `GEOTECH-DESKTOP-SCREENING.md` | Desktop geotechnical screening and field exploration/test plan; not a geotechnical report. |
+| `source/` | Archived county, survey, environmental, and reference inputs. |
 
-## New submittal — prior approvals are base work (user, 2026-09-30)
+Files containing `concept-SDC`, `2026-concept-submission`, or `cad` in older names are superseded records and are not submission drawings.
 
-This is a **new submittal**. The prior approvals do not carry it on their own, but the prior approval work is acceptable as a base, with additional work.
+## Implemented coordination corrections (2026-10-01)
 
-| Prior case | Use in this submittal | Additional work |
-|---|---|---|
-| NRI-015-06 | Base data (no streams, PMA, wetlands) | Updated/revised NRI: draft with this submission, approved before concept approval (E-4, Sec. 32-182(a)) |
-| TCP1-018-06 / TCP2-016-09 | Base woodland record | TCP2 revision, or new TCP / letter of exemption, as M-NCPPC Environmental Planning determines |
-| DPW&T 9399-2009-00 street tree & lighting | Base layout (houses, courts, trees, lights, open section) | Re-review to current DPW&T/DPIE standards |
-| — | — | Current-code items: ESD to the MEP (Subtitle 32), RR zone (2022 ordinance), DPIE concept checklist rev. 08/25/2021 |
+1. Environmental baseline: mapped woody vegetation/possible woodland is carried conservatively in hydrology and shown on C-100. An updated NRI/TCP remains controlling.
+2. Drainage: concept H&H and POI tables are generated from the same model. The off-site screening area requires field delineation; downstream receiving-system capacity remains a technical-design hold point.
+3. Quantities: application values, plan tables, twin, and ePlan manifest are regenerated from the current sheet set.
+4. Grading: the plan carries explicit hold points for positive drainage, Lot 1 stepped/retained treatment, and Lots 2–4. Generated grading is preliminary and cannot be staked until revised/accepted by the civil PE using field survey and geotechnical results.
+5. Road type: Estates Court is rural open section. The DPIE application says open section, not closed section.
+6. Zoning: the layout sheet includes an RR concept compliance matrix for lot area, coverage, and 25/8/20-ft setback standards; final survey/height certification governs.
+7. Geotechnical: desktop sources and a site-specific field program are documented. E-1/E-2 remain outstanding because no borings or infiltration tests have been performed.
+8. Utilities/access: proposed WSSC mains originate at Henrietta Drive and use the recorded/proposed easement route. Sizes/inverts and easement discrepancies remain to be resolved with WSSC.
+9. ePlan: the combined plan is split into individually named sheet PDFs, hashed, and validated so the LOD does not cross building footprints and the SCE covers the entrance apron.
 
-## How the 2009 plan was used as the base
+## Correct access condition
 
-- The 2009 Street Tree & Lighting sheet (DPW&T 9399-2009-00) was fitted to the plat lot lines.
-  - Fit: 1" = 29.80', rotation −0.22°, median residual 0.44 ft.
-  - It appears under SDC-2, so the 2005 Landesign field survey, the woods, the fences and the adjoining houses sit in their surveyed positions.
-- The recorded lots in PGAtlas match plat PM 228 @ 83 to the second (for example S 68°24'27" W exact, N 03°27'26" W 90.53'), so they are used as the boundary. Every lot closes within 0.04 ft.
+Estates Court forms a T-intersection with Jennifer Drive. Jennifer Drive is the frontage road between the subdivision entrance and MD 210. The existing physical separation/barrier between Jennifer Drive and MD 210 remains. The concept proposes no direct Estates Court access to MD 210 and no MD 210 auxiliary lanes. Sight distance is shown for Jennifer Drive at a preliminary 25 mph assumption and must be field verified.
 
-## What changed since 2009
+The stabilized construction entrance covers the entire unpaved Jennifer Drive entrance apron and extends 30 feet into Estates Court, with at least 50 feet total vehicle travel length. Material and drainage notes follow MDE Detail B-1: 6-inch minimum 2–3-inch aggregate on nonwoven geotextile, with temporary pipe beneath the entrance wherever surface flow crosses. It is installed before permanent paving and not over existing Jennifer Drive pavement.
 
-| 2009 | 2026 |
-|---|---|
-| Water and sewer came in from MD 210 along Estates Court. | The mains come from **Henrietta Drive**, through the 30-ft WSSC easement recorded Nov. 2025 (L.51799 F.399) and a new 30-ft WSSC easement across Lot 4 that still has to be granted. |
-| Outlot A was part of the subdivision. | Outlot A now belongs to the Doyals (L.51565 F.455). The tract is 165,019 sf of record. |
-| Zone R-R. | Zone **RR** (2022 ordinance, Sec. 27-4202). All six lots conform. |
-| Street tree and lighting approval only. | DPIE Concept checklist items: BMP Summary Table (A-15), POIs (C-9), drainage areas and off-site area (C-11), 100-yr overflow path (C-10), environmental features (B), 5-inch approval strip (A-3), grid ticks (A-8), datum (A-9), vicinity map at 1" = 2,000' (A-6). |
-| Pre-2010 SWM. | **ESD to the maximum extent practicable:** 8 micro-bioretention (M-6) cells. ESDv required 3,866 cf, targets from MDE Table 5.3, HSG C. |
+## Outstanding before filing / construction
 
-## Design Review Checklist (rev. 08/25/2021): consultant column
+- PE/LS design review, seals, certifications, owner signature, application contacts, fees, and agency upload.
+- Field survey/datum reconciliation and final grading corrections; this draft is not for construction staking.
+- Updated/revised NRI and M-NCPPC determination for TCP2 revision/new TCP or exemption.
+- Geotechnical report, borings/test pits, groundwater observations, and infiltration testing.
+- Downstream drainage survey/capacity analysis and final outlet protection/quantity-control design.
+- WSSC 220SE01/as-builts, main sizes/inverts, acceptance of service routing, correction of recorded easement discrepancies, and grant of the Lot 4 easement.
+- Field-verified Jennifer Drive sight distance and County access/road approval.
+- Adjacent-owner notification affidavit and any reviewer-requested supporting documents.
 
-C = shown/complete, O = outstanding, X = not applicable.
+## Regeneration order
 
-| Item | Status | Where / what is left |
-|---|---|---|
-| A-1 labelled concept plan | C | SDC-1, SDC-2 |
-| A-2 ≤ 30"×42", one size | **O** | The SDC sheets are 24×36. The engine set is also ARCH D, but check the plot size before printing. |
-| A-3 5-inch approval strip | C | SDC sheets. The engine sheets use a 7-inch title column with approval blocks; the PE should confirm DPIE accepts that. |
-| A-4 / A-5 composite and key map | X | 2 concept sheets; the whole site is on one sheet. |
-| A-6 vicinity map | C | SDC-1, upper right |
-| A-7 bar scale | C | every sheet |
-| A-8 three grid ticks | C | SDC-2 |
-| A-9 datum | **O** | NAD 83 / NAVD 88. DPIE prefers NGVD 29, so the field-run update must state the datum. |
-| A-10 general notes | C | SDC-1 |
-| A-11 ≤ 1" = 50' | C | 1" = 40' |
-| A-12 existing features / easements | C | 2009 underlay + PGAtlas |
-| A-13 2-ft contours 100 ft beyond | C | M-NCPPC 2-ft |
-| A-14 existing utilities | **O** | Size and location of the WSSC mains in Henrietta Dr are not in hand. Get the WSSC 220SE01 sheet. |
-| A-15 BMP Summary Table | C | SDC-1 |
-| B-1/B-2/B-6 stream, buffer, PMA | C | None on site (owner verified on PGAtlas; prior NRI-015-06 is base work, updated NRI required) |
-| B-3, B-4, B-12, B-13, B-14 | C | none found |
-| B-5 steep slopes | C | SDC-2 |
-| B-7 woodland | C | Per the updated NRI; prior NRI-015-06 / TCP2-016-09 are base work. TCP2 revision or new TCP / exemption as M-NCPPC determines. |
-| B-8 features 100 ft off site | C | SDC-2 |
-| B-9 soils | C / **conflict** | PGAtlas NRCS and the 2009 plan both show BaB Beltsville (HSG C). The engine's soils table (C-sheets) lists Adelphia from its own SSURGO query. **Resolve before sealing.** |
-| B-10 TMDL / Tier II | C | Confirm the Piscataway Creek listing on the MDE TMDL site. |
-| B-11 highly erodible | C | note |
-| C-1 layout | C | |
-| C-2 ESD locations | C | 8 × M-6 |
-| C-3 storm drain inlets | X | Open section: roadside swales, with a culvert under each driveway |
-| C-4 LOD | C | includes the off-site easement work |
-| C-5 easements | C | recorded and proposed WSSC, plus proposed SWM easements |
-| C-6 rights-of-way | C | MD 210 (SHA), Estates Ct, Henrietta Dr, the 30-ft R/W in common |
-| C-7 wells / septic | C | the only well is on Parcel 199, off site |
-| C-8 dedication | C | Estates Court, 35,173 sf of record |
-| C-9 POIs | C | 2 POIs, from D8 routing |
-| C-10 100-yr overflow | C | SDC-2 |
-| C-11 drainage areas | C | per device, plus off-site 2.67 ac |
-| C-12 ponding | X | no fill across a drainage course |
-| D-1 to D-10 report / computations | **O** | Narrative, Qp10/Qf at each POI, downstream analysis. Not produced. |
-| E-1/E-2 geotechnical | **O** | Soil borings and Sec. 32-131 infiltration tests |
-| E-3 notification affidavit | **O** | Letters to adjoiners within 7 days of submittal. The owners are listed on SDC-2. |
-| E-4 NRI | **O** | New submittal: updated/revised NRI in draft with this submission; approved copy before concept approval (Sec. 32-182(a)). NRI-015-06 is base work. |
-
-## Open items before this can be filed
-
-1. **WSSC easement record errors** (Schedule A vs. Exhibit A): N 03°24'09" vs N 03°27'26", the curve written as "N 043°07'06"", and inconsistent deed dates. A **Lot 4 WSSC easement** still has to be granted.
-2. **MD 210 entrance:** needs an SHA access permit and a sight-distance analysis (Submittal checklist item 10).
-3. **Road section:** back to the 2009 rural open section, measured off the 2009 sheet: 24 ft pavement, cul-de-sac pavement radius 42 ft, 50 ft entrance returns, roadside swales. Confirm with DPIE/DPW&T.
-4. **The engine's grading flags need an engineer's attention:**
-   - Lot 1's front yard falls 66.6%, because the house sits near the MD 210 mouth.
-   - The front yards on Lots 2–4 partly drain toward the houses.
-5. **Datum:** the 2009 survey is on WSSC datum and this set is on NAVD 88. The field-run update should state the datum and the conversion.
-6. Seal, owner signature, the fee ($500 + 5% technology fee) and the SWM narrative / H&H computations.
+1. `estates_indian_head_inputs.py`
+2. `estates_indian_head_2009_layout.py`
+3. `estates_indian_head_2009_features.py`
+4. `generate-subdivision.ts` with `TWIN_JSON`, `SHEETSET_JSON`, and `CAD_PLOT`
+5. `estates_indian_head_application.py`
+6. `estates_indian_head_eplan.py`

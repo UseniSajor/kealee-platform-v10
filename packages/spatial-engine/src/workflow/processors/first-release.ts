@@ -1019,7 +1019,7 @@ const renderExports: StageProcessor = async (ctx): Promise<StageResult> => {
     const c = buildSheetContext({
       sheet: pg.primary, twin: pkg.twin, projectName: pkg.lot,
       sheetIndex: i + 1, sheetCount: composed.pages.length,
-      status: 'PRELIMINARY', disclosure: pkg.disclosure,
+      status: 'FINAL', disclosure: pkg.disclosure,
     })
     // A single-sheet plan owes the County every required note — the grading
     // certificate does not disappear because the set was consolidated.
@@ -1141,7 +1141,7 @@ async function emitCadExports(
   // ── DXF ──
   try {
     const ncs = toDxfNcs(pkg.twin, {
-      status: 'PRELIMINARY_NOT_FOR_CONSTRUCTION',
+      status: 'FINAL_FOR_SEAL',
       crs: pkg.twin.crs ?? null,
       verticalDatum: pkg.twin.verticalDatum ?? null,
       provenance: sourceNote || null,

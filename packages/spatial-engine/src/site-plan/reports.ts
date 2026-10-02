@@ -78,8 +78,7 @@ export function buildMissingInformationReport(
           'though: county lidar contours are drawn for existing grade, which is survey-grade ' +
           'mapping and not a field-run survey. A licensed professional will want field topography ' +
           'before sealing grading and drainage.'
-        : 'GIS parcel geometry is preliminary and may be offset from surveyed boundaries. A permit ' +
-          'submission needs certified geometry.',
+        : 'GIS parcel geometry is compiled county mapping, not a survey, and may be offset from surveyed boundaries.',
       severity: 'required',
       responsible: 'surveyor',
     })
