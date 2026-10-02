@@ -331,6 +331,7 @@ export function buildSheetSet(input: {
       vicinityStreetsFile: pr.vicinityStreetsFile ?? null,
       roadImprovementsNote: pr.roadImprovementsNote ?? null,
       sightDistance: pr.sightDistance ?? null,
+      existingUtilities: pr.existingUtilities ?? null,
       siteLod: site.rings, siteLodSqFt: Math.round(siteLodSqFt), siltFence, constructionEntrance: sce,
       proposedStreet: pr.proposedStreets?.[0] ? {
         name: pr.proposedStreets[0].name, rightOfWayFt: pr.proposedStreets[0].rightOfWayFt, pavementFt: pr.proposedStreets[0].pavementFt,
@@ -340,6 +341,7 @@ export function buildSheetSet(input: {
       } : null,
       easementsOfRecord: pr.easementsOfRecord ?? [],
       existingStructures: pr.existingStructures ?? [],
+      existingPaving: pr.existingPaving ?? [],
     },
     project: (pr.titleBlock ?? {}) as Record<string, string>,
     sheets, sheetSizeIn: [36, 24], approvalStripIn: 5, twin,

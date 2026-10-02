@@ -46,22 +46,116 @@ A = md['A']; u = md['u']; n = md['n']            # n points from the site toward
 def along(off, a0=-420, a1=520):
     return [[A[0] + u[0] * a0 + n[0] * off, A[1] + u[1] * a0 + n[1] * off],
             [A[0] + u[0] * a1 + n[0] * off, A[1] + u[1] * a1 + n[1] * off]]
+# Drawn from the County's 2023 planimetrics (PGAtlas Transportation/8 pavement,
+# Transportation/2 centrelines), archived in source/. Owner 2026-10-02: label and
+# draw Indian Head Highway, its medians and Jennifer Drive accurately for the
+# reviewer. Each pavement feature's first ring is its outline and any later ring
+# inside it is a hole -- MD 210's hole is its centre median. Carriageway names
+# follow right-hand traffic: MD 210 runs SW-NE and the site lies on its SE side,
+# so the carriageway nearer the site is NORTHBOUND.
+_tract_fp = Polygon(J('estates-indian-head.geometry.json')['tract'])
+VIEW = _tract_fp.buffer(400)
+def _pave_polys(feature):
+    rings = [Polygon(r).buffer(0) for r in feature['geometry']['rings'] if len(r) > 2]
+    rings.sort(key=lambda g: -g.area)
+    outs = []
+    for g in rings:
+        host = next((o for o in outs if o.contains(g.representative_point())), None)
+        if host is None: outs.append(g)
+        else: outs[outs.index(host)] = host.difference(g)
+    return outs
+_pave = J('source/pgatlas-pavement-2023.json')['features']
+_cls = J('source/pgatlas-centerlines.json')['features']
+def _named(name):
+    return [LineString(p_) for f in _cls if (f['attributes'].get('FULLNAME') or '').strip() == name for p_ in f['geometry']['paths']]
+def _road_polys(name):
+    cls_ = _named(name)
+    out = []
+    for f in _pave:
+        if f['attributes']['FEATURE_CODE'] != 1201: continue
+        for g in _pave_polys(f):
+            if any(g.intersection(c).length > 50 for c in cls_): out.append(g)
+    return out
+def _edges(polys):
+    lines = []
+    for g in polys:
+        for ring in [g.exterior, *g.interiors]:
+            cut = LineString(ring.coords).intersection(VIEW)
+            for seg in getattr(cut, 'geoms', [cut]):
+                if seg.geom_type == 'LineString' and seg.length > 5:
+                    lines.append([list(q) for q in seg.coords])
+    return lines
+def _clip_lines(ls_):
+    out = []
+    for l in ls_:
+        cut = l.intersection(VIEW)
+        for seg in getattr(cut, 'geoms', [cut]):
+            if seg.geom_type == 'LineString' and seg.length > 5: out.append([list(q) for q in seg.coords])
+    return out
+md_polys, jen_polys = _road_polys('INDIAN HEAD HWY'), _road_polys('JENNIFER DR')
+# The two MD 210 centrelines: the one nearer the site is the northbound roadway.
+_md_cl = sorted(_named('INDIAN HEAD HWY'), key=lambda c: c.distance(_tract_fp))
+_nb = [c for c in _md_cl if abs(c.distance(_tract_fp) - _md_cl[0].distance(_tract_fp)) < 30]
+_sb = [c for c in _md_cl if c not in _nb]
+# Medians, read on a section square to the highway clear of the entrance.
+def _section(a_=-100):
+    base = (A[0] + u[0] * a_, A[1] + u[1] * a_)
+    tr = LineString([(base[0] - n[0] * 40, base[1] - n[1] * 40), (base[0] + n[0] * 300, base[1] + n[1] * 300)])
+    spans = []
+    for g in md_polys + jen_polys:
+        I = tr.intersection(g)
+        for seg in getattr(I, 'geoms', [I]):
+            if seg.geom_type == 'LineString' and not seg.is_empty:
+                o = sorted((q[0] - base[0]) * n[0] + (q[1] - base[1]) * n[1] for q in seg.coords)
+                spans.append((o[0], o[-1]))
+    spans.sort()
+    return spans
+_spans = _section()
+_gaps = [(_spans[i][1], _spans[i + 1][0]) for i in range(len(_spans) - 1) if _spans[i + 1][0] - _spans[i][1] > 5]
+# carriageway centres on the section: Jennifer, MD 210 NB, MD 210 SB (site outward)
+_mid = [(a_ + b_) / 2 for a_, b_ in _spans]
+# The window the plan sheets show (1" = 30' viewports centred on the site),
+# inset 5 ft. A band's label goes in the middle of the band's run inside it.
+# At 1" = 30' the window reaches Jennifer Drive, the separation median and the
+# northbound roadway; the MD 210 centre median and southbound roadway lie
+# beyond it, so the highway's name rides the northbound band.
+_bx = _tract_fp.bounds
+_cx, _cy = (_bx[0] + _bx[2]) / 2, (_bx[1] + _bx[3]) / 2
+VISIBLE = Polygon([(_cx - 436.5 + 5, _cy - 267.75 + 5), (_cx + 436.5 - 5, _cy - 267.75 + 5),
+                   (_cx + 436.5 - 5, _cy + 267.75 - 5), (_cx - 436.5 + 5, _cy + 267.75 - 5)])
+def band_label(off):
+    seen = LineString(along(off, -1500, 1500)).intersection(VISIBLE)
+    seg = max(getattr(seen, 'geoms', [seen]), key=lambda g: g.length) if not seen.is_empty else None
+    if seg is None or seg.length < 30: return None
+    return [list(seg.interpolate(0.15, normalized=True).coords[0]), list(seg.interpolate(0.85, normalized=True).coords[0])]
+_sep, _mdmed = (_gaps + [None, None])[:2]
 md210 = {'name': 'INDIAN HEAD HIGHWAY (MD 210)',
-         'label': 'INDIAN HEAD HIGHWAY — MARYLAND ROUTE 210 — VARIABLE R/W WIDTH (S.R.C. PLAT NO. 47040) — SHA',
-         'source': '2009 approved sheet DPW&T 9399-2009, lines measured parallel to the edge of road',
-         'lines': [{'type': 'edge-of-road', 'line': along(74.2), 'label': 'EX. EDGE OF MD 210'},
-                   {'type': 'lane-line', 'line': along(102.2)},
-                   {'type': 'edge-of-road', 'line': along(122.8), 'label': 'EX. EDGE OF MD 210'}]}
+         'label': 'INDIAN HEAD HWY — MD 210 — MASTER PLAN FREEWAY F-11 (SHA)',
+         'source': 'PGAtlas Transportation/8 pavement (2023) and Transportation/2 centrelines; Transportation/6 Master Plan R/W (F-11)',
+         'lines': [{'type': 'edge-of-road', 'line': l} for l in _edges(md_polys)]
+                  + [{'type': 'centerline', 'line': l} for l in _clip_lines(_nb)]
+                  + [{'type': 'centerline', 'line': l} for l in _clip_lines(_sb)]
+}
+# Same road name as md210, so the plan letters the highway once, on this band.
+md210_nb = {'name': 'INDIAN HEAD HIGHWAY (MD 210)', 'label': 'MD 210 NORTHBOUND', 'source': md210['source'],
+            'lines': [{'type': 'label', 'line': band_label(_mid[1]), 'label': 'INDIAN HEAD HWY (MD 210) NORTHBOUND — FREEWAY F-11'}] if len(_mid) > 1 and band_label(_mid[1]) else []}
+md210_sb = {'name': 'MD 210 SOUTHBOUND', 'label': 'MD 210 SOUTHBOUND', 'source': md210['source'],
+            'lines': []}
+_medians = []
+if _sep:
+    _medians.append({'type': 'median', 'line': band_label((_sep[0] + _sep[1]) / 2) or along((_sep[0] + _sep[1]) / 2, -260, -40),
+                     'label': f'EX. MEDIAN (UNPAVED, ±{_sep[1] - _sep[0]:.0f} FT) — JENNIFER DR / MD 210'})
+if _mdmed:
+    _medians.append({'type': 'median', 'line': band_label((_mdmed[0] + _mdmed[1]) / 2) or along((_mdmed[0] + _mdmed[1]) / 2, -260, -40),
+                     'label': f'EX. MD 210 MEDIAN (±{_mdmed[1] - _mdmed[0]:.0f} FT)'})
 jennifer_frontage = {
     'name': 'JENNIFER DRIVE',
-    'label': 'JENNIFER DRIVE — FRONTAGE ROAD — ESTATES COURT INTERSECTION',
-    'source': '2009 approved geometry cross-checked to PGAtlas Transportation centerlines',
-    'lines': [
-        {'type': 'edge-of-road', 'line': along(0.0), 'label': 'EX. EDGE OF JENNIFER DRIVE'},
-        {'type': 'centerline', 'line': along(12.2), 'label': 'JENNIFER DRIVE C/L'},
-        {'type': 'edge-of-road', 'line': along(24.8), 'label': 'EX. EDGE OF JENNIFER DRIVE'},
-        {'type': 'barrier', 'line': along(49.5), 'label': 'EX. PHYSICAL SEPARATION / BARRIER — NO DIRECT ESTATES CT ACCESS TO MD 210'},
-    ],
+    'label': 'JENNIFER DRIVE — FRONTAGE ROAD',
+    'source': 'PGAtlas Transportation/8 pavement (2023) and Transportation/2 centreline',
+    'lines': [{'type': 'edge-of-road', 'line': l} for l in _edges(jen_polys)]
+             + [{'type': 'centerline', 'line': l} for l in _clip_lines(_named('JENNIFER DR'))]
+             + [{'type': 'barrier', 'line': along(49.5), 'label': 'EX. PHYSICAL SEPARATION / BARRIER — NO DIRECT ESTATES CT ACCESS TO MD 210'}]
+             + _medians,
 }
 
 # ── Jennifer Drive / Henrietta Drive (PGAtlas centreline, 50 ft R/W) ─────────
@@ -81,7 +175,35 @@ def road(name, fullname):
             except Exception:
                 pass
     return {'name': fullname, 'label': f"{fullname} (50' R/W)", 'source': 'PGAtlas Transportation/2 centreline; 50-ft R/W per Treeview Estates plats (2009 sheet letters Henrietta Dr 50\' R/W)', 'lines': lines}
-roads = [jennifer_frontage, md210, road('HENRIETTA', 'HENRIETTA DRIVE')]
+roads = [jennifer_frontage, md210, md210_nb, md210_sb, road('HENRIETTA', 'HENRIETTA DRIVE')]
+
+# ── Existing utilities along the frontage (2005 field survey on the base sheet) ──
+# Owner 2026-10-02: show the current telephone poles, and the current water and
+# sewer in Jennifer Drive at the locations the base sheet draws them. Poles are
+# the surveyed C&P poles (pixel positions on the georeferenced sheet); the
+# overhead line runs pole to pole along the frontage R/W and crosses MD 210 at
+# pole 8. The 8-in water and 8-in sewer lie in the Jennifer Drive roadway at the
+# offsets the sheet measures from its site-side edge of road (water 18.8 ft,
+# sewer 4.2 ft), from the north end of the drawing to the Estates Court mouth.
+POLES_PX = {'C&P 8': (1402, 1098), 'C&P 7 1/2': (885, 1778)}
+# A pole inside the proposed entrance pavement has to move; say so on the pole.
+_entr = unary_union([Polygon(r_).buffer(0) for r_ in st['pavementRings']])
+poles = []
+for k, p_ in POLES_PX.items():
+    pt = W(*p_)
+    hit = _entr.buffer(2).contains(Point(pt))
+    poles.append({'point': list(pt), 'owner': 'C&P (Verizon)', 'inProposedPavement': hit,
+                  'label': f'EX. TELEPHONE POLE ({k})' + (' — IN PROPOSED ENTRANCE, TO BE RELOCATED (VERIZON)' if hit else '')})
+overhead = [
+    {'line': [list(W(760, 1940)), list(W(885, 1778)), list(W(1402, 1098)), list(W(2060, 280))], 'label': 'EX. OVERHEAD WIRES'},
+    {'line': [list(W(1402, 1098)), list(W(360, 744))], 'label': 'EX. OVERHEAD WIRES ACROSS MD 210'},
+]
+_turn = W(1410, 1150)
+_a_turn = (_turn[0] - A[0]) * u[0] + (_turn[1] - A[1]) * u[1]
+existing_mains = [
+    {'type': 'water', 'line': along(18.8, -420, _a_turn), 'label': 'EX. 8" WATER (WSSC) — JENNIFER DR'},
+    {'type': 'sewer', 'line': along(4.2, -420, _a_turn), 'label': 'EX. 8" SEWER (WSSC) — JENNIFER DR'},
+]
 
 # ── Street trees and lights (2009 street tree & lighting plan) ───────────────
 TREES_PX = [(1866, 530), (1960, 1126), (2236, 1330), (2510, 1540), (2820, 1670), (1710, 1426), (2240, 1816),
@@ -403,6 +525,7 @@ rec['environmentalGeometry'] = {
 }
 rec['vicinityStreetsFile'] = os.path.abspath(os.path.join(proj, 'source', 'pgatlas-vicinity-streets.json'))
 rec['existingRoads'] = roads
+rec['existingUtilities'] = {'poles': poles, 'overhead': overhead, 'mains': existing_mains}
 # Existing structures off site, from the county's 2023 building layer
 # (PGAtlas Administrative/MapServer/2), archived in source/. User 2026-10-01:
 # show the house at 15608 Indian Head Hwy and label it as existing.
@@ -416,6 +539,24 @@ if os.path.exists(bfile):
         'label': f"EXISTING DWELLING\\P{addr}",
         'source': B['source'],
     } for b in B['buildings']]
+# Existing driveway and walk at the 15608 Indian Head Hwy house (owner 2026-10-02),
+# from the County's 2023 planimetrics (pavement driveway / walk features within
+# 150 ft of the house). Surface as the County records it.
+existing_paving = []
+if os.path.exists(bfile):
+    _house = unary_union([Polygon(b['ring']).buffer(0) for b in B['buildings']])
+    for f in J('source/pgatlas-pavement-2023.json')['features']:
+        a_ = f['attributes']
+        kind = {1205: 'DRIVEWAY', 1208: 'WALK'}.get(a_['FEATURE_CODE'])
+        if not kind: continue
+        for g in _pave_polys(f):
+            if g.distance(_house) > 150 or g.area < 20: continue
+            surf = {'Unpaved': 'GRAVEL', 'Paved': 'PAVED', 'Concrete': 'CONCRETE', 'Asphalt': 'ASPHALT'}.get(a_['SURFACE'], '')
+            for gg in ([g] if g.geom_type == 'Polygon' else list(g.geoms)):
+                existing_paving.append({'ring': [list(q) for q in list(gg.exterior.coords)[:-1]], 'kind': kind, 'surface': a_['SURFACE'],
+                                        'label': f'EX. {surf} {kind}'.replace('  ', ' ') + (f' ({addr})' if kind == 'DRIVEWAY' else ''),
+                                        'source': 'PGAtlas Transportation/8 pavement, captured 2023' if a_['SOURCE_CODE'] == 9 else 'PGAtlas Transportation/8 pavement'})
+rec['existingPaving'] = existing_paving
 rec['streetTrees'] = trees
 rec['streetLights'] = lights
 rec['roadsideSwales'] = swales
@@ -471,6 +612,10 @@ rec['siteLod'] = {'ring': [list(p) for p in list(_lod.exterior.coords)[:-1]], 'a
                   'setbackFt': LOD_SETBACK_FT, 'edgeOffsetsFt': _edge_offsets,
                   'note': "Limit of disturbance 10 ft inside the rear lot lines and the outer sides of Lots 1 and 6 (existing tree line preserved; 3 ft along the Lot 6 west line, where the dwelling stands 8 ft from the line); crossed only by the street, the Jennifer Drive entrance and the WSSC easement."}
 
+# Existing frontage utilities, stated once in the general notes.
+_moved = [p_['label'].split(' — ')[0].replace('EX. TELEPHONE POLE ', 'pole ') for p_ in poles if p_['inProposedPavement']]
+rec['generalNotes'].insert(5, 'Existing frontage utilities: 8" WSSC water and 8" WSSC sewer in Jennifer Drive, telephone poles and overhead wires along the frontage R/W, as shown.'
+    + (f' Telephone {", ".join(_moved)} lies within the proposed Estates Court entrance and is to be relocated; coordinate with Verizon.' if _moved else ''))
 json.dump(rec, open(os.path.join(proj, 'estates-indian-head.plat-record.json'), 'w'), indent=1)
 print(f'roads {len(roads)} · trees {len(trees)} · lights {len(lights)} · swale runs {len(swales)} '
       f'({sum(LineString(s["line"]).length for s in swales):.0f} ft) · culverts {len(culverts)} · spots {len(spots)} · '

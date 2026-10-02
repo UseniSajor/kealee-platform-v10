@@ -66,6 +66,13 @@ LAYERS = {
     'C-WATR-SVCS-N': (5, 'CONTINUOUS', 30),   # 1" water service, main to dwelling
     'C-SSWR-SVCS-N': (94, 'DASHED', 30),      # 4" sewer lateral, main to dwelling
     'C-UTIL-ANNO-N': (7, 'CONTINUOUS', 18),
+    # existing utilities outside the tract (frontage)
+    'C-WATR-MAIN-E': (5, 'DASHED2', 25),
+    'C-SSWR-MAIN-E': (94, 'DASHED2', 25),
+    'V-UTIL-POLE': (7, 'CONTINUOUS', 25),
+    'V-UTIL-OVHD': (8, 'DASHED', 18),
+    'V-UTIL-ANNO-E': (8, 'CONTINUOUS', 13),
+    'V-PVMT-E': (8, 'CONTINUOUS', 18),           # existing driveways / walks off site
     'E-LITE-N': (7, 'CONTINUOUS', 25),
     'L-PLNT-TREE-N': (7, 'CONTINUOUS', 25),
     # stormwater
@@ -91,7 +98,7 @@ LAYERS = {
 BASE = ['V-PROP-BNDY', 'V-PROP-LOTS', 'V-PROP-ADJN', 'V-PROP-ANNO', 'V-GRID',
         'C-ROAD-EDGE-E', 'C-ROAD-CNTR-E', 'C-ROAD-ROWL-E', 'C-ROAD-ANNO-E',
         'C-ROAD-ROWL-N', 'C-ROAD-PVMT-N', 'C-ROAD-ANNO-N', 'C-BLDG-FTPR-N', 'C-PVMT-DRWY-N', 'C-PVMT-WALK-N', 'V-ESMT',
-        'V-BLDG-E', 'V-BLDG-ANNO-E']
+        'V-BLDG-E', 'V-BLDG-ANNO-E', 'C-WATR-MAIN-E', 'C-SSWR-MAIN-E', 'V-UTIL-POLE', 'V-UTIL-OVHD', 'V-UTIL-ANNO-E', 'V-PVMT-E']
 # Every plan sheet carries the same construction base (user, 2026-10-01: existing
 # and proposed contours on all sheets; L.O.D. around the full site; nothing a
 # contractor needs on one sheet missing from another). Each sheet then adds its

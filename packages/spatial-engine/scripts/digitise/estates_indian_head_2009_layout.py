@@ -249,19 +249,46 @@ for n, d in L2009.items():
     closed = unary_union([throat, pave]).buffer(FLARE, join_style=1).buffer(-FLARE, join_style=1)
     apron = closed.intersection(throat.buffer(FLARE + 1.0, cap_style=2)).difference(pave).intersection(row).buffer(0)
     # stoop and walk
+    # Owner 2026-10-02: walks "all out of line". Everything is squared to the
+    # FRONT WALL the door is in, not to the garage door or the house centroid:
+    #   stoop  8 ft along the wall x 5 ft deep, against the wall at the door;
+    #   walk   4 ft wide, PARALLEL to the front wall 5-9 ft out from it, from the
+    #          stoop to the drive/court and 1 ft into it;
+    #   else   (no parallel run reaches the drive) straight out from the stoop,
+    #          square to the wall, then square across to the drive.
     sp = d.get('stoop_world') or W(*d['stoop'])
-    stoop = Polygon([(sp[0] + ue[0] * dx + nrm[0] * dy, sp[1] + ue[1] * dx + nrm[1] * dy) for dx, dy in ((-4, -2.5), (4, -2.5), (4, 2.5), (-4, 2.5))])
-    # The lead walk leaves the stoop square to the front wall for 5 ft, then runs
-    # to the drive and 1 ft into it, so it always joins the paving (user
-    # 2026-10-01: walks "incomplete and not visible" — Lot 6's straight walk
-    # clipped the house and stopped 4.35 ft short).
+    _ring = list(house.exterior.coords)
+    _edges = [(_ring[i], _ring[i + 1]) for i in range(len(_ring) - 1) if math.dist(_ring[i], _ring[i + 1]) > 3]
+    wa, wb = min(_edges, key=lambda e: LineString(e).distance(Point(sp)))
+    uf = unit(wa, wb)
+    nf = (-uf[1], uf[0])
     _hc = house.centroid
-    uo = unit((_hc.x, _hc.y), sp)                      # out from the house through the front door
-    out_pt = (sp[0] + uo[0] * 5.0, sp[1] + uo[1] * 5.0)
-    wp, _ = nearest_points(on_lot, Point(out_pt))
-    uw = unit(out_pt, (wp.x, wp.y)) if math.dist(out_pt, (wp.x, wp.y)) > 0.1 else (0.0, 0.0)
-    w_end = (wp.x + uw[0] * 1.0, wp.y + uw[1] * 1.0)
-    walk = unary_union([strip(sp, out_pt, 4.0), strip(out_pt, w_end, 4.0), Point(out_pt).buffer(2.0, cap_style=3)]).difference(house).buffer(0)
+    _fp = LineString((wa, wb)).interpolate(LineString((wa, wb)).project(Point(sp)))
+    if (nf[0] * (_fp.x - _hc.x) + nf[1] * (_fp.y - _hc.y)) < 0: nf = (-nf[0], -nf[1])
+    f0 = (_fp.x, _fp.y)
+    at = lambda a_, o_: (f0[0] + uf[0] * a_ + nf[0] * o_, f0[1] + uf[1] * a_ + nf[1] * o_)
+    stoop = Polygon([at(-4, 0), at(4, 0), at(4, 5), at(-4, 5)])
+    walk = None
+    best_w = None
+    for sgn in (1, -1):
+        ray = LineString([at(-4 * sgn, 7), at(150 * sgn, 7)])
+        hit = ray.intersection(on_lot)
+        if hit.is_empty: continue
+        hp = min((hit.geoms if hasattr(hit, 'geoms') else [hit]), key=lambda g: Point(at(0, 7)).distance(g))
+        q, _ = nearest_points(hp, Point(at(0, 7)))
+        run = abs((q.x - f0[0]) * uf[0] + (q.y - f0[1]) * uf[1])
+        w = strip(at(-4 * sgn, 7), at((run + 1.0) * sgn, 7), 4.0)
+        if w.intersects(house.buffer(-0.5)): continue
+        if best_w is None or run < best_w[0]: best_w = (run, w)
+    if best_w:
+        walk = unary_union([best_w[1], stoop.buffer(0.01)]).difference(stoop).difference(house).buffer(0)
+    else:
+        # straight out, square to the wall, to the line of the drive, then across
+        _, dq = nearest_points(Point(at(0, 5)), on_lot)
+        depth = max(7.0, (dq.x - f0[0]) * nf[0] + (dq.y - f0[1]) * nf[1])
+        side = (dq.x - f0[0]) * uf[0] + (dq.y - f0[1]) * uf[1]
+        walk = unary_union([strip(at(0, 5), at(0, depth + 2.0), 4.0),
+                            strip(at(0, depth), at(side + (1.0 if side > 0 else -1.0), depth), 4.0)]).difference(house).buffer(0)
     geomlist = lambda gg: [list(p) for p in list((max(gg.geoms, key=lambda x: x.area) if hasattr(gg, 'geoms') else gg).exterior.coords)[:-1]]
     spec['fixedFootprint'] = [list(p) for p in list(house.exterior.coords)[:-1]]
     spec['fixedPaving'] = [

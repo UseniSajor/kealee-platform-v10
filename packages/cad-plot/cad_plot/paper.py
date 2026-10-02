@@ -334,6 +334,8 @@ class Sheets:
                          ('V-PROP-ADJN', 'Adjoining property'), ('V-BLDG-E', 'Existing building (county 2023 footprint)'), ('C-TOPO-MAJR-E', 'Existing contour, 10-ft (NAVD 88)'),
                          ('C-TOPO-MINR-E', 'Existing contour, 2-ft'), ('C-ROAD-EDGE-E', 'Existing edge of road'),
                          ('C-ROAD-ROWL-E', 'Existing right-of-way'),
+                         ('C-WATR-MAIN-E', 'Existing water main (WSSC)'), ('C-SSWR-MAIN-E', 'Existing sewer main (WSSC)'),
+                         ('V-UTIL-POLE', 'Existing telephone pole'), ('V-UTIL-OVHD', 'Existing overhead wires'), ('V-PVMT-E', 'Existing driveway / walk'),
                          ('C-ENVR-SLOP-E', 'Steep slopes (County layer): dots 15-25%, hatch >25%'), ('C-ENVR-SOIL-E', 'Soil boundary (USDA NRCS)'), ('V-ESMT', 'Easement')],
             'layout': [('V-PROP-BNDY', 'Boundary of record'), ('C-ROAD-ROWL-N', 'Estates Ct right-of-way'),
                        ('C-ROAD-PVMT-N', 'Proposed pavement'), ('C-ROAD-SWAL-N', 'Roadside swale (flowline)'),
@@ -341,11 +343,14 @@ class Sheets:
                        ('V-PROP-BRL', 'Building restriction line'), ('C-TOPO-MAJR-N', 'Proposed contour'),
                        ('C-TOPO-MINR-E', 'Existing contour'), ('C-TOPO-SPOT-N', 'Spot elevation (NAVD 88)'),
                        ('C-ESC-LOD', 'Limit of disturbance'), ('C-ROAD-SIGHT-N', 'Jennifer Dr sight-distance line'),
-                       ('E-LITE-N', 'Street light (LED)')],
+                       ('E-LITE-N', 'Street light (LED)'), ('C-WATR-MAIN-E', 'Existing water main (WSSC)'),
+                       ('C-SSWR-MAIN-E', 'Existing sewer main (WSSC)'), ('V-UTIL-POLE', 'Existing telephone pole'), ('V-UTIL-OVHD', 'Existing overhead wires')],
             'utility': [('C-WATR-MAIN-N', 'Proposed 8" water main'), ('C-SSWR-MAIN-N', 'Proposed 8" sanitary sewer'),
                         ('C-WATR-SVCS-N', '1" water house connection (W.H.C.)'), ('C-SSWR-SVCS-N', '4" sewer house connection (S.H.C.)'),
                         ('V-ESMT', 'WSSC easement (recorded / proposed)'),
-                        ('L-PLNT-TREE-N', 'Street tree — Red Maple'), ('E-LITE-N', 'Street light (LED)')],
+                        ('L-PLNT-TREE-N', 'Street tree — Red Maple'), ('E-LITE-N', 'Street light (LED)'),
+                        ('C-WATR-MAIN-E', 'Existing water main (WSSC)'), ('C-SSWR-MAIN-E', 'Existing sewer main (WSSC)'),
+                        ('V-UTIL-POLE', 'Existing telephone pole'), ('V-UTIL-OVHD', 'Existing overhead wires')],
             'swm': [('C-SWM-ESD-N', 'ESD practice — micro-bioretention (M-6)'), ('C-ROAD-SWAL-N', 'Roadside dry swale (M-8)'),
                     ('C-SWM-DRAN-N', 'Drainage area to practice'), ('C-SWM-OFFS', 'Off-site area draining onto site'),
                     ('C-SWM-FLOW', '100-yr overflow path'), ('C-SWM-POI', 'Point of investigation'),
@@ -386,7 +391,16 @@ class Sheets:
         self.plan_title(ps, sh)
         sc = sh.get('scaleFtPerIn', 30)
         top = H - M - 0.55
-        ctr = (self.plan_c[0], self.plan_c[1] + 40) if sh['kind'] == 'swm' else self.plan_c   # DA map: whole contributing area to the divide
+        if sh['kind'] == 'swm':
+            ctr = (self.plan_c[0], self.plan_c[1] + 40)  # DA map: whole contributing area to the divide
+        elif sh['kind'] == 'utility':
+            # The Henrietta Drive connection and both recorded 30-ft WSSC
+            # easement segments sit just east of the subdivision. The common
+            # plan centre clipped the road and the tie-in symbols at the sheet
+            # edge. Shift only C-300; the scale and every other sheet stay put.
+            ctr = (self.plan_c[0] + 70, self.plan_c[1])
+        else:
+            ctr = self.plan_c
         self.viewport(ps, sh['kind'], DRAW_X0, self.band_top(), DRAW_X1, top, sc, centre=ctr)
         _box(ps, DRAW_X0, self.band_top(), DRAW_X1, top, layer='G-ANNO-TABL')
         bar_scale(ps, DRAW_X0 + 0.15, self.band_top() + 0.25, sc, 200)
@@ -829,7 +843,7 @@ class Sheets:
         yb, _ = table(ps, DRAW_X0, ytab, "PRINCE GEORGE'S COUNTY BMP SUMMARY TABLE — ESD BY POINT OF INVESTIGATION (A-15, C-9)",
                       ['BMP', 'PRACTICE', 'MDE', 'LOCATION', 'OWNERSHIP / MAINT.', 'POI', 'DA SF', 'IMP SF', '%I', 'HSG', 'P_E IN', 'Rv',
                        'ESDv REQ CF', 'ESDv PROV CF', 'Rev REQ CF', 'SURFACE SF', 'COORDINATES (NAD 83)'],
-                      rows, h=0.08, max_width=vx0 - DRAW_X0 - 0.3, bold_last=True, wrap_cols={4: 1.5, 1: 1.5})
+                      rows, h=0.09, max_width=vx0 - DRAW_X0 - 0.3, bold_last=True, wrap_cols={4: 1.5, 1: 1.5})
         _txt(ps, f"P_E from {s['bmp']['citation']}; HSG {s['bmp']['rows'][0]['hsg'] if s['bmp']['rows'] else 'C'} governing. Rv = 0.05 + 0.009·I; "
              'ESDv = P_E·Rv·A/12; Rev = S·Rv·A/12 (S = 0.13 in, HSG C), met within ESDv. M-8 provided = 6 cf per ft (4-ft bottom, 6" ponding, 2.5\' media at n 0.40).',
              DRAW_X0, yb - 0.06, 0.06)
@@ -842,27 +856,27 @@ class Sheets:
         lc = s['tables'].get('lotCoverage')
         y = top
         if lc and lc['rows']:
-            y, _ = table(ps, xA, y, lc['title'], lc['columns'], lc['rows'], h=0.085, wrap_cols={c: 1.0 for c in range(1, 6)})
+            y, _ = table(ps, xA, y, lc['title'], lc['columns'], lc['rows'], h=0.095, wrap_cols={c: 1.0 for c in range(1, 6)})
             _txt(ps, 'LOT COVERAGE = DRIVEWAY, WALK AND STOOP + DWELLING FOOTPRINT, ON THE LOT.', xA, y - 0.06, 0.065)
             y -= 0.4
         ad = s['tables'].get('addresses')
         if ad and ad['rows']:
-            y, _ = table(ps, xA, y, ad['title'], ad['columns'], ad['rows'], h=0.1)
+            y, _ = table(ps, xA, y, ad['title'], ad['columns'], ad['rows'], h=0.11)
         bottoms = [y]
         bottoms.append(self.cover_legend(ps, xB, top))
         y = top
         idx_rows = [[str(i + 1), x['id'], x['title']] for i, x in enumerate(self.sheets)]
-        y, _ = table(ps, xC, y, 'INDEX OF DRAWINGS', ['NO.', 'SHEET', 'TITLE'], idx_rows, h=0.085, wrap_cols={2: 4.4})
+        y, _ = table(ps, xC, y, 'INDEX OF DRAWINGS', ['NO.', 'SHEET', 'TITLE'], idx_rows, h=0.095, wrap_cols={2: 4.4})
         bottoms.append(self.std_notes(ps, xC, y - 0.3, 6.0))
         self._cover_record_view(ps, min(bottoms) - 0.35)
         y = top
         wD = DRAW_X1 - xD
         for title, body in CERTIFICATIONS:
             y0 = y
-            y = paragraphs(ps, xD + 0.12, y - 0.12, wD - 0.24, title, [body], h=0.075, numbered=False)
+            y = paragraphs(ps, xD + 0.12, y - 0.12, wD - 0.24, title, [body], h=0.09, numbered=False)
             for lab in ('SIGNATURE: ______________________________   MD P.E. LICENSE NO. ________',
                         'PRINTED NAME: ___________________________   DATE: ____________'):
-                _txt(ps, lab, xD + 0.12, y - 0.05, 0.075); y -= 0.2
+                _txt(ps, lab, xD + 0.12, y - 0.05, 0.085); y -= 0.22
             _box(ps, xD, y - 0.05, xD + wD, y0, layer='G-ANNO-TABL', lw=35)
             y -= 0.3
             if y < M + 4.8: break
@@ -899,17 +913,17 @@ class Sheets:
                 ('SOIL BOUNDARY', None, 'C-ENVR-SOIL-E'),
                 ('STREET TREE', 'TREE', None), ('STREET LIGHT', 'LIGHT', None), ('SPOT ELEVATION', 'SPOT', None)]
         c0, c1, c2 = 2.6, 1.4, 1.4
-        rh = 0.24
-        _txt(ps, 'LEGEND', x + (c0 + c1 + c2) / 2, y, 0.13, bold=True, align=TextEntityAlignment.TOP_CENTER)
+        rh = 0.28
+        _txt(ps, 'LEGEND', x + (c0 + c1 + c2) / 2, y, 0.15, bold=True, align=TextEntityAlignment.TOP_CENTER)
         y -= 0.3
         top = y
         for k, lab in enumerate(('ITEM', 'NEW', 'EXISTING')):
-            _txt(ps, lab, x + [c0 / 2, c0 + c1 / 2, c0 + c1 + c2 / 2][k], y - rh / 2, 0.08, bold=True, align=TextEntityAlignment.MIDDLE_CENTER)
+            _txt(ps, lab, x + [c0 / 2, c0 + c1 / 2, c0 + c1 + c2 / 2][k], y - rh / 2, 0.09, bold=True, align=TextEntityAlignment.MIDDLE_CENTER)
         y -= rh
         _line(ps, (x, y), (x + c0 + c1 + c2, y))
         for item, new, ex in rows:
             ym = y - rh / 2
-            _txt(ps, item, x + 0.08, ym, 0.07, align=TextEntityAlignment.MIDDLE_LEFT)
+            _txt(ps, item, x + 0.08, ym, 0.085, align=TextEntityAlignment.MIDDLE_LEFT)
             for lay, cxx in ((new, x + c0), (ex, x + c0 + c1)):
                 if not lay: continue
                 if lay in ('TREE', 'LIGHT', 'SPOT'):
@@ -934,14 +948,18 @@ class Sheets:
         colw = (DRAW_X1 - DRAW_X0 - 0.6) / 3
         c1, c2 = DRAW_X0, DRAW_X0 + colw + 0.3
         c3 = DRAW_X0 + 2 * (colw + 0.3)
-        y1, _ = table(ps, c1, ytop, 'SITE DATA', ['ITEM', 'DATA'], s['tables']['siteData']['rows'], h=0.085, wrap_cols={1: colw - 1.4}, max_width=colw)
-        y1, _ = table(ps, c1, y1 - 0.25, 'APPROVALS OF RECORD', ['CASE', 'STATUS'], s['tables']['approvals']['rows'], h=0.085, max_width=colw)
-        paragraphs(ps, c1, y1 - 0.25, colw, 'GENERAL NOTES', s['notes'].get('general') or [], h=0.085)
+        y1, _ = table(ps, c1, ytop, 'SITE DATA', ['ITEM', 'DATA'], s['tables']['siteData']['rows'], h=0.105, wrap_cols={1: colw - 1.4}, max_width=colw)
+        y1, _ = table(ps, c1, y1 - 0.3, 'APPROVALS OF RECORD', ['CASE', 'STATUS'], s['tables']['approvals']['rows'], h=0.105, max_width=colw)
+        paragraphs(ps, c1, y1 - 0.3, colw, 'GENERAL NOTES', s['notes'].get('general') or [], h=0.105)
         rows = [[r['id'], r['text'], r['reference'], r['status'], r['comment'], r['sheet']] for r in s['checklist']['rows']]
-        half = (len(rows) + 1) // 2
-        split = next((i for i in range(half, len(rows)) if rows[i][0][0] != rows[i - 1][0][0]), half)
+        # Balance by rendered content rather than row count: the C-E checklist
+        # responses are much longer than A-B. A 50/50 row split left the first
+        # block half-height and drove an enlarged second block through the PE /
+        # County reservation. Roughly 64% in the first block makes both finish
+        # immediately above the 4.5-in reserved band on this 55-row checklist.
+        split = max(1, min(len(rows) - 1, round(len(rows) * 0.64)))
         table(ps, c2, ytop, 'DPIE CONCEPT PLAN DESIGN REVIEW CHECKLIST (08/25/2021) — C = SHOWN · X = N/A · O = OUTSTANDING',
-              ['ITEM', 'REQUIREMENT', 'REF.', 'C/X/O', 'RESPONSE / WHERE SHOWN', 'SHEET'], rows[:split], h=0.075,
+              ['ITEM', 'REQUIREMENT', 'REF.', 'C/X/O', 'RESPONSE / WHERE SHOWN', 'SHEET'], rows[:split], h=0.095,
               wrap_cols={1: colw * 0.38, 4: colw * 0.36}, max_width=colw)
-        table(ps, c3, ytop, 'CHECKLIST (CONT.)', ['ITEM', 'REQUIREMENT', 'REF.', 'C/X/O', 'RESPONSE / WHERE SHOWN', 'SHEET'], rows[split:], h=0.075,
+        table(ps, c3, ytop, 'CHECKLIST (CONT.)', ['ITEM', 'REQUIREMENT', 'REF.', 'C/X/O', 'RESPONSE / WHERE SHOWN', 'SHEET'], rows[split:], h=0.095,
               wrap_cols={1: colw * 0.38, 4: colw * 0.36}, max_width=colw)

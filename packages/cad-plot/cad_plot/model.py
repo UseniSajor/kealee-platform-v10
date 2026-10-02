@@ -256,6 +256,7 @@ class Model:
         self.topo()
         self.environment()
         self.utilities()
+        self.existing_utilities()      # after the paving fills, so a pole in the entrance stays visible
         self.street_geometry()
         self.sight_lines()
         self.stormwater()
@@ -339,6 +340,13 @@ class Model:
             self.fill(r, 'V-BLDG-E', pattern='ANSI31', scale=PAT)
             self.pl(r, 'V-BLDG-E', close=True)
             self.mtext(st.get('label', 'EXISTING DWELLING'), _centroid(r), 0.08, 'V-BLDG-ANNO-E', width_in=1.6, bold=True)
+        # existing driveways and walks off site, outlined light and labelled EX.
+        for pv in (self.s.get('extras') or {}).get('existingPaving') or []:
+            r = [(p[0], p[1]) for p in pv.get('ring') or []]
+            if len(r) < 3: continue
+            self.pl(r, 'V-PVMT-E', close=True)
+            if pv.get('kind') == 'DRIVEWAY' and _area(r) > 300:
+                self.text(pv.get('label', 'EX. DRIVEWAY'), self._pole(r), 0.06, 'V-BLDG-ANNO-E')
 
     def adjoiners(self):
         from shapely.geometry import Polygon
@@ -367,9 +375,20 @@ class Model:
 
     def roads(self):
         named = set()
+        labelled = {f['attributes'].get('road', '') for f in self.of('ExistingFeature', roadLine=lambda v: v == 'label')
+                    if f['attributes'].get('label', '').upper().startswith(('INDIAN HEAD', 'JENNIFER'))}
         for f in self.of('ExistingFeature', roadLine=lambda v: bool(v)):
             a = f['attributes']
             ln = _line(f)
+            if a['roadLine'] in ('median', 'label'):
+                # label-only lines: a median or a carriageway name, lettered along
+                # the line; the pavement edges already bound them
+                if a.get('label') and len(ln) >= 2:
+                    p, q = ln[0], ln[-1]
+                    at = (p[0] + (q[0] - p[0]) * 0.5, p[1] + (q[1] - p[1]) * 0.5)
+                    self.text(a['label'], at, 0.075 if a['roadLine'] == 'median' else 0.1, 'C-ROAD-ANNO-E',
+                              angle=_text_angle(p, q), bold=a['roadLine'] == 'label')
+                continue
             lay = {'edge-of-road': 'C-ROAD-EDGE-E', 'lane-line': 'C-ROAD-CNTR-E', 'centerline': 'C-ROAD-CNTR-E',
                    'right-of-way': 'C-ROAD-ROWL-E', 'barrier': 'C-ROAD-ROWL-E'}.get(a['roadLine'], 'C-ROAD-EDGE-E')
             self.pl(ln, lay)
@@ -378,6 +397,8 @@ class Model:
                 at = (p[0] + (q[0] - p[0]) * 0.43, p[1] + (q[1] - p[1]) * 0.43)
                 self.text(a['label'], at, 0.055, 'C-ROAD-ANNO-E', angle=_text_angle(p, q), bold=True)
             road = a.get('road', '')
+            if road in labelled:      # the record places this road's name itself
+                continue
             if road not in named and a['roadLine'] in ('centerline', 'lane-line') and len(ln) >= 2:
                 named.add(road)
                 i = len(ln) // 2
@@ -396,8 +417,31 @@ class Model:
                     s1 = s0 + 150 if s0 + 150 < hw.length else s0 - 150
                     m = hw.interpolate(s1); m2 = hw.interpolate(min(hw.length, s1 + 5))
                     mid, p, q = (m.x, m.y), (m.x, m.y), (m2.x, m2.y)
-                    label = "INDIAN HEAD HIGHWAY — MD ROUTE 210 (SHA, VARIABLE WIDTH R/W)"
+                    label = a.get('roadLabel') if 'MASTER PLAN' in str(a.get('roadLabel', '')) else "INDIAN HEAD HIGHWAY — MD ROUTE 210 (SHA, VARIABLE WIDTH R/W)"
                 self.text(label, mid, 0.13, 'C-ROAD-ANNO-E', angle=_text_angle(p, q), bold=True)
+
+    def existing_utilities(self):
+        """Existing poles, overhead wires and mains outside the tract, from the plan record."""
+        eu = self.s['extras'].get('existingUtilities') or {}
+        for m in eu.get('mains') or []:
+            ln = [(p[0], p[1]) for p in m['line']]
+            if len(ln) < 2: continue
+            lay = 'C-WATR-MAIN-E' if m.get('type') == 'water' else 'C-SSWR-MAIN-E'
+            self.pl(ln, lay)
+            p, q = ln[0], ln[-1]
+            t = 0.3 if m.get('type') == 'water' else 0.45
+            self.text(m.get('label', ''), (p[0] + (q[0] - p[0]) * t, p[1] + (q[1] - p[1]) * t), 0.06, 'V-UTIL-ANNO-E', angle=_text_angle(p, q))
+        for o in eu.get('overhead') or []:
+            ln = [(p[0], p[1]) for p in o['line']]
+            if len(ln) < 2: continue
+            self.pl(ln, 'V-UTIL-OVHD')
+            p, q = ln[-2], ln[-1]
+            self.text(o.get('label', ''), (p[0] + (q[0] - p[0]) * 0.55, p[1] + (q[1] - p[1]) * 0.55), 0.055, 'V-UTIL-ANNO-E', angle=_text_angle(p, q))
+        for pole in eu.get('poles') or []:
+            x, y = pole['point'][0], pole['point'][1]
+            self.msp.add_circle((x, y), 1.5, dxfattribs={'layer': 'V-UTIL-POLE'})
+            self.pl([(x - 1.5, y), (x + 1.5, y)], 'V-UTIL-POLE'); self.pl([(x, y - 1.5), (x, y + 1.5)], 'V-UTIL-POLE')
+            self.text(pole.get('label', ''), (x - 3.0, y + 3.0), 0.055, 'V-UTIL-ANNO-E', align=TextEntityAlignment.BOTTOM_RIGHT)
 
     def street(self):
         ps = self.s['extras'].get('proposedStreet') or {}
@@ -604,6 +648,28 @@ class Model:
             if len(ln) < 2: continue
             self.pl(ln, lay)
             if lay in ('C-WATR-MAIN-N', 'C-SSWR-MAIN-N') and len(ln) > 3:
+                # The route is stored connection-end first. Show that proposed
+                # tie-in explicitly, rather than allowing the off-site main and
+                # the recorded easement route to disappear at the viewport
+                # edge. Water and sewer callouts are thrown to opposite sides.
+                conn = str(a.get('sizeAtMain', '')).strip()
+                if conn:
+                    q0, q1 = ln[0], ln[1]
+                    self.msp.add_circle(q0, 2.0, dxfattribs={'layer': lay, 'lineweight': 50})
+                    L0 = math.dist(q0, q1) or 1
+                    ux0, uy0 = (q1[0] - q0[0]) / L0, (q1[1] - q0[1]) / L0
+                    water0 = lay == 'C-WATR-MAIN-N'
+                    side0 = 1 if water0 else -1
+                    # Pull the note back into the easement corridor and right-
+                    # justify it. The tie point is near the east viewport edge;
+                    # throwing the leader beyond the connection clipped the
+                    # very Henrietta callout this symbol exists to show.
+                    at0 = (q0[0] + ux0 * 18 - uy0 * 22 * side0,
+                           q0[1] + uy0 * 18 + ux0 * 22 * side0)
+                    self.pl([q0, at0], 'C-UTIL-ANNO-N')
+                    self.text(f"PROP. CONNECTION — {conn} VIA REC. 30' WSSC ESMT (L.51799 F.399)",
+                              at0, 0.065, 'C-UTIL-ANNO-N',
+                              align=TextEntityAlignment.BOTTOM_RIGHT if water0 else TextEntityAlignment.TOP_RIGHT)
                 i = len(ln) // 3
                 self.text(f"{a.get('label', ty)} — {a.get('sizeAtMain', '')}", ln[i], 0.065, 'C-UTIL-ANNO-N', angle=_text_angle(ln[i - 1], ln[i + 1]))
                 # the end of the main: capped and called out — no main past the last service
